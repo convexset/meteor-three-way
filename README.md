@@ -80,7 +80,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 
 When the template is rendered, the reactive elements are set up using `data-bind` attributes in the "mark up" part of the template. 
 
-###### `html`
+###### Binding: `html`
 
 For example, `<span data-bind="html: name"></span>`, binds the "name" field to the `innerHTML` property of the element.
 
@@ -94,7 +94,7 @@ where `mapToAgeDisplay` was described as `x => ageRanges[x]` (or, equivalently, 
 
 Pre-processors actually take two arguments, `(value, elem)` and return a value to be passed into the next pre-processor, or rendered on the page. This actually features in `ThreeWay.helpers.updateSemanticUIDropdown`, used in the demo, where the element itself has to be manipulated (see: [this](http://semantic-ui.com/modules/dropdown.html)) to achieve the desired result.
 
-###### `value`
+###### Binding: `value`
 
 There's nothing much to say about this simple binding...
 
@@ -102,7 +102,7 @@ There's nothing much to say about this simple binding...
 <input name="name" style="border: 0; width: 100%;" data-bind="value: name">
 ```
 
-###### `checked`
+###### Binding: `checked`
 
 This one too, although the helper does bear some explaining. `repackageDictionaryAsArray` takes a dictionary (object) and maps it into an array of key-value pairs. That is, an array with elements of the form `{key: "key", value: "value"}`. So the below example lays out the various options as checkboxes and binds `checked` to an array.
 
@@ -128,7 +128,7 @@ In the case of radio buttons, `checked` is bound to a string.
 </div>
 ```
 
-###### `visible`: A modern necessity
+###### Binding: `visible` (A modern necessity)
 
 `visible` can be bound to a variable, and stuff disappears when it is set to `"none"`.
 
