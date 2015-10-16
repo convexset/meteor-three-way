@@ -1,0 +1,152 @@
+<head>
+	<title>ThreeWay Demo</title>
+</head>
+<body>
+	<div class="ui container">
+		{{> DemoThreeWay}}
+	</div>
+</body>
+
+<template name="DemoThreeWay">
+	<h1>ThreeWay Demo</h1>
+	
+	<div class="column">
+		<h3>Show Me the Data</h3>
+		<table class="ui celled table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>e-mail Preferences</th>
+					<th>Age</th>
+					<th colspan="2">Tags</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{#each data}}
+					<tr>
+						<td>{{name}}</td>
+						<td>{{emailPrefsToCSL emailPrefs}}</td>
+						<td>{{getProperty age ageRanges}}</td>
+						<td>{{join tags ', '}}</td>
+						<td>
+							<button id="focus-{{_id}}">Work on This</button>
+						</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
+	</div>
+	
+	<div class="column">
+		&nbsp;
+	</div>
+	
+	<div data-bind="visible: _3w_haveData">
+		
+		<div class="column">
+			<h3>Edit{{#if _3w_id}} - {{_3w_id}}{{/if}}</h3>
+			
+			<p>
+				Requires <a href="https://atmospherejs.com/semantic/ui" target=_blank><code>semantic:ui</code></a> for the multi-select dropdown. (Start Meteor, do a trivial edit of <code>client/lib/semantic-ui/custom.semantic.json</code>, and save it to generate <a href="semantic-ui.com" target=_blank>Semantic UI</a>.)
+			</p>
+			
+			<table border="1">
+				<tr>
+					<th><strong>Name</strong></th>
+					<td><input name="name" style="border: 0; width: 100%;" data-bind="value: name"></td>
+				</tr>
+				<tr>
+					<th><strong>e-mail Preferences</strong></th>
+					<td>
+						{{#each repackageDictionaryAsArray emailPrefsAll}}
+							<div class="ui checkbox">
+								<input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
+								<label>{{value}}</label>
+							</div>
+						{{/each}}
+					</td>
+				</tr>
+				<tr>
+					<th><strong>Age</strong></th>
+					<td>
+						<div class="inline fields">
+							{{#each repackageDictionaryAsArray ageRanges}}
+								<div class="ui radio checkbox">
+									<input type="radio" name="age" value="{{key}}" data-bind="checked: age">
+									<label>{{value}}</label>
+								</div>
+							{{/each}}
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<th><strong>Tags</strong></th>
+					<td>
+						<div class="ui fluid multiple search selection dropdown">
+							<input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
+							<i class="dropdown icon"></i>
+							<div class="default text">Select Tags</div>
+							<div class="menu">
+								{{#each allTags}}
+									<div class="item" data-value="{{this}}">{{this}}</div>
+								{{/each}}
+							</div>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+		
+		<div class="column">
+			&nbsp;
+		</div>
+		
+		<div class="column">
+			<h3>Display{{#if _3w_id}} - {{_3w_id}}{{/if}}</h3>
+
+			<table class="ui celled table">
+				<tr>
+					<td><strong>Name</strong></td>
+					<td><span data-bind="html: name"></span></td>
+				</tr>
+				<tr>
+					<td><strong>e-mail Preferences</strong></td>
+					<td><span data-bind="html: emailPrefs|mapToEmailPrefs"></span></td>
+				</tr>
+				<tr>
+					<td><strong>Age</strong></td>
+					<td><span data-bind="html: age|mapToAgeDisplay"></span></td>
+				</tr>
+				<tr>
+					<td><strong>Tags</strong></td>
+					<td><span data-bind="html: tags|tagsTextDisplay"></span></td>
+				</tr>
+			</table>
+		</div>
+		
+		<div class="column">
+			&nbsp;
+		</div>
+		
+		<div class="column">
+			<h3>Additional</h3>
+			<data field="additional" initial-value="view model to view only"></data>
+			<div>
+				Additional (View Model Only): <input data-bind="value: additional">
+			</div>
+			<div>
+				Additional: <span data-bind="html: additional"></span>
+			</div>
+			
+			<div data-bind="visible: additional">
+				<strong>Set "Additional" to "none" to Make this Disappear</strong>
+			</div>
+		</div>
+		
+		<div class="column">
+			&nbsp;
+		</div>
+	</div>
+	
+	
+</template>
