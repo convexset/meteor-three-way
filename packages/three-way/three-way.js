@@ -101,6 +101,9 @@ if (Meteor.isClient) {
 			instance._3w_SetId = function(id) {
 				threeWay.id.set(id);
 			};
+			instance._3w_GetId = function() {
+				return threeWay.id.get();
+			};
 			instance._3w_Get = p => threeWay.data.get(p);
 			instance._3w_Set = (p, v) => threeWay.data.set(p, v);
 			instance._3w_Get_NR = p => threeWay.dataMirror[p];

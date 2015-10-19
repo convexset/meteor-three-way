@@ -164,6 +164,8 @@ It is easy to specify fields that are view model only. They don't even have to b
 
 The following methods are crammed onto each template instance in an `onCreated` hook.
 
+`_3w_GetId()`: gets the id of the document bound to
+
 `_3w_SetId(id)`: sets the id of the document to bind to
 
 `_3w_Get(prop)`: gets a property
