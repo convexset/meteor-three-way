@@ -16,7 +16,7 @@ if (Meteor.isServer) {
 	});
 	DataCollection.allow({}); // Allow nothing
 
-	['name', 'emailPrefs', 'age', 'tags'].forEach(function(field) {
+	['name', 'emailPrefs', 'age', 'notes', 'tags'].forEach(function(field) {
 		var methods = {};
 		var fn = function(id, value) {
 			var updater = {};
@@ -49,6 +49,7 @@ if (Meteor.isServer) {
 			'name': user.fullname,
 			'emailPrefs': _emPrefs,
 			'age': Fake.fromArray(ageRangeValues),
+			'notes': Fake.sentence(10),
 			'tags': tags,
 		});
 	});
@@ -62,7 +63,7 @@ if (Meteor.isClient) {
 
 	Meteor.subscribe('demo-pub');
 
-	var fields = ['name', 'emailPrefs', 'age', 'tags'];
+	var fields = ['name', 'emailPrefs', 'age', 'notes', 'tags'];
 	ThreeWay.prepare(Template.DemoThreeWay, {
 		// The relevant top-level fields in the database
 		fields: fields,

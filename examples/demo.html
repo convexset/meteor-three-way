@@ -18,6 +18,7 @@
 					<th>Name</th>
 					<th>e-mail Preferences</th>
 					<th>Age</th>
+					<th>Notes</th>
 					<th colspan="2">Tags</th>
 				</tr>
 			</thead>
@@ -27,6 +28,7 @@
 						<td>{{name}}</td>
 						<td>{{emailPrefsToCSL emailPrefs}}</td>
 						<td>{{getProperty age ageRanges}}</td>
+						<td>{{notes}}</td>
 						<td>{{join tags ', '}}</td>
 						<td>
 							<button id="focus-{{_id}}">Work on This</button>
@@ -80,6 +82,12 @@
 					</td>
 				</tr>
 				<tr>
+					<th><strong>Notes</strong></th>
+					<td>
+						<textarea data-bind="value: notes"></textarea>
+					</td>
+				</tr>
+				<tr>
 					<th><strong>Tags</strong></th>
 					<td>
 						<div class="ui fluid multiple search selection dropdown">
@@ -116,6 +124,10 @@
 				<tr>
 					<td><strong>Age</strong></td>
 					<td><span data-bind="html: age|mapToAgeDisplay"></span></td>
+				</tr>
+				<tr>
+					<td><strong>Notes</strong></td>
+					<td><span data-bind="html: notes"></span></td>
 				</tr>
 				<tr>
 					<td><strong>Tags</strong></td>

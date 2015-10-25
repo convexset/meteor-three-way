@@ -102,6 +102,8 @@ There's nothing much to say about this simple binding...
 <input name="name" style="border: 0; width: 100%;" data-bind="value: name">
 ```
 
+Works with `input` and `textarea` tags.
+
 ###### Binding: `checked`
 
 This one too, although the helper does bear some explaining. `repackageDictionaryAsArray` takes a dictionary (object) and maps it into an array of key-value pairs. That is, an array with elements of the form `{key: "key", value: "value"}`. So the below example lays out the various options as checkboxes and binds `checked` to an array.
