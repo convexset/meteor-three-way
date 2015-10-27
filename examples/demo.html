@@ -21,6 +21,7 @@
 					<th>Notes</th>
 					<th>Tags</th>
 					<th>Some Array</th>
+					<th style="width: 150px;">Other Array</th>
 					<th></th>
 				</tr>
 			</thead>
@@ -32,7 +33,20 @@
 						<td>{{getProperty personal.particulars.age ageRanges}}</td>
 						<td>{{notes}}</td>
 						<td>{{join tags ', '}}</td>
-						<td>{{join personal.someArr ', '}}</td>
+						<td>
+							<ol start="0">
+								{{#each personal.someArr}}
+									<li>{{this}}</li>
+								{{/each}}
+							</ol>
+						</td>
+						<td>
+							<ol start="0">
+								{{#each personal.otherArr}}
+									<li>a: {{a}}; b: {{b}}</li>
+								{{/each}}
+							</ol>
+						</td>
 						<td>
 							<button id="focus-{{_id}}">Work on This</button>
 						</td>
@@ -87,7 +101,7 @@
 				<tr>
 					<th><strong>Notes</strong></th>
 					<td>
-						<textarea data-bind="value: notes"></textarea>
+						<textarea data-bind="value: notes" style="border: 0; width: 100%;"></textarea>
 					</td>
 				</tr>
 				<tr>
@@ -106,8 +120,26 @@
 					</td>
 				</tr>
 				<tr>
-					<th><strong>personal.someArr[1]</strong></th>
-					<td><input name="personal.someArr.1" style="border: 0; width: 100%;" data-bind="value: personal.someArr.1"></td>
+					<th><strong>personal.someArr</strong></th>
+					<td>
+						{{#each range num}}
+							<strong>#{{this}}:</strong> <input name="personal.someArr.{{this}}" style="width: 25%;" data-bind="value: personal.someArr.{{this}}">
+						{{/each}}
+					</td>
+				</tr>
+				<tr>
+					<th><strong>personal.otherArr[0]</strong></th>
+					<td>
+						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.a">
+						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.b">
+					</td>
+				</tr>
+				<tr>
+					<th><strong>personal.otherArr[1]</strong></th>
+					<td>
+						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.a">
+						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.b">
+					</td>
 				</tr>
 			</table>
 		</div>
@@ -118,7 +150,7 @@
 		
 		<div class="column">
 			<h3>Display{{#if _3w_id}} - {{_3w_id}}{{/if}}</h3>
-
+			
 			<table class="ui celled table">
 				<tr>
 					<td><strong>Name</strong></td>
@@ -139,6 +171,36 @@
 				<tr>
 					<td><strong>Tags</strong></td>
 					<td><span data-bind="html: tags|tagsTextDisplay"></span></td>
+				</tr>
+				<tr>
+					<td><strong>personal.someArr</strong></td>
+					<td>
+						<ol start="0">
+							{{#each range 3}}
+								<li><span data-bind="html: personal.someArr.{{this}}"></span></li>
+							{{/each}}
+						</ol>
+					</td>
+				</tr>
+				<tr>
+					<td><strong>personal.otherArr</strong></td>
+					<td>
+						<ol start="0">
+							{{#each range 2}}
+								<li>
+									<ul>
+										<li>
+											a: <span data-bind="html: personal.otherArr.{{this}}.a"></span>&nbsp;&nbsp;
+										</li>
+										<li>
+											b: <span data-bind="html: personal.otherArr.{{this}}.b"></span>
+										</li>										
+									</ul>
+									<br/>
+								</li>
+							{{/each}}
+						</ol>
+					</td>
 				</tr>
 			</table>
 		</div>

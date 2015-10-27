@@ -4,19 +4,22 @@
 
 if (Meteor.isClient) {
 	ThreeWay.setDebugModeOn();
-	// ThreeWay.debugModeSelectAll();
+	ThreeWay.debugModeSelectAll();
 	// ThreeWay.debugModeSelect('bindings');
-	// ThreeWay.debugModeSelect('data_mirror');
-	ThreeWay.debugModeSelect('observer');
+	// ThreeWay.debugModeSelect('data-mirror');
+	// ThreeWay.debugModeSelect('observer');
 	// ThreeWay.debugModeSelect('tracker');
-	// ThreeWay.debugModeSelect('new_id');
+	// ThreeWay.debugModeSelect('new-id');
 	// ThreeWay.debugModeSelect('db');
 	// ThreeWay.debugModeSelect('value');
 	// ThreeWay.debugModeSelect('checked');
 	// ThreeWay.debugModeSelect('html');
 	// ThreeWay.debugModeSelect('visible');
+	// ThreeWay.debugModeSelect('vm-only');
+	// ThreeWay.debugModeSelect('re-bind');
+
 }
-var fields = ['name', 'emailPrefs', 'personal.particulars.age', 'notes', 'tags', 'personal.someArr.1'];
+var fields = ['name', 'emailPrefs', 'personal.particulars.age', 'notes', 'tags', 'personal.someArr.*', 'personal.otherArr.*.*'];
 
 
 DataCollection = new Mongo.Collection('data');
@@ -34,21 +37,42 @@ if (Meteor.isServer) {
 	DataCollection.allow({}); // Allow nothing
 
 	fields.forEach(function(field) {
-		var methods = {};
-		var fn = function(id, value) {
+		if (field.indexOf('*') === -1) {
+			var methods = {};
+			var fn = function(id, value) {
+				var updater = {};
+				updater[field] = value;
+				console.log('update-' + field, id, value);
+				DataCollection.update(id, {
+					$set: updater
+				});
+			};
+			methods['update-' + field] = fn;
+			Meteor.methods(methods);
+		}
+	});
+	Meteor.methods({
+		'update-personal.someArr.*': function(id, value, k) {
 			var updater = {};
-			updater[field] = value;
+			updater['personal.someArr.' + k] = value;
+			console.log('update-personal.someArr.' + k, id, value);
 			DataCollection.update(id, {
 				$set: updater
 			});
-		};
-		methods['update-' + field] = fn;
-		Meteor.methods(methods);
+		},
+		'update-personal.otherArr.*.*': function(id, value, k, fld) {
+			var updater = {};
+			updater['personal.otherArr.' + k + '.' + fld] = value;
+			console.log('update-personal.otherArr.' + k + '.' + fld, id, value);
+			DataCollection.update(id, {
+				$set: updater
+			});
+		}
 	});
 
 	// Init. data
 	DataCollection.remove({});
-	_.range(7).forEach(function() {
+	_.range(3).forEach(function() {
 		var user = Fake.user();
 		var tags = [];
 		allTags.forEach(function(tag) {
@@ -69,9 +93,16 @@ if (Meteor.isServer) {
 				'particulars': {
 					'age': Fake.fromArray(ageRangeValues),
 				},
-				'someArr': ['a', '!!!', 'c']
+				'someArr': [Math.floor(Math.random() * 10), '!!!', Math.floor(Math.random() * 10)],
+				'otherArr': [{
+					a: 10 + Math.floor(Math.random() * 10),
+					b: 20 + Math.floor(Math.random() * 10)
+				}, {
+					a: 30 + Math.floor(Math.random() * 10),
+					b: 40 + Math.floor(Math.random() * 10)
+				}, ]
 			},
-			'notes': Fake.sentence(10),
+			'notes': Fake.sentence(5),
 			'tags': tags,
 		});
 	});
@@ -142,6 +173,7 @@ if (Meteor.isClient) {
 
 	Template.DemoThreeWay.onCreated(function() {
 		this.id = new ReactiveVar(null);
+		this.num = new ReactiveVar(1);
 	});
 
 	Template.DemoThreeWay.onRendered(function() {
@@ -173,12 +205,23 @@ if (Meteor.isClient) {
 		entry: () => DataCollection.findOne(Template.instance().id.get(), {
 			reactive: true
 		}),
+		num: () => Template.instance().num.get()
 	});
 
 	var selectCreated = false;
 	Template.DemoThreeWay.events({
 		"click button": function(event, template) {
-			template._3w_SetId(event.target.getAttribute('id').split('-')[1]);
+			template.num.set(1);
+			var id = event.target.getAttribute('id').split('-')[1];
+			console.info('Setting ID to: ' + id);
+			console.info('Note the personal.someArr array is initially only bound to one input element (item 0).');
+			setTimeout(function() {
+				template._3w_SetId(id);
+				setTimeout(function() {
+					template.num.set(3);
+					console.info('Now (~3 sec later) personal.someArr array bound to three input elements (item 0, 1 & 2).');
+				}, 3000);
+			}, 50);
 		}
 	});
 }
