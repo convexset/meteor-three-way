@@ -72,7 +72,9 @@ ThreeWay.prepare(Template.DemoThreeWay, {
         "additional": "VM to V Only"
     },
     // "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
-    debounceInterval: 400
+    debounceInterval: 400,  // Default: 400 ms
+    // "Re-Bind Poll Interval" for discovering new DOM nodes in need of data-binding
+    rebindPollInterval: 300  // Default: 300 ms
 });
 ```
 

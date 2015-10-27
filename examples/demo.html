@@ -11,6 +11,29 @@
 	<h1>ThreeWay Demo</h1>
 	
 	<div class="column">
+		<h3>Debug Messages</h3>
+		<div class="ui form">
+			{{#each clump allDebugMessages 4}}
+				<div class="fields">
+					{{#each this}}
+						<div class="four wide field">
+							<div class="ui checkbox">
+								<input type="checkbox" value="{{this}}" data-bind="checked: debugMessages" name="debug-messages">
+								<label><code>{{this}}</code></label>
+							</div>
+							
+						</div>
+					{{/each}}
+				</div>
+			{{/each}}
+		</div>
+	</div>
+
+	<div class="column">
+		&nbsp;
+	</div>
+	
+	<div class="column">
 		<h3>Show Me the Data</h3>
 		<table class="ui celled table">
 			<thead>
@@ -48,7 +71,7 @@
 							</ol>
 						</td>
 						<td>
-							<button id="focus-{{_id}}">Work on This</button>
+							<button id="focus-{{_id}}">Edit</button>
 						</td>
 					</tr>
 				{{/each}}
@@ -71,11 +94,11 @@
 			
 			<table border="1">
 				<tr>
-					<th><strong>Name</strong></th>
+					<td><strong>Name</strong></td>
 					<td><input name="name" style="border: 0; width: 100%;" data-bind="value: name"></td>
 				</tr>
 				<tr>
-					<th><strong>e-mail Preferences</strong></th>
+					<td><strong>e-mail Preferences</strong></td>
 					<td>
 						{{#each repackageDictionaryAsArray emailPrefsAll}}
 							<div class="ui checkbox">
@@ -86,7 +109,7 @@
 					</td>
 				</tr>
 				<tr>
-					<th><strong>Age</strong></th>
+					<td><strong>Age</strong></td>
 					<td>
 						<div class="inline fields">
 							{{#each repackageDictionaryAsArray ageRanges}}
@@ -99,13 +122,13 @@
 					</td>
 				</tr>
 				<tr>
-					<th><strong>Notes</strong></th>
+					<td><strong>Notes</strong></td>
 					<td>
 						<textarea data-bind="value: notes" style="border: 0; width: 100%;"></textarea>
 					</td>
 				</tr>
 				<tr>
-					<th><strong>Tags</strong></th>
+					<td><strong>Tags</strong></td>
 					<td>
 						<div class="ui fluid multiple search selection dropdown">
 							<input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
@@ -120,7 +143,7 @@
 					</td>
 				</tr>
 				<tr>
-					<th><strong>personal.someArr</strong></th>
+					<td><strong>personal.someArr</strong></td>
 					<td>
 						{{#each range num}}
 							<strong>#{{this}}:</strong> <input name="personal.someArr.{{this}}" style="width: 25%;" data-bind="value: personal.someArr.{{this}}">
@@ -128,14 +151,14 @@
 					</td>
 				</tr>
 				<tr>
-					<th><strong>personal.otherArr[0]</strong></th>
+					<td><strong>personal.otherArr[0]</strong></td>
 					<td>
 						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.a">
 						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.b">
 					</td>
 				</tr>
 				<tr>
-					<th><strong>personal.otherArr[1]</strong></th>
+					<td><strong>personal.otherArr[1]</strong></td>
 					<td>
 						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.a">
 						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.b">
@@ -194,7 +217,7 @@
 										</li>
 										<li>
 											b: <span data-bind="html: personal.otherArr.{{this}}.b"></span>
-										</li>										
+										</li>
 									</ul>
 									<br/>
 								</li>

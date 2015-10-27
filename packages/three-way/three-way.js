@@ -5,7 +5,9 @@ var __tw = function ThreeWay() {};
 ThreeWay = new __tw();
 
 var THREE_WAY_NAMESPACE = "__three_way__";
-var DEBOUNCE_INTERVAL = 400;
+var THREE_WAY_DATA_BOUND_ATTRIBUTE = "three-way-data-bound";
+var DEFAULT_DEBOUNCE_INTERVAL = 400;
+var DEFAULT_DOM_POLL_INTERVAL = 300;
 
 var DEBUG_MODE = false;
 var DEBUG_MODE_ALL = false;
@@ -136,7 +138,8 @@ if (Meteor.isClient) {
 			dataTransformFromServer: {},
 			preProcessors: {},
 			viewModelToViewOnly: {},
-			debounceInterval: DEBOUNCE_INTERVAL
+			debounceInterval: DEFAULT_DEBOUNCE_INTERVAL,
+			rebindPollInterval: DEFAULT_DOM_POLL_INTERVAL,
 		}, options, true);
 
 		if (!(options.collection instanceof Mongo.Collection)) {
@@ -228,23 +231,23 @@ if (Meteor.isClient) {
 			var mostRecentDatabaseEntry = {};
 
 			Tracker.autorun(function() {
-				threeWay.dataMirror = instance[THREE_WAY_NAMESPACE].data.all();
+				threeWay.dataMirror = threeWay.data.all();
 				if (IN_DEBUG_MODE_FOR('data-mirror')) {
 					console.log('Updating data mirror...', threeWay.dataMirror);
 				}
 			});
 
 			_.forEach(options.viewModelToViewOnly, function(value, field) {
-				threeWay.data.set(field, threeWay.viewModelOnlyData[field]);
-				threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
-					threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
-					if (IN_DEBUG_MODE_FOR('vm-only')) {
-						console.log("[vm-only] vm-only data:", threeWay.viewModelOnlyData);
-					}
-				});
+				threeWay.data.set(field, value);
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
 					console.log("[vm-only] Setting up initial value for " + field + " to ", value, " using template-level options.");
 				}
+				threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
+					threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
+					if (IN_DEBUG_MODE_FOR('vm-only')) {
+						console.log("[vm-only] Updating vm-only data:", threeWay.viewModelOnlyData);
+					}
+				});
 			});
 
 
@@ -267,25 +270,24 @@ if (Meteor.isClient) {
 					threeWay._dataUpdateComputations = {};
 				}
 
-				try {
-					if (IN_DEBUG_MODE_FOR('data-mirror')) {
-						console.log("[data-mirror] Clearing threeWay.data");
-					}
-					threeWay.data.clear();
+				if (IN_DEBUG_MODE_FOR('data-mirror')) {
+					console.log("[data-mirror] Clearing threeWay.data");
+				}
+				threeWay.data.clear();
 
-					// Replace ViewModel only data and set-up mirroring again
-					_.forEach(threeWay.viewModelOnlyData, function(value, field) {
-						threeWay.data.set(field, threeWay.viewModelOnlyData[field]);
-						threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
-							threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
-						});
+				// Replace ViewModel only data and set-up mirroring again
+				_.forEach(threeWay.viewModelOnlyData, function(value, field) {
+					threeWay.data.set(field, threeWay.viewModelOnlyData[field]);
+					if (IN_DEBUG_MODE_FOR('vm-only')) {
+						console.log("[vm-only] Restoring value for " + field + " to ", threeWay.viewModelOnlyData[field], ".");
+					}
+					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
+						threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
 						if (IN_DEBUG_MODE_FOR('vm-only')) {
-							console.log("[vm-only] Restoring value for " + field + " to ", threeWay.viewModelOnlyData[field], ".");
+							console.log("[vm-only] Updating vm-only data:", threeWay.viewModelOnlyData);
 						}
 					});
-				} catch (e) {
-					console.log('Spurious error on ReactiveDict.prototype.clear: ', e);
-				}
+				});
 
 				threeWay.dataMatchParams = {};
 				mostRecentDatabaseEntry = {};
@@ -482,7 +484,7 @@ if (Meteor.isClient) {
 				}
 
 				Array.prototype.forEach.call(instance.$("[data-bind]"), function(elem) {
-					if (!!elem.getAttribute('data-bound')) {
+					if (!!elem.getAttribute(THREE_WAY_DATA_BOUND_ATTRIBUTE)) {
 						// Already data-bound
 						return;
 					}
@@ -564,6 +566,7 @@ if (Meteor.isClient) {
 								}
 							}
 						};
+
 						$(elem).change(valueChangeHandler);
 						$(elem).keyup(valueChangeHandler);
 
@@ -600,6 +603,7 @@ if (Meteor.isClient) {
 							}
 							elemGlobals.suppressChange = false;
 						}));
+
 					}
 
 
@@ -654,6 +658,7 @@ if (Meteor.isClient) {
 								}
 							}
 						};
+
 						$(elem).change(checkedChangeHandler);
 
 						threeWay.computations.push(Tracker.autorun(function(c) {
@@ -662,9 +667,11 @@ if (Meteor.isClient) {
 							var value = threeWay.data.get(source);
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('checked')) {
-									console.log("[.checked] Preparing .checked update for", source, elem);
+									console.log("[.checked] Preparing .checked update (to ", value, ") for", source, elem);
 								}
-								return;
+								if (typeof value === "undefined") {
+									return;
+								}
 							}
 							elemGlobals.suppressChange = true;
 
@@ -726,6 +733,7 @@ if (Meteor.isClient) {
 
 							elemGlobals.suppressChange = false;
 						}));
+
 					}
 
 
@@ -807,13 +815,13 @@ if (Meteor.isClient) {
 					//////////////////////////////////////////////////////
 					//////////////////////////////////////////////////////
 
-					elem.setAttribute('data-bound', true);
+					elem.setAttribute(THREE_WAY_DATA_BOUND_ATTRIBUTE, true);
 
 				});
 
 				if (threeWay.doRebindOperations) {
 					// Recheck later
-					setTimeout(rebindOperations, 500);
+					setTimeout(rebindOperations, options.rebindPollInterval);
 				}
 			})(); // Invoke rebindOperations
 		});

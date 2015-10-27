@@ -18,6 +18,20 @@ if (Meteor.isClient) {
 	// ThreeWay.debugModeSelect('vm-only');
 	// ThreeWay.debugModeSelect('re-bind');
 
+	var allDebugMessages = [
+		'bindings',
+		'data-mirror',
+		'observer',
+		'tracker',
+		'new-id',
+		'db',
+		'value',
+		'checked',
+		'html',
+		'visible',
+		'vm-only',
+		're-bind',
+	];
 }
 var fields = ['name', 'emailPrefs', 'personal.particulars.age', 'notes', 'tags', 'personal.someArr.*', 'personal.otherArr.*.*'];
 
@@ -166,9 +180,11 @@ if (Meteor.isClient) {
 		// Will be overridden by value tags in the rendered template of the form:
 		// <data field="additional" initial-value="view model to view only"></data>
 		viewModelToViewOnly: {
-			"additional": "VM to V Only"
+			"additional": "VM to V Only",
+			"debugMessages": allDebugMessages.map(x => x)
 		},
-
+		debounceInterval: 400,
+		rebindPollInterval: 300
 	});
 
 	Template.DemoThreeWay.onCreated(function() {
@@ -177,7 +193,7 @@ if (Meteor.isClient) {
 	});
 
 	Template.DemoThreeWay.onRendered(function() {
-		function createDropdown() {
+		(function createDropdown() {
 			if (!selectCreated) {
 				var selector = $('.ui.dropdown');
 				if (selector.length > 0) {
@@ -189,8 +205,7 @@ if (Meteor.isClient) {
 					setTimeout(createDropdown, 10);
 				}
 			}
-		}
-		createDropdown();
+		})();
 	});
 
 	Template.DemoThreeWay.helpers({
@@ -205,7 +220,8 @@ if (Meteor.isClient) {
 		entry: () => DataCollection.findOne(Template.instance().id.get(), {
 			reactive: true
 		}),
-		num: () => Template.instance().num.get()
+		num: () => Template.instance().num.get(),
+		allDebugMessages: () => allDebugMessages
 	});
 
 	var selectCreated = false;
@@ -221,6 +237,15 @@ if (Meteor.isClient) {
 					template.num.set(3);
 					console.info('Now (~3 sec later) personal.someArr array bound to three input elements (item 0, 1 & 2).');
 				}, 3000);
+			}, 50);
+		},
+		"change input[name=debug-messages]": function(event, template) {
+			setTimeout(function() {
+				var selectedDebugMessages = template._3w_Get_NR('debugMessages');
+				console.info('Selected Debug Messages:', selectedDebugMessages);
+				ThreeWay.setDebugModeOn();
+				ThreeWay.debugModeSelectNone();
+				selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
 			}, 50);
 		}
 	});
