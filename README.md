@@ -76,6 +76,29 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 });
 ```
 
+#### Referring to Fields
+
+For such a document, the relevant fields are referred to as follows:
+
+```javascript
+{
+    topLevelField: 'xxx',  // "topLevelField"
+    topLevelArray: [  // "topLevelArray"
+        'a',  // "topLevelArray.0"
+        'b',  // "topLevelArray.1"
+        'c',  // "topLevelArray.2"
+    ],
+    topLevelObject: {  // "topLevelObject"
+        nestedField: 'xxx',  // "topLevelObject.nestedField"
+        nestedArray: [  // "topLevelObject.nestedArray"
+            1,  // "topLevelObject.nestedArray.0"
+            2,  // "topLevelObject.nestedArray.1"
+            3,  // "topLevelObject.nestedArray.2"
+        ],
+    }
+}
+```
+
 #### Binding to the View
 
 When the template is rendered, the reactive elements are set up using `data-bind` attributes in the "mark up" part of the template. 

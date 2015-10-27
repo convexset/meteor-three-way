@@ -83,6 +83,24 @@ if (Meteor.isClient) {
 			}
 		});
 
+		var extendedFields = (function genObjSubFields(fields) {
+			var ret = [];
+			fields.forEach(function(f) {
+				var currResults = [f];
+				var split = f.split('.');
+				split.pop();
+				if (split.length > 0) {
+					Array.prototype.push.apply(currResults, genObjSubFields([split.join('.')]));
+				}
+				Array.prototype.push.apply(ret, currResults);
+			});
+			return ret;
+		})(options.fields);
+		if (DEBUG_MODE && (DEBUG_MODE_ALL || DEBUG_MESSAGES['observer'])) {
+			console.log('[Observer] Extended field list: ', extendedFields);
+		}
+
+
 		tmpl.onCreated(function() {
 			var instance = this;
 
@@ -144,54 +162,71 @@ if (Meteor.isClient) {
 						console.log('[Observer] Creating new cursor: ' + _id);
 					}
 
-					var cursor = options.collection.find(_id, {
-						fields: _.object(options.fields, options.fields.map(() => 1))
-					});
+					// Retrieve only the necessary fields
+					// Not doing a minimal field set retrieval because
+					// that aspect should have been handled by the subscription
+					var cursor = options.collection.find(_id);
+
+					// Descend into objects and arrays
+					var descendInto = function descendInto(fields, doc, fieldPrefix) {
+						if (typeof fieldPrefix === "undefined") {
+							fieldPrefix = '';
+						}
+						_.forEach(fields, function(v, f) {
+							var curr_f = fieldPrefix + f;
+							if (extendedFields.indexOf(curr_f) !== -1) {
+								if (options.fields.indexOf(curr_f) !== -1) {
+									// A field we are binding to
+									if (DEBUG_MODE && (DEBUG_MODE_ALL || DEBUG_MESSAGES['observer'])) {
+										console.log('[Observer] Descent Complete -- ', curr_f, ':', v);
+									}
+
+									// Update if new
+									var mostRecentValue = mostRecentDatabaseEntry[curr_f];
+									var newValue = options.dataTransformFromServer[curr_f](v, doc);
+									if (!_.isEqual(mostRecentValue, newValue)) {
+										threeWay.data.set(curr_f, newValue);
+										mostRecentDatabaseEntry[curr_f] = newValue;
+										threeWay.__idReadyFor[curr_f] = true;
+									}
+								} else if (typeof v === "object") {
+									// Parent of field we are binding to
+									// Object or array
+									if (DEBUG_MODE && (DEBUG_MODE_ALL || DEBUG_MESSAGES['observer'])) {
+										console.log('[Observer] Descending -- ' + curr_f + (fieldPrefix === '' ? '' : ' (' + fieldPrefix + ' + ' + f + ')') + ' :', v);
+									}
+									descendInto(v, doc, curr_f + '.');
+									// } else if ((typeof v === "object") && (!(v instanceof Array))) {
+									// 	// ...
+									// Array of Objects (index track)
+									// Array of Primitives (index track)
+								}
+							}
+						});
+					};
 
 					// Setting Up Observers
-					threeWay.observer = cursor.observeChanges({
-						added: function(id, fields) {
+					threeWay.observer = cursor.observe({
+						added: function(document) {
 							if (DEBUG_MODE && (DEBUG_MODE_ALL || DEBUG_MESSAGES['observer'])) {
-								console.log('[Observer] Added:', id, fields);
+								console.log('[Observer] Added:', document._id, document);
 							}
-							if (id === _id) {
-								var doc = options.collection.findOne(id, {
-									reactive: false
-								});
-								threeWay.haveData.set(true);
-								_.forEach(fields, function(v, f) {
-									if (options.fields.indexOf(f) !== -1) {
-										threeWay.data.set(f, options.dataTransformFromServer[f](v, doc));
-										mostRecentDatabaseEntry[f] = options.dataTransformFromServer[f](v, doc);
-										threeWay.__idReadyFor[f] = true;
-									}
-								});
-							}
+							threeWay.haveData.set(true);
+							descendInto(document, document);
 						},
-						changed: function(id, fields) {
+						changed: function(newDocument, oldDocument) {
 							if (DEBUG_MODE && (DEBUG_MODE_ALL || DEBUG_MESSAGES['observer'])) {
-								console.log('[Observer] Changes:', id, fields);
+								console.log('[Observer] Changed:', newDocument._id, newDocument, oldDocument);
 							}
-							if (id === _id) {
-								var doc = options.collection.findOne(id, {
-									reactive: false
-								});
-								_.forEach(fields, function(v, f) {
-									threeWay.data.set(f, options.dataTransformFromServer[f](v, doc));
-									mostRecentDatabaseEntry[f] = options.dataTransformFromServer[f](v, doc);
-									threeWay.__idReadyFor[f] = true;
-								});
-							}
+							descendInto(newDocument, newDocument);
 						},
-						removed: function(id) {
+						removed: function(oldDocument) {
 							if (DEBUG_MODE && (DEBUG_MODE_ALL || DEBUG_MESSAGES['observer'])) {
-								console.log('[Observer] Removed:', id);
+								console.log('[Observer] Removed:', oldDocument._id);
 							}
-							if (id === _id) {
-								threeWay.haveData.set(false);
-								threeWay.id.set(null);
-								threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
-							}
+							threeWay.haveData.set(false);
+							threeWay.id.set(null);
+							threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
 						}
 					});
 

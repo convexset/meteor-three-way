@@ -2,6 +2,23 @@
 /* global DataCollection: true */
 /* global ThreeWay: true */
 
+if (Meteor.isClient) {
+	ThreeWay.setDebugModeOn();
+	// ThreeWay.debugModeSelectAll();
+	// ThreeWay.debugModeSelect('bindings');
+	// ThreeWay.debugModeSelect('data_mirror');
+	ThreeWay.debugModeSelect('observer');
+	// ThreeWay.debugModeSelect('tracker');
+	// ThreeWay.debugModeSelect('new_id');
+	// ThreeWay.debugModeSelect('db');
+	// ThreeWay.debugModeSelect('value');
+	// ThreeWay.debugModeSelect('checked');
+	// ThreeWay.debugModeSelect('html');
+	// ThreeWay.debugModeSelect('visible');
+}
+var fields = ['name', 'emailPrefs', 'personal.particulars.age', 'notes', 'tags', 'personal.someArr.1'];
+
+
 DataCollection = new Mongo.Collection('data');
 var allTags = ['tag1', 'tag2', 'tag3', 'tag4', 'tag5'];
 var ageRangeValues = ['0_12', '13_20', '21_35', '36_65', '66_plus'];
@@ -12,11 +29,11 @@ var emailPrefsAll = _.object(emailPrefsValues, ['Spam Away', 'Only My Orders', '
 if (Meteor.isServer) {
 	// The publication
 	Meteor.publish('demo-pub', function() {
-		return DataCollection.find();
+		return DataCollection.find({});
 	});
 	DataCollection.allow({}); // Allow nothing
 
-	['name', 'emailPrefs', 'age', 'notes', 'tags'].forEach(function(field) {
+	fields.forEach(function(field) {
 		var methods = {};
 		var fn = function(id, value) {
 			var updater = {};
@@ -48,22 +65,22 @@ if (Meteor.isServer) {
 		DataCollection.insert({
 			'name': user.fullname,
 			'emailPrefs': _emPrefs,
-			'age': Fake.fromArray(ageRangeValues),
+			'personal': {
+				'particulars': {
+					'age': Fake.fromArray(ageRangeValues),
+				},
+				'someArr': ['a', '!!!', 'c']
+			},
 			'notes': Fake.sentence(10),
 			'tags': tags,
 		});
 	});
 }
 
-if (Meteor.isClient) {
-	ThreeWay.setDebugModeOn();
-	ThreeWay.debugModeSelectAll();
-	//ThreeWay.debugModeSelect('html');
-	//ThreeWay.debugModeSelect('checked');
 
+if (Meteor.isClient) {
 	Meteor.subscribe('demo-pub');
 
-	var fields = ['name', 'emailPrefs', 'age', 'notes', 'tags'];
 	ThreeWay.prepare(Template.DemoThreeWay, {
 		// The relevant top-level fields in the database
 		fields: fields,
