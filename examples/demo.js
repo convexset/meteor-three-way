@@ -76,7 +76,12 @@ if (Meteor.isClient) {
 		// separated list in a string, while it is stored in the server as
 		// an array
 		dataTransformToServer: {
-			tags: x => x.split(',').map(y => y.trim())
+			// tags: x => x.split(',').map(y => y.trim())
+			tags: function(x, vmData) {
+				var outcome = x.split(',').map(y => y.trim());
+				console.log('dataTransformToServer[\'tags\']:', x, vmData, '-->', outcome);
+				return outcome;
+			}
 		},
 		// Transformations from the view model to the server
 		// (Transform and call the updater Meteor method)
@@ -84,7 +89,12 @@ if (Meteor.isClient) {
 		// separated list in a string, while it is stored in the server as
 		// an array
 		dataTransformFromServer: {
-			tags: arr => arr.join && arr.join(',') || ""
+			// tags: arr => arr.join && arr.join(',') || ""
+			tags: function(arr, doc) {
+				var outcome = arr.join && arr.join(',') || "";
+				console.log('dataTransformFromServer[\'tags\']:', arr, doc, '-->', outcome);
+				return outcome;
+			}
 		},
 		// Pre-processors for data pre-render (view model to view)
 		preProcessors: {
@@ -95,8 +105,10 @@ if (Meteor.isClient) {
 			mapToAgeDisplay: x => ageRanges[x],
 			// this maps an array of keys to the corresponding long form
 			// descriptions and then joins them
-			mapToEmailPrefs: function(prefs) {
-				return prefs.map(x => emailPrefsAll[x]).join(", ");
+			mapToEmailPrefs: function(prefs, elem, vmData) {
+				var outcome = prefs.map(x => emailPrefsAll[x]).join(", ");
+				console.log('preProcessors[\'mapToEmailPrefs\']:', prefs, elem, vmData, '-->', outcome);
+				return outcome;
 			},
 			// This is something special to make the Semantic UI Dropdown work
 			// More helpers will be written soon...

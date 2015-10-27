@@ -155,11 +155,14 @@ if (Meteor.isClient) {
 								console.log('[Observer] Added:', id, fields);
 							}
 							if (id === _id) {
+								var doc = options.collection.findOne(id, {
+									reactive: false
+								});
 								threeWay.haveData.set(true);
 								_.forEach(fields, function(v, f) {
 									if (options.fields.indexOf(f) !== -1) {
-										threeWay.data.set(f, options.dataTransformFromServer[f](v));
-										mostRecentDatabaseEntry[f] = options.dataTransformFromServer[f](v);
+										threeWay.data.set(f, options.dataTransformFromServer[f](v, doc));
+										mostRecentDatabaseEntry[f] = options.dataTransformFromServer[f](v, doc);
 										threeWay.__idReadyFor[f] = true;
 									}
 								});
@@ -170,9 +173,12 @@ if (Meteor.isClient) {
 								console.log('[Observer] Changes:', id, fields);
 							}
 							if (id === _id) {
+								var doc = options.collection.findOne(id, {
+									reactive: false
+								});
 								_.forEach(fields, function(v, f) {
-									threeWay.data.set(f, options.dataTransformFromServer[f](v));
-									mostRecentDatabaseEntry[f] = options.dataTransformFromServer[f](v);
+									threeWay.data.set(f, options.dataTransformFromServer[f](v, doc));
+									mostRecentDatabaseEntry[f] = options.dataTransformFromServer[f](v, doc);
 									threeWay.__idReadyFor[f] = true;
 								});
 							}
@@ -218,7 +224,11 @@ if (Meteor.isClient) {
 									console.log('[DB] Updating... ' + f + ' -> ', value);
 								}
 								mostRecentDatabaseEntry[f] = value;
-								threeWay.debouncedUpdaters[f](options.dataTransformToServer[f](value));
+								threeWay.debouncedUpdaters[f](options.dataTransformToServer[f](value, _.extend({}, threeWay.dataMirror)));
+							} else {
+								if (DEBUG_MODE && (DEBUG_MODE_ALL || DEBUG_MESSAGES['db'])) {
+									console.log('[DB] No update.');
+								}
 							}
 						}));
 					});
@@ -329,7 +339,7 @@ if (Meteor.isClient) {
 
 						elemGlobals.suppressChange = true;
 						pipeline.forEach(function(m) {
-							value = options.preProcessors[m](value, elem);
+							value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 						});
 
 						if (elem.value !== value) {
@@ -494,7 +504,7 @@ if (Meteor.isClient) {
 						}
 
 						mappings.forEach(function(m) {
-							html = options.preProcessors[m](html, elem);
+							html = options.preProcessors[m](html, elem, _.extend({}, threeWay.dataMirror));
 						});
 
 						if (elem.innerHTML !== html) {
@@ -532,7 +542,7 @@ if (Meteor.isClient) {
 								}
 							}
 							mappings.forEach(function(m) {
-								visible = options.preProcessors[m](visible, elem);
+								visible = options.preProcessors[m](visible, elem, _.extend({}, threeWay.dataMirror));
 							});
 						}
 
