@@ -1,11 +1,11 @@
 # ThreeWay
 
-A Meteor package that provides three-way data-binding. In particular, database to view model to view.
+`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view.
 
 Database to view model connectivity is provided by Meteor methods with signatures `func(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `func(id, value, param1, param2, ...)`. 
 For example, `staff.*.particulars.*` would match both `staff[3].particulars.age` and `staff[0].particulars.height`. And for the first of the two examples, `param1 === '3'` and `param2 === 'age'`.
 
-Display is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)).
+Display is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and declaratively) translate data to a format that the "view" can directly work with (the exact HTML source).
 
 **The package works fine, but the whole code base is remains fairly young as of this commit. Have a look below and at the example (clone the repo and run meteor) to see how simple and flexible it is to use.**
 
@@ -242,7 +242,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 #### (Display) Pre-processor Pipelines
 
-Pre-processor pipelines is a "powerful" (actually, simple) feature that allows for great flexibility in displaying data. One might go so far as to claim that it realizes the whole "view model" promise of describing how to translate data to a format that the "view" can directly work with.
+Pre-processor pipelines is a "powerful" (actually, simple) feature that allows for great flexibility in displaying data. One might go so far as to claim that it realizes the whole "view model" promise of declaratively translating data to a format that the "view" can directly work with (the exact HTML source).
 
 Display (one-directional) bindings like html and visible (later class, style and attr) use pre-processing pipelines to generate items for display. Consider the following examples:
 
