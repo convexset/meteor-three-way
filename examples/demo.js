@@ -109,14 +109,14 @@ if (Meteor.isServer) {
 			}
 		});
 		DataCollection.insert({
-			'name': user.fullname,
-			'emailPrefs': _emPrefs,
-			'personal': {
-				'particulars': {
-					'age': Fake.fromArray(ageRangeValues),
+			name: user.fullname,
+			emailPrefs: _emPrefs,
+			personal: {
+				particulars: {
+					age: Fake.fromArray(ageRangeValues),
 				},
-				'someArr': [Math.floor(Math.random() * 10), '!!!', Math.floor(Math.random() * 10)],
-				'otherArr': [{
+				someArr: [Math.floor(Math.random() * 10), '!!!', Math.floor(Math.random() * 10)],
+				otherArr: [{
 					a: 10 + Math.floor(Math.random() * 10),
 					b: 20 + Math.floor(Math.random() * 10)
 				}, {
@@ -124,8 +124,8 @@ if (Meteor.isServer) {
 					b: 40 + Math.floor(Math.random() * 10)
 				}, ]
 			},
-			'notes': Fake.sentence(5),
-			'tags': tags,
+			notes: Fake.sentence(5),
+			tags: tags,
 		});
 	});
 }
@@ -177,7 +177,7 @@ if (Meteor.isClient) {
 			// descriptions and then joins them
 			mapToEmailPrefs: function(prefs, elem, vmData) {
 				var outcome = prefs.map(x => emailPrefsAll[x]).join(", ");
-				console.log('preProcessors[\'mapToEmailPrefs\']:', prefs, elem, vmData, '-->', outcome);
+				console.log('preProcessors[\'mapToEmailPrefs\']\nValue: ', prefs, "\nDOM Element:", elem, "\nView Model Data:", vmData, '-->', outcome);
 				return outcome;
 			},
 			// This is something special to make the Semantic UI Dropdown work

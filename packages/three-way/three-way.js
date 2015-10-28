@@ -583,8 +583,7 @@ if (Meteor.isClient) {
 							var value = threeWay.data.get(source);
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('value')) {
-									console.log("[.value] Preparing .value update for", elem);
-									console.log("[.value] " + source + "; Pipeline: ", pipeline);
+									console.log("[.value] Preparing .value update (to", source, ") for", elem);
 								}
 								if (typeof value === "undefined") {
 									return;
@@ -592,8 +591,10 @@ if (Meteor.isClient) {
 							}
 
 							elemGlobals.suppressChange = true;
+							
 							pipeline.forEach(function(m) {
-								value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
+								// pipelines do not manipulate value
+								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 							});
 
 							if (elem.value !== value) {
@@ -667,18 +668,26 @@ if (Meteor.isClient) {
 						$(elem).change(checkedChangeHandler);
 
 						threeWay.computations.push(Tracker.autorun(function(c) {
-							var source = elemBindings.bindings.checked.source;
+							var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim());
+							var source = pipelineSplit[0];
+							var pipeline = pipelineSplit.splice(1);
 
 							var value = threeWay.data.get(source);
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('checked')) {
 									console.log("[.checked] Preparing .checked update (to ", value, ") for", source, elem);
 								}
-								if (typeof value === "undefined") {
+								if ((typeof value !== "object") || (!(value instanceof Array))) {
 									return;
 								}
 							}
+
 							elemGlobals.suppressChange = true;
+							
+							pipeline.forEach(function(m) {
+								// pipelines do not manipulate value
+								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
+							});
 
 							if (elem.getAttribute('type').toLowerCase() === "radio") {
 								// Radio Button
