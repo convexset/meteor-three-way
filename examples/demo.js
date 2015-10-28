@@ -2,7 +2,7 @@
 /* global DataCollection: true */
 /* global ThreeWay: true */
 
-var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'methods', 'value', 'checked', 'html', 'visible-and-disabled', 'vm-only', 're-bind'];
+var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'methods', 'value', 'checked', 'html', 'visible-and-disabled', 'style', 'attr', 'class', 'vm-only', 're-bind'];
 var selectedDebugMessages = [
 	// 'bindings',
 	// 'data-mirror',
@@ -15,11 +15,14 @@ var selectedDebugMessages = [
 	// 'checked',
 	// 'html',
 	// 'visible-and-disabled',
+	// 'style',
+	// 'attr',
+	// 'class',
 	// 'vm-only',
 	// 're-bind',
 ];
 
-selectedDebugMessages = allDebugMessages.map(x => x);  // copy
+selectedDebugMessages = allDebugMessages.map(x => x); // copy
 if (Meteor.isClient) {
 	ThreeWay.setDebugModeOn();
 	ThreeWay.debugModeSelectNone();
@@ -188,6 +191,7 @@ if (Meteor.isClient) {
 				return v.trim().toUpperCase() !== "HIDE";
 			},
 			not: x => !x,
+			noIsFalse: (x) => x.trim().toLowerCase() === 'no' ? false : true,
 			// This is something special to make the Semantic UI Dropdown work
 			// More helpers will be written soon...
 			updateSemanticUIDropdown: ThreeWay.helpers.updateSemanticUIDropdown
@@ -242,7 +246,7 @@ if (Meteor.isClient) {
 			reactive: true
 		}),
 		num: () => Template.instance().num.get(),
-		allDebugMessages: () => allDebugMessages
+		allDebugMessages: () => allDebugMessages,
 	});
 
 	var selectCreated = false;

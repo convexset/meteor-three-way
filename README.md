@@ -197,6 +197,15 @@ As a "special dispensation", `visible` and `disabled` can be bound to one partic
 
 ... which one might find to be particularly useful.
 
+###### Style, Attribute and Class Bindings
+
+ Style bindings are done via: `data-bind="style: {font-weight: v1|preProc, font-size: v2|preProc; ...}"`. Things work just like the above html binding.
+
+ Attribute bindings are done via: `data-bind="attr: {disabled: v1|preProc, ...}"`. Things also work just like html bindings.
+
+ Class bindings are done via: `data-bind="class: {class1: bool1|preProc; ...}"`. However, things work more like the visible and disabled bindings in that the values to be bound to will be treated as boolean-ish.
+
+
 #### View Model to View Only Elements
 
 It is easy to specify fields that are "view model only". They don't even have to be declared in the set up.
@@ -355,9 +364,6 @@ In this example, for some reason, `tags` is stored in the view model as a string
 
 ## Roadmap
 
- - style bindings via: `data-bind="style: {font-weight|v1|preProc, font-size|v2|preProc; ...}"`
- - attribute bindings via: `data-bind="attr: {disabled|v1|preProc, ...}"`
- - class bindings via: `data-bind="class: {class1|bool1|preProc; ...}"`
  - Event bindings via: `data-bind="event: change|cbFn, keyup|cbFn; ..."` where `cbFn` has signature `function(event, template, boundData, bindingInfo)`
  - ViewModel-only initializers with parsers `<data field="fieldName" initial-value="v1|v2|v3" parser="split" param="|"></data>`
  - ThreeWay instances in child templates to notify parent templates of their existence. Child instances to find their parent. =)

@@ -25,6 +25,9 @@ var DEBUG_MESSAGES = {
 	'checked': false,
 	'html': false,
 	'visible-and-disabled': false,
+	'style': false,
+	'attr': false,
+	'class': false,
 	'vm-only': false,
 	're-bind': false,
 };
@@ -447,9 +450,9 @@ if (Meteor.isClient) {
 									var mostRecentValue = mostRecentDatabaseEntry[curr_f];
 									var newValue = options.dataTransformFromServer[match.match](v, doc);
 									if (!_.isEqual(mostRecentValue, newValue)) {
-											threeWay.data.set(curr_f, newValue);
-											mostRecentDatabaseEntry[curr_f] = newValue;
-											threeWay.__idReadyFor[curr_f] = true;
+										threeWay.data.set(curr_f, newValue);
+										mostRecentDatabaseEntry[curr_f] = newValue;
+										threeWay.__idReadyFor[curr_f] = true;
 									}
 
 									if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
@@ -955,6 +958,120 @@ if (Meteor.isClient) {
 								elem.disabled = disabled;
 							}
 						}));
+					}
+
+					//////////////////////////////////////////////////////
+					// style
+					//////////////////////////////////////////////////////
+					if (!!elemBindings.bindings.style) {
+						_.forEach(elemBindings.bindings.style.source, function(pipelineString, key) {
+							threeWay.computations.push(Tracker.autorun(function(c) {
+								var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+								var source = pipelineSplit[0];
+								var mappings = pipelineSplit.splice(1);
+
+								var value = threeWay.data.get(source);
+								if (c.firstRun) {
+									if (IN_DEBUG_MODE_FOR('style')) {
+										console.log("[.style|" + key + "] Preparing .style update for", elem);
+										console.log("[.style|" + key + "] Field: " + source + "; Mappings: ", mappings);
+									}
+									if (typeof value === "undefined") {
+										return;
+									}
+								}
+
+								mappings.forEach(function(m) {
+									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
+								});
+
+								// Update Style
+								if (elem.style[key] !== value) {
+									if (IN_DEBUG_MODE_FOR('style')) {
+										console.log('[.style|' + key + '] Setting style.' + key + ' to \"' + value + '\" for', elem);
+									}
+									elem.style[key] = value;
+								}
+							}));
+						});
+					}
+
+					//////////////////////////////////////////////////////
+					// attr
+					//////////////////////////////////////////////////////
+					if (!!elemBindings.bindings.attr) {
+						_.forEach(elemBindings.bindings.attr.source, function(pipelineString, key) {
+							threeWay.computations.push(Tracker.autorun(function(c) {
+								var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+								var source = pipelineSplit[0];
+								var mappings = pipelineSplit.splice(1);
+
+								var value = threeWay.data.get(source);
+								if (c.firstRun) {
+									if (IN_DEBUG_MODE_FOR('attr')) {
+										console.log("[.attr|" + key + "] Preparing attribute update for", elem);
+										console.log("[.attr|" + key + "] Field: " + source + "; Mappings: ", mappings);
+									}
+									if (typeof value === "undefined") {
+										return;
+									}
+								}
+
+								mappings.forEach(function(m) {
+									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
+								});
+
+								// Update Style
+								if ($(elem).attr(key) !== value) {
+									if (IN_DEBUG_MODE_FOR('attr')) {
+										console.log('[.attr|' + key + '] Setting attribute ' + key + ' to \"' + value + '\" for', elem);
+									}
+									$(elem).attr(key, value);
+								}
+							}));
+						});
+					}
+
+
+					//////////////////////////////////////////////////////
+					// class
+					//////////////////////////////////////////////////////
+					if (!!elemBindings.bindings.class) {
+						_.forEach(elemBindings.bindings.class.source, function(pipelineString, key) {
+							threeWay.computations.push(Tracker.autorun(function(c) {
+								var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+								var source = pipelineSplit[0];
+								var mappings = pipelineSplit.splice(1);
+
+								var value = threeWay.data.get(source);
+								if (c.firstRun) {
+									if (IN_DEBUG_MODE_FOR('class')) {
+										console.log("[.class|" + key + "] Preparing class update for", elem);
+										console.log("[.class|" + key + "] Field: " + source + "; Mappings: ", mappings);
+									}
+									if (typeof value === "undefined") {
+										return;
+									}
+								}
+
+								mappings.forEach(function(m) {
+									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
+								});
+								value = !!value;
+
+								// Update Style
+								if ($(elem).hasClass(key) !== value) {
+									if (IN_DEBUG_MODE_FOR('class')) {
+										console.log('[.class|' + key + '] Setting class ' + key + ' to \"' + value + '\" for', elem);
+									}
+									if (value) {
+										$(elem).addClass(key);	
+									} else {
+										$(elem).removeClass(key);
+									}
+								}
+							}));
+						});
 					}
 
 					//////////////////////////////////////////////////////

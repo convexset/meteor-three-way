@@ -235,6 +235,8 @@
 	</div>
 	
 	<div class="column">
+		<h1>View Model Only Stuff</h1>
+		
 		<h3>Hide?</h3>
 		<data field="hide" initial-value="view model to view only"></data>
 		<div>
@@ -249,6 +251,32 @@
 		</div>
 		<div>
 			<strong>The above is actually a <code>style.display</code> binding... Anything other than "hide" will show the annoying <span style="color: red;">red</span> <code>div</code>.</strong>
+		</div>
+		
+		<h3 data-bind="style: {color: fieldNameColor, font-size: fieldNameFontSize}">Heading Info</h3>
+		<data field="fieldNameColor" initial-value="#0000FF"></data>
+		<data field="fieldNameFontSize" initial-value="200%"></data>
+		<data field="imgAltText" initial-value="No Such Image"></data>
+		<data field="semanticUIStyling" initial-value="yes"></data>
+
+		<div data-bind="class: {ui: semanticUIStyling|noIsFalse, form: semanticUIStyling|noIsFalse}">
+			<div class="field">
+				<label>[Style binding] fieldNameColor (VM Only)</label>
+				<input data-bind="value: fieldNameColor">
+			</div>
+			<div class="field">
+				<label>[Style binding] fieldNameFontSize (VM Only)</label>
+				<input data-bind="value: fieldNameFontSize">
+			</div>
+			<div class="field">
+				<label>[Attribute binding] imgAltText (VM Only)</label>
+				<input data-bind="value: imgAltText">
+			</div>
+			<img src="no-such-image.jpg" data-bind="attr: {alt: imgAltText}">
+			<div class="field">
+				<label>[Class binding] semanticUIStyling (VM Only; no means false) <code>semanticUIStyling|noIsFalse</code> --> <span data-bind="html: semanticUIStyling|noIsFalse"></span></label>
+				<input data-bind="value: semanticUIStyling">					
+			</div>
 		</div>
 	</div>
 	
