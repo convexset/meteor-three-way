@@ -23,16 +23,26 @@ Here is the example used in the demo. The idea is to set up the bindings on the 
 
 ```javascript
 ThreeWay.prepare(Template.DemoThreeWay, {
-    // The relevant top-level fields in the database
-    fields: ['name', 'emailPrefs', 'age', 'tags'],
+    // The relevant fields/field selectors for the database
+    fields: [
+        'name',
+        'emailPrefs',
+        'personal.particulars.age',
+        'notes',
+        'tags',
+        'personal.someArr.*',
+        'personal.otherArr.*.*'
+    ],
     // The relevant Mongo.Collection
     collection: DataCollection,
     // Meteor methods for updating the database
     updatersForServer: {
         'name': 'update-name',
         'emailPrefs': 'update-emailPrefs',
-        'age': 'update-age',
-        'tags': 'update-tags'
+        'personal.particulars.age': 'update-age',
+        'tags': 'update-tags',
+        'personal.someArr.*': 'update-some-arr',
+        'personal.otherArr.*.*': 'update-other-arr',
     },
     // Transformations from the server to the view model
     // In this example, "tags" are stored in the view model as a comma
@@ -72,7 +82,11 @@ ThreeWay.prepare(Template.DemoThreeWay, {
         "additional": "VM to V Only"
     },
     // "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
-    debounceInterval: 400,  // Default: 400 ms
+    debounceInterval: 200,  // Default: 200 ms
+    // "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
+    throttleInterval: DEFAULT_THROTTLE_INTERVAL,  // Default: 500 ms
+    // Fields for which updaters are throttle'd instead of debounce'zd
+    throttledUpdaters: [],
     // "Re-Bind Poll Interval" for discovering new DOM nodes in need of data-binding
     rebindPollInterval: 300  // Default: 300 ms
 });
@@ -171,7 +185,7 @@ Incidentally, visible can be bound to one particular helper which returns a bool
 
 #### View Model to View Only Elements
 
-It is easy to specify fields that are view model only. They don't even have to be declared as in the set up.
+It is easy to specify fields that are view model only. They don't even have to be declared in the set up.
 
 ```html
 <data field="additional" initial-value="view model to view only"></data>
@@ -233,3 +247,19 @@ The following methods are crammed onto each template instance in an `onCreated` 
  - `checked`
  - `html`
  - `visible`
+ - `vm-only`
+ - `re-bind`
+
+## Missing Parts of README
+- Transforms (from/to server)
+- Pre-processor pipelines
+- VM-only tag-based initializers checked only at onRendered
+
+## Roadmap
+
+ - Disabled bindings
+ - ViewModel-only initializers with parsers`<data field="fieldName" initial-value="v1|v2|v3" parser="split" param="|"></data>`
+ - Event bindings via: `data-bind="event: change|cbFn, keyup|cbFn; ..."` where `cbFn` has signature `function(event, template, boundData, bindingInfo)`
+ - style bindings via: `data-bind="style: font-weight|v1|preProc, font-size|v2|preProc; ..."`
+ - attribute bindings via: `data-bind="attr: disabled|v1|preProc, font-size|v2|preProc; ..."`
+ - class bindings via: `data-bind="class: clsArray|preProc"`

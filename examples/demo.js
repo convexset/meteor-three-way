@@ -2,38 +2,47 @@
 /* global DataCollection: true */
 /* global ThreeWay: true */
 
+var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'value', 'checked', 'html', 'visible', 'vm-only', 're-bind'];
+var selectedDebugMessages = [
+	'bindings',
+	'data-mirror',
+	'observer',
+	// 'tracker',
+	// 'new-id',
+	'db',
+	// 'value',
+	// 'checked',
+	// 'html',
+	// 'visible',
+	// 'vm-only',
+	// 're-bind'
+];
+
+selectedDebugMessages = allDebugMessages.map(x => x);  // copy
 if (Meteor.isClient) {
 	ThreeWay.setDebugModeOn();
-	ThreeWay.debugModeSelectAll();
-	// ThreeWay.debugModeSelect('bindings');
-	// ThreeWay.debugModeSelect('data-mirror');
-	// ThreeWay.debugModeSelect('observer');
-	// ThreeWay.debugModeSelect('tracker');
-	// ThreeWay.debugModeSelect('new-id');
-	// ThreeWay.debugModeSelect('db');
-	// ThreeWay.debugModeSelect('value');
-	// ThreeWay.debugModeSelect('checked');
-	// ThreeWay.debugModeSelect('html');
-	// ThreeWay.debugModeSelect('visible');
-	// ThreeWay.debugModeSelect('vm-only');
-	// ThreeWay.debugModeSelect('re-bind');
-
-	var allDebugMessages = [
-		'bindings',
-		'data-mirror',
-		'observer',
-		'tracker',
-		'new-id',
-		'db',
-		'value',
-		'checked',
-		'html',
-		'visible',
-		'vm-only',
-		're-bind',
-	];
+	ThreeWay.debugModeSelectNone();
+	selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
 }
-var fields = ['name', 'emailPrefs', 'personal.particulars.age', 'notes', 'tags', 'personal.someArr.*', 'personal.otherArr.*.*'];
+
+
+function setUpDebugMessages(template) {
+	var selectedDebugMessages = template._3w_Get_NR('debugMessages');
+	console.info('Selected Debug Messages:', selectedDebugMessages);
+	ThreeWay.setDebugModeOn();
+	ThreeWay.debugModeSelectNone();
+	selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
+}
+
+var fields = [
+	'name',
+	'emailPrefs',
+	'personal.particulars.age',
+	'notes',
+	'tags',
+	'personal.someArr.*',
+	'personal.otherArr.*.*'
+];
 
 
 DataCollection = new Mongo.Collection('data');
@@ -48,7 +57,6 @@ if (Meteor.isServer) {
 	Meteor.publish('demo-pub', function() {
 		return DataCollection.find({});
 	});
-	DataCollection.allow({}); // Allow nothing
 
 	fields.forEach(function(field) {
 		if (field.indexOf('*') === -1) {
@@ -127,7 +135,7 @@ if (Meteor.isClient) {
 	Meteor.subscribe('demo-pub');
 
 	ThreeWay.prepare(Template.DemoThreeWay, {
-		// The relevant top-level fields in the database
+		// The relevant fields/field selectors in the database
 		fields: fields,
 		// The relevant Mongo.Collection
 		collection: DataCollection,
@@ -181,9 +189,11 @@ if (Meteor.isClient) {
 		// <data field="additional" initial-value="view model to view only"></data>
 		viewModelToViewOnly: {
 			"additional": "VM to V Only",
-			"debugMessages": allDebugMessages.map(x => x)
+			"debugMessages": selectedDebugMessages
 		},
-		debounceInterval: 400,
+		debounceInterval: 200,
+		throttleInterval: 500,
+		throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
 		rebindPollInterval: 300
 	});
 
@@ -206,6 +216,8 @@ if (Meteor.isClient) {
 				}
 			}
 		})();
+
+		setUpDebugMessages(Template.instance());
 	});
 
 	Template.DemoThreeWay.helpers({
@@ -240,13 +252,7 @@ if (Meteor.isClient) {
 			}, 50);
 		},
 		"change input[name=debug-messages]": function(event, template) {
-			setTimeout(function() {
-				var selectedDebugMessages = template._3w_Get_NR('debugMessages');
-				console.info('Selected Debug Messages:', selectedDebugMessages);
-				ThreeWay.setDebugModeOn();
-				ThreeWay.debugModeSelectNone();
-				selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
-			}, 50);
+			setTimeout(() => setUpDebugMessages(template), 50);
 		}
 	});
 }

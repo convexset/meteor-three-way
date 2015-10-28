@@ -6,7 +6,8 @@ ThreeWay = new __tw();
 
 var THREE_WAY_NAMESPACE = "__three_way__";
 var THREE_WAY_DATA_BOUND_ATTRIBUTE = "three-way-data-bound";
-var DEFAULT_DEBOUNCE_INTERVAL = 400;
+var DEFAULT_DEBOUNCE_INTERVAL = 200;
+var DEFAULT_THROTTLE_INTERVAL = 500;
 var DEFAULT_DOM_POLL_INTERVAL = 300;
 
 var DEBUG_MODE = false;
@@ -28,15 +29,6 @@ var DEBUG_MESSAGES = {
 
 function IN_DEBUG_MODE_FOR(message_class) {
 	return DEBUG_MODE && (DEBUG_MODE_ALL || DEBUG_MESSAGES[message_class]);
-}
-
-function removeInPlace(a, item) {
-	var idx = a.indexOf(item);
-	while (idx !== -1) {
-		a.splice(idx, 1);
-		idx = a.indexOf(item);
-	}
-	return a;
 }
 
 function getFieldParams(templateString, itemString) {
@@ -76,7 +68,7 @@ function getFieldParams(templateString, itemString) {
 
 function matchParamStrings(templateStrings, itemString, matchOne) {
 	if (typeof matchOne === "undefined") {
-		matchOne = true;
+		matchOne = false;
 	}
 
 	var ts, getParamsRes;
@@ -139,6 +131,8 @@ if (Meteor.isClient) {
 			preProcessors: {},
 			viewModelToViewOnly: {},
 			debounceInterval: DEFAULT_DEBOUNCE_INTERVAL,
+			throttleInterval: DEFAULT_THROTTLE_INTERVAL,
+			throttledUpdaters: [],
 			rebindPollInterval: DEFAULT_DOM_POLL_INTERVAL,
 		}, options, true);
 
@@ -184,9 +178,9 @@ if (Meteor.isClient) {
 			});
 			return ret;
 		})(options.fields);
-		var pseudoFields = (function () {
+		var pseudoFields = (function() {
 			var efo = [];
-			extendedFields.forEach(function (item) {
+			extendedFields.forEach(function(item) {
 				if (options.fields.indexOf(item) === -1) {
 					efo.push(item);
 				}
@@ -206,14 +200,16 @@ if (Meteor.isClient) {
 				data: new ReactiveDict(),
 				viewModelOnlyData: {},
 				dataMirror: {},
-				dataMatchParams: {},
+				fieldMatchParams: {},  // No need to re-create
+				_fieldPseudoMatched: [],  // No need to re-create
+				_fieldsTested: [],  // No need to re-create
 				haveData: new ReactiveVar(false),
 				id: new ReactiveVar(null),
 				observer: null,
 				bindings: [],
 				computations: [],
 				_dataUpdateComputations: {},
-				doRebindOperations: true
+				doRebindOperations: true,
 			};
 
 			instance[THREE_WAY_NAMESPACE] = threeWay;
@@ -251,6 +247,7 @@ if (Meteor.isClient) {
 			});
 
 
+			// The big set-up
 			Tracker.autorun(function() {
 				var _id = threeWay.id.get();
 
@@ -289,7 +286,6 @@ if (Meteor.isClient) {
 					});
 				});
 
-				threeWay.dataMatchParams = {};
 				mostRecentDatabaseEntry = {};
 				threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
 
@@ -306,128 +302,136 @@ if (Meteor.isClient) {
 					// that aspect should have been handled by the subscription
 					var cursor = options.collection.find(_id);
 
+					//////////////////////////////////////////////////// 
 					// Descend into objects and arrays
-					var untouchedFields = [];
-					var descendInto = function descendInto(fields, doc, addedRun, fieldPrefix) {
-						if (typeof fieldPrefix === "undefined") {
-							fieldPrefix = '';
-						}
+					//
+					var descendInto = (function() {
+						return function descendInto(fields, doc, addedRun, fieldPrefix) {
+							if (typeof fieldPrefix === "undefined") {
+								fieldPrefix = '';
+							}
 
-						if (fieldPrefix === '') {
-							untouchedFields = _.map(threeWay.dataMatchParams, (v, k) => k);
-						}
+							_.forEach(fields, function(v, f) {
+								var curr_f = fieldPrefix + f;
 
-						_.forEach(fields, function(v, f) {
-							var curr_f = fieldPrefix + f;
+								// Get matching items to data-bind
+								// item.subitem --> (item.subitem, [])
+								// item.subitem --> (item.*, ['subitem'])
+								if (threeWay._fieldsTested.indexOf(curr_f) === -1) {
+									var matches = matchParamStrings(options.fields, curr_f);  // Match all (single run)
+									if (matches.length > 1) {
+										if (IN_DEBUG_MODE_FOR('observer')) {
+											console.error('[Observer] Ambiguous matches for ' + curr_f, ' (will use first):', matches);
+										}
+									}
+									threeWay.fieldMatchParams[curr_f] = (matches.length > 0) ? matches[0] : null;
+									threeWay._fieldPseudoMatched[curr_f] = (!!threeWay.fieldMatchParams[curr_f]) ? true : ((extendedFields.indexOf(curr_f) === -1) || (matchParamStrings(pseudoFields, curr_f, true).length > 0));
+									threeWay._fieldsTested.push(curr_f);
+								}
+								var match = threeWay.fieldMatchParams[curr_f] || null;
+								var psuedoMatched = threeWay._fieldPseudoMatched[curr_f] || null;
 
-							// Get matching items to data-bind
-							// item.subitem --> (item.subitem, [])
-							// item.subitem --> (item.*, ['subitem'])
-							var matches = matchParamStrings(options.fields, curr_f, !addedRun);  // Match more than one only if in a "added" observe callback
-							if (addedRun) {
-								if (matches.length > 1) {
+								if ((!match) && (!psuedoMatched)) {
+									// Skip if unnecessary branch
 									if (IN_DEBUG_MODE_FOR('observer')) {
-										console.error('[Observer] Ambiguous matches for ' + curr_f, ' (will use first):', matches);
+										console.log('[Observer] Skipping ' + curr_f + ' and children.');
+									}
+									return;
+								}
+
+								if (!!match) {
+									// This is field we might be binding to...
+									// ... (based on options.fields)...do something
+
+									// Indicate field is touched and update matches
+									threeWay.fieldMatchParams[curr_f] = match;
+									if (IN_DEBUG_MODE_FOR('db')) {
+										console.log('[db] Field match:', curr_f, match);
+										console.log('[db] All matches:', threeWay.fieldMatchParams);
+									}
+
+									if (IN_DEBUG_MODE_FOR('observer')) {
+										console.log('[Observer] Field match -- ' + curr_f, ':', v);
+									}
+
+									// Update data if changed
+									var mostRecentValue = mostRecentDatabaseEntry[curr_f];
+									var newValue = options.dataTransformFromServer[match.match](v, doc);
+									if (!_.isEqual(mostRecentValue, newValue)) {
+										threeWay.data.set(curr_f, newValue);
+										mostRecentDatabaseEntry[curr_f] = newValue;
+										threeWay.__idReadyFor[curr_f] = true;
+									}
+
+									if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
+										threeWay._dataUpdateComputations[curr_f] = Tracker.autorun(function() {
+											var value = threeWay.data.get(curr_f);
+
+											var __id;
+											Tracker.nonreactive(function() {
+												__id = threeWay.id.get();
+											});
+											if (IN_DEBUG_MODE_FOR('db')) {
+												console.log('[DB Update] Field: ' + curr_f + "; id: " + __id + "; isReady[f]: " + threeWay.__idReadyFor[curr_f]);
+												console.log("\tValue:", value);
+												console.log("\tMost Recent DB entry: ", mostRecentDatabaseEntry[curr_f]);
+											}
+											if ((!!__id) && threeWay.__idReadyFor[curr_f] && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
+												if (IN_DEBUG_MODE_FOR('db')) {
+													console.log('[DB] Updating... ' + curr_f + ' -> ', value);
+												}
+												mostRecentDatabaseEntry[curr_f] = value;
+												var matchFamily = threeWay.fieldMatchParams[curr_f].match;
+												threeWay.debouncedOrThrottledUpdaters[matchFamily](options.dataTransformToServer[matchFamily](value, _.extend({}, threeWay.dataMirror)), threeWay.fieldMatchParams[curr_f]);
+											} else {
+												if (IN_DEBUG_MODE_FOR('db')) {
+													console.log('[DB] No update.');
+												}
+											}
+										});
 									}
 								}
-							}
-							var match = (matches.length > 0) ? matches[0] : null;
-							var psuedoMatched = (!!match) ? true : (extendedFields.indexOf(curr_f) === -1) || matchParamStrings(pseudoFields, curr_f, true).length > 0;
 
-							if ((!match) && (!psuedoMatched)) {
-								// Skip if unnecessary branch
-								if (IN_DEBUG_MODE_FOR('observer')) {
-									console.log('[Observer] Skipping ' + curr_f + ' and children.');
+								if (typeof v === "object") {
+									// Parent of field we are binding to
+									// Object or array
+									if (IN_DEBUG_MODE_FOR('observer')) {
+										console.log('[Observer] Descending -- ' + curr_f + (fieldPrefix === '' ? '' : ' (' + fieldPrefix + ' + ' + f + ')') + ' :', v);
+									}
+									descendInto(v, doc, addedRun, curr_f + '.');
 								}
-								return;
-							}
-
-							if (!!match) {
-								// This is field we might be binding to...
-								// ... (based on options.fields)...do something
-
-								// Indicate field is touched and update matches
-								removeInPlace(untouchedFields, curr_f);
-								threeWay.dataMatchParams[curr_f] = match;
-
-								if (IN_DEBUG_MODE_FOR('observer')) {
-									console.log('[Observer] Field match -- ' + curr_f, ':', v);
-								}
-
-								// Update data if changed
-								var mostRecentValue = mostRecentDatabaseEntry[curr_f];
-								var newValue = options.dataTransformFromServer[match.match](v, doc);
-								if (!_.isEqual(mostRecentValue, newValue)) {
-									threeWay.data.set(curr_f, newValue);
-									mostRecentDatabaseEntry[curr_f] = newValue;
-									threeWay.__idReadyFor[curr_f] = true;
-								}
-
-								if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
-									threeWay._dataUpdateComputations[curr_f] = Tracker.autorun(function() {
-										var value = threeWay.data.get(curr_f);
-
-										var __id;
-										Tracker.nonreactive(function() {
-											__id = threeWay.id.get();
-										});
-										if (IN_DEBUG_MODE_FOR('db')) {
-											console.log('[DB Update] Field: ' + curr_f + "; id: " + __id + "; isReady[f]: " + threeWay.__idReadyFor[curr_f]);
-											console.log("\tValue:", value);
-											console.log("\tMost Recent DB entry: ", mostRecentDatabaseEntry[curr_f]);
-										}
-										if ((!!__id) && threeWay.__idReadyFor[curr_f] && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
-											if (IN_DEBUG_MODE_FOR('db')) {
-												console.log('[DB] Updating... ' + curr_f + ' -> ', value);
-											}
-											mostRecentDatabaseEntry[curr_f] = value;
-											var matchFamily = threeWay.dataMatchParams[curr_f].match;
-											threeWay.debouncedUpdaters[matchFamily](options.dataTransformToServer[matchFamily](value, _.extend({}, threeWay.dataMirror)), threeWay.dataMatchParams[curr_f]);
-										} else {
-											if (IN_DEBUG_MODE_FOR('db')) {
-												console.log('[DB] No update.');
-											}
-										}
-									});
-								}
-							}
-
-							if (typeof v === "object") {
-								// Parent of field we are binding to
-								// Object or array
-								if (IN_DEBUG_MODE_FOR('observer')) {
-									console.log('[Observer] Descending -- ' + curr_f + (fieldPrefix === '' ? '' : ' (' + fieldPrefix + ' + ' + f + ')') + ' :', v);
-								}
-								descendInto(v, doc, addedRun, curr_f + '.');
-							}
-						});
-
-						if (fieldPrefix === '') {
-							// Remove stuff in untouchedFields
-							untouchedFields.forEach(function(field) {
-								delete threeWay.dataMatchParams[field];
 							});
-						}
-					};
+						};
+					})();
+					//
+					// End Descend Into
+					//////////////////////////////////////////////////// 
 
 					// Setting Up Observers
-					threeWay.observer = cursor.observe({
-						added: function(document) {
+					threeWay.observer = cursor.observeChanges({
+						added: function(id, fields) {
+							var doc = options.collection.findOne(id, {
+								reactive: false
+							});
 							if (IN_DEBUG_MODE_FOR('observer')) {
-								console.log('[Observer] Added:', document._id, document);
+								console.log('[Observer] Added:', id, doc);
 							}
 							threeWay.haveData.set(true);
-							descendInto(document, document, true);
+							descendInto(fields, doc, true);
 						},
-						changed: function(newDocument, oldDocument) {
+						changed: function(id, fields) {
+							var doc = options.collection.findOne(id, {
+								reactive: false
+							});
 							if (IN_DEBUG_MODE_FOR('observer')) {
-								console.log('[Observer] Changed:', newDocument._id, newDocument, oldDocument);
+								// console.log('[Observer] Changed:', id, fields, doc);
+								console.log('[Observer] Changed:', id, fields);
 							}
-							descendInto(newDocument, newDocument, false);
+							descendInto(fields, doc, false);
 						},
-						removed: function(oldDocument) {
+						removed: function(id) {
 							if (IN_DEBUG_MODE_FOR('observer')) {
-								console.log('[Observer] Removed:', oldDocument._id);
+								console.log('[Observer] Removed:', id);
 							}
 							threeWay.haveData.set(false);
 							threeWay.id.set(null);
@@ -435,18 +439,19 @@ if (Meteor.isClient) {
 						}
 					});
 
-					// Setting Up Debounced Updaters
+					// Setting Up Debounced/Throttled Updaters
 					// Old ones will trigger even if id changes since
 					// new functions are created when id changes
-					threeWay.debouncedUpdaters = _.object(options.fields,
+					threeWay.debouncedOrThrottledUpdaters = _.object(options.fields,
 						options.fields.map(function(f) {
-							return _.debounce(function updateServer(v, match) {
+							var update = function updateServer(v, match) {
 								var params = [_id, v];
 								match.params.forEach(function(p) {
 									params.push(p);
 								});
 								Meteor.apply(options.updatersForServer[f], params);
-							}, options.debounceInterval);
+							};
+							return (options.throttledUpdaters.indexOf(f) !== -1) ? _.debounce(update, options.throttleInterval) : _.debounce(update, options.debounceInterval);
 						}));
 
 				}
@@ -461,11 +466,11 @@ if (Meteor.isClient) {
 			Array.prototype.forEach.call(instance.$("data[field]"), function(elem) {
 				var field = elem.getAttribute('field');
 				var initValue = elem.getAttribute('initial-value') || null;
-				threeWay.data.set(field, initValue);
 
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
 					console.log("[vm-only] Setting up initial value for " + field + " to ", initValue, " using ", elem);
 				}
+				threeWay.data.set(field, initValue);
 
 				if (typeof threeWay._dataUpdateComputations[field] === "undefined") {
 					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
@@ -704,31 +709,38 @@ if (Meteor.isClient) {
 								}
 							} else if (elem.getAttribute('type').toLowerCase() === "checkbox") {
 								// Check Boxes
-								if (value.indexOf(elem.value) > -1) {
-									// Should be checked now
-									if (!elem.checked) {
-										elem.checked = true;
-										if (IN_DEBUG_MODE_FOR('checked')) {
-											console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
+								if ((!!value) && (value instanceof Array)) {
+									if (value.indexOf(elem.value) > -1) {
+										// Should be checked now
+										if (!elem.checked) {
+											elem.checked = true;
+											if (IN_DEBUG_MODE_FOR('checked')) {
+												console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
+											}
+										} else {
+											if (IN_DEBUG_MODE_FOR('checked')) {
+												console.log('[.checked] Not updating .checked of', elem);
+											}
 										}
 									} else {
-										if (IN_DEBUG_MODE_FOR('checked')) {
-											console.log('[.checked] Not updating .checked of', elem);
+										// Should be unchecked now
+										if (elem.checked) {
+											elem.checked = false;
+											if (IN_DEBUG_MODE_FOR('checked')) {
+												console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
+											}
+										} else {
+											if (IN_DEBUG_MODE_FOR('checked')) {
+												console.log('[.checked] Not updating .checked of', elem);
+											}
 										}
 									}
 								} else {
-									// Should be unchecked now
-									if (elem.checked) {
-										elem.checked = false;
-										if (IN_DEBUG_MODE_FOR('checked')) {
-											console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
-										}
-									} else {
-										if (IN_DEBUG_MODE_FOR('checked')) {
-											console.log('[.checked] Not updating .checked of', elem);
-										}
+									if (IN_DEBUG_MODE_FOR('checked')) {
+										console.warn('[.checked] Not bound to an array:', elem);
 									}
 								}
+
 							}
 
 							elemGlobals.suppressChange = false;
