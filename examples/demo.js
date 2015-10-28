@@ -180,6 +180,13 @@ if (Meteor.isClient) {
 				console.log('preProcessors[\'mapToEmailPrefs\']\nValue: ', prefs, "\nDOM Element:", elem, "\nView Model Data:", vmData, '-->', outcome);
 				return outcome;
 			},
+			boldIfMoreThanOne: function(prefString) {
+				return (prefString.split(',').length <= 1) ? prefString : '<strong>' + prefString + '</strong>';
+			},
+			sayHideToHide: function(v) {
+				return v.trim().toUpperCase() !== "HIDE";
+			},
+			not: x => !x,
 			// This is something special to make the Semantic UI Dropdown work
 			// More helpers will be written soon...
 			updateSemanticUIDropdown: ThreeWay.helpers.updateSemanticUIDropdown
@@ -188,7 +195,7 @@ if (Meteor.isClient) {
 		// Will be overridden by value tags in the rendered template of the form:
 		// <data field="additional" initial-value="view model to view only"></data>
 		viewModelToViewOnly: {
-			"additional": "VM to V Only",
+			"hide": "VM to V Only",
 			"debugMessages": selectedDebugMessages
 		},
 		debounceInterval: 200,
@@ -238,7 +245,7 @@ if (Meteor.isClient) {
 
 	var selectCreated = false;
 	Template.DemoThreeWay.events({
-		"click button": function(event, template) {
+		"click button.select-data": function(event, template) {
 			template.num.set(1);
 			var id = event.target.getAttribute('id').split('-')[1];
 			console.info('Setting ID to: ' + id);
@@ -250,6 +257,10 @@ if (Meteor.isClient) {
 					console.info('Now (~3 sec later) personal.someArr array bound to three input elements (item 0, 1 & 2).');
 				}, 3000);
 			}, 50);
+		},
+		"click button.talk": function() {
+			/* global alert: true */
+			alert('Not disabled!');
 		},
 		"change input[name=debug-messages]": function(event, template) {
 			setTimeout(() => setUpDebugMessages(template), 50);

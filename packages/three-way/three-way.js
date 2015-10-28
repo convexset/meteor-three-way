@@ -200,9 +200,9 @@ if (Meteor.isClient) {
 				data: new ReactiveDict(),
 				viewModelOnlyData: {},
 				dataMirror: {},
-				fieldMatchParams: {},  // No need to re-create
-				_fieldPseudoMatched: [],  // No need to re-create
-				_fieldsTested: [],  // No need to re-create
+				fieldMatchParams: {}, // No need to re-create
+				_fieldPseudoMatched: [], // No need to re-create
+				_fieldsTested: [], // No need to re-create
 				haveData: new ReactiveVar(false),
 				id: new ReactiveVar(null),
 				observer: null,
@@ -318,7 +318,7 @@ if (Meteor.isClient) {
 								// item.subitem --> (item.subitem, [])
 								// item.subitem --> (item.*, ['subitem'])
 								if (threeWay._fieldsTested.indexOf(curr_f) === -1) {
-									var matches = matchParamStrings(options.fields, curr_f);  // Match all (single run)
+									var matches = matchParamStrings(options.fields, curr_f); // Match all (single run)
 									if (matches.length > 1) {
 										if (IN_DEBUG_MODE_FOR('observer')) {
 											console.error('[Observer] Ambiguous matches for ' + curr_f, ' (will use first):', matches);
@@ -591,7 +591,7 @@ if (Meteor.isClient) {
 							}
 
 							elemGlobals.suppressChange = true;
-							
+
 							pipeline.forEach(function(m) {
 								// pipelines do not manipulate value
 								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
@@ -683,7 +683,7 @@ if (Meteor.isClient) {
 							}
 
 							elemGlobals.suppressChange = true;
-							
+
 							pipeline.forEach(function(m) {
 								// pipelines do not manipulate value
 								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
@@ -808,7 +808,7 @@ if (Meteor.isClient) {
 
 							var visible;
 							if (source === "_3w_haveData") {
-								visible = threeWay.haveData.get() ? "" : "none";
+								visible = threeWay.haveData.get();
 							} else {
 								visible = threeWay.data.get(source);
 								if (c.firstRun) {
@@ -816,16 +816,57 @@ if (Meteor.isClient) {
 										return;
 									}
 								}
-								mappings.forEach(function(m) {
-									visible = options.preProcessors[m](visible, elem, _.extend({}, threeWay.dataMirror));
-								});
 							}
+							mappings.forEach(function(m) {
+								visible = options.preProcessors[m](visible, elem, _.extend({}, threeWay.dataMirror));
+							});
+							visible = (!!visible) ? "" : "none";
 
 							if (elem.style.display !== visible) {
 								if (IN_DEBUG_MODE_FOR('visible')) {
 									console.log('[.visible] Setting .style[visible] to \"' + visible + '\" for', elem);
 								}
 								elem.style.display = visible;
+							}
+						}));
+					}
+
+					//////////////////////////////////////////////////////
+					// .disabled
+					//////////////////////////////////////////////////////
+					if (!!elemBindings.bindings.disabled) {
+						threeWay.computations.push(Tracker.autorun(function(c) {
+							var pipelineSplit = elemBindings.bindings.disabled.source.split('|').map(x => x.trim());
+							var source = pipelineSplit[0];
+							var mappings = pipelineSplit.splice(1);
+
+							if (c.firstRun) {
+								if (IN_DEBUG_MODE_FOR('disabled')) {
+									console.log("[.disabled] Preparing .disabled update with " + source + " for", elem);
+								}
+							}
+
+							var disabled;
+							if (source === "_3w_haveData") {
+								disabled = threeWay.haveData.get();
+							} else {
+								disabled = threeWay.data.get(source);
+								if (c.firstRun) {
+									if (typeof disabled === "undefined") {
+										return;
+									}
+								}
+							}
+							mappings.forEach(function(m) {
+								disabled = options.preProcessors[m](disabled, elem, _.extend({}, threeWay.dataMirror));
+							});
+							disabled = (!!disabled);
+
+							if (elem.disabled !== disabled) {
+								if (IN_DEBUG_MODE_FOR('disabled')) {
+									console.log('[.disabled] Setting .disabled to \"' + disabled + '\" for', elem);
+								}
+								elem.disabled = disabled;
 							}
 						}));
 					}

@@ -179,19 +179,23 @@ In the case of radio buttons, `checked` is bound to a string.
 </div>
 ```
 
-###### Binding: `visible` (A modern necessity)
+###### Bindings: `visible` and `disabled` (modern necessities)
 
-`visible` can be bound to a variable, and stuff disappears when it is set to `"none"`.
-
-```html
-<div data-bind="visible: something">
-```
-
-Incidentally, visible can be bound to one particular helper which returns a boolean. In this special case, `visible` is set to `""` when `_3w_haveData` returns `true` and `"none"` otherwise.
+`visible` and `disabled` can be bound to any boolean (or truthy) variable, and stuff disappears/gets disabled when it is set to `false` (false-ish).
 
 ```html
-<div data-bind="visible: _3w_haveData">
+<div data-bind="visible: something">...</div>
+<div data-bind="disabled: something">...</div>
 ```
+
+As a "special dispensation", `visible` and `disabled` can be bound to one particular helper which returns a boolean:
+
+```html
+<div data-bind="visible: _3w_haveData">...</div>
+<button data-bind="disabled: _3w_haveData">...</button>
+```
+
+... which one might find to be particularly useful.
 
 #### View Model to View Only Elements
 
@@ -352,11 +356,20 @@ In this example, for some reason, `tags` is stored in the view model as a string
  - `vm-only`
  - `re-bind`
 
+## Issues
+
+#### Updating Sub-fields/Elements
+
+When quickly updating fields nested within the same object (e.g.: `myObject.item`) items get "mysteriously" partially reverted.
+
+This occurs because the server reports that the entire field is changed (`myObject` in the previous example) in [`observe`](http://docs.meteor.com/#/full/observe) and [`observeChanges`](http://docs.meteor.com/#/full/observe_changes) callbacks. Therefore, any view model-side updates to other children/elements that have not yet been registered by the server are partially reverted because of race condition associated with naive updates and the "observe callbacks". The same applies to arrays.
+
+One resolution is to use `Meteor.call` callbacks and queue updates in a ridiculous promise chain. The question is whether to chain everything (stupid), or group those with the same field specification (naive), or group those with the same top-level parent field ("correct" but annoying).
+
 ## Roadmap
 
- - visible bindings (ultimately boolean; with all the fun of pipelines)
- - disabled bindings (ultimately boolean; with all the fun of pipelines)
-- style bindings via: `data-bind="style: {font-weight|v1|preProc, font-size|v2|preProc; ...}"`
+ - Fix issues.
+ - style bindings via: `data-bind="style: {font-weight|v1|preProc, font-size|v2|preProc; ...}"`
  - attribute bindings via: `data-bind="attr: {disabled|v1|preProc, ...}"`
  - class bindings via: `data-bind="class: {class1|bool1|preProc; ...}"`
  - Event bindings via: `data-bind="event: change|cbFn, keyup|cbFn; ..."` where `cbFn` has signature `function(event, template, boundData, bindingInfo)`
