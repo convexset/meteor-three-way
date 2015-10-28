@@ -2,7 +2,7 @@
 /* global DataCollection: true */
 /* global ThreeWay: true */
 
-var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'value', 'checked', 'html', 'visible', 'vm-only', 're-bind'];
+var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'value', 'checked', 'html', 'visible-and-disabled', 'vm-only', 're-bind'];
 var selectedDebugMessages = [
 	'bindings',
 	'data-mirror',
@@ -13,7 +13,7 @@ var selectedDebugMessages = [
 	// 'value',
 	// 'checked',
 	// 'html',
-	// 'visible',
+	// 'visible-and-disabled',
 	// 'vm-only',
 	// 're-bind'
 ];

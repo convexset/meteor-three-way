@@ -343,18 +343,18 @@ In this example, for some reason, `tags` is stored in the view model as a string
 `ThreeWay.debugModeSelectNone()` - Reset selection of debug message classes to none
 
 `ThreeWay.debugModeSelect(aspect)` - More granular control of debug messages, debug messages fall into the following classes:
- - `bindings`
- - `data_mirror`
- - `observer`
- - `tracker`
- - `new_id`
- - `db`
- - `value`
- - `checked`
- - `html`
- - `visible`
- - `vm-only`
- - `re-bind`
+ - `'bindings'`
+ - `'data_mirror'`
+ - `'observer'`
+ - `'tracker'`
+ - `'new_id'`
+ - `'db'`
+ - `'value'`
+ - `'checked'`
+ - `'html'`
+ - `'visible-and-disabled'`
+ - `'vm-only'`
+ - `'re-bind'`
 
 ## Issues
 

@@ -22,7 +22,7 @@ var DEBUG_MESSAGES = {
 	'value': false,
 	'checked': false,
 	'html': false,
-	'visible': false,
+	'visible-and-disabled': false,
 	'vm-only': false,
 	're-bind': false,
 };
@@ -801,7 +801,7 @@ if (Meteor.isClient) {
 							var mappings = pipelineSplit.splice(1);
 
 							if (c.firstRun) {
-								if (IN_DEBUG_MODE_FOR('visible')) {
+								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
 									console.log("[.visible] Preparing .visible update with " + source + " for", elem);
 								}
 							}
@@ -823,7 +823,7 @@ if (Meteor.isClient) {
 							visible = (!!visible) ? "" : "none";
 
 							if (elem.style.display !== visible) {
-								if (IN_DEBUG_MODE_FOR('visible')) {
+								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
 									console.log('[.visible] Setting .style[visible] to \"' + visible + '\" for', elem);
 								}
 								elem.style.display = visible;
@@ -841,7 +841,7 @@ if (Meteor.isClient) {
 							var mappings = pipelineSplit.splice(1);
 
 							if (c.firstRun) {
-								if (IN_DEBUG_MODE_FOR('disabled')) {
+								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
 									console.log("[.disabled] Preparing .disabled update with " + source + " for", elem);
 								}
 							}
@@ -863,7 +863,7 @@ if (Meteor.isClient) {
 							disabled = (!!disabled);
 
 							if (elem.disabled !== disabled) {
-								if (IN_DEBUG_MODE_FOR('disabled')) {
+								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
 									console.log('[.disabled] Setting .disabled to \"' + disabled + '\" for', elem);
 								}
 								elem.disabled = disabled;
