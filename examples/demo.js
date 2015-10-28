@@ -19,7 +19,7 @@ var selectedDebugMessages = [
 	// 're-bind',
 ];
 
-//selectedDebugMessages = allDebugMessages.map(x => x);  // copy
+selectedDebugMessages = allDebugMessages.map(x => x);  // copy
 if (Meteor.isClient) {
 	ThreeWay.setDebugModeOn();
 	ThreeWay.debugModeSelectNone();
