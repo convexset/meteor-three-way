@@ -240,7 +240,6 @@ if (Meteor.isClient) {
 			//
 			var templateLevelUpdatePromiseLedger = {};
 			var templateLevelUpdatePromiseLedger_LastTimings = {};
-			var templateLevelUpdatePromiseLedger_ChangeBlockers = {};
 
 			function meteorApply_usePromiseBins(fieldPath, method, args, _options) {
 				if (!!_options) {
@@ -252,20 +251,10 @@ if (Meteor.isClient) {
 					templateLevelUpdatePromiseLedger_LastTimings[bin] = (new Date()).getTime();
 				}
 
-				if (typeof templateLevelUpdatePromiseLedger_ChangeBlockers[fieldPath] === "undefined") {
-					templateLevelUpdatePromiseLedger_ChangeBlockers[fieldPath] = [];
-				}
-
 				templateLevelUpdatePromiseLedger[bin] = templateLevelUpdatePromiseLedger[bin]
 				// need "resist change list" to "resist updates" in the observer
 				// clear it once method returns (after the methodInterval delay)
 				.then(function() {
-					templateLevelUpdatePromiseLedger_ChangeBlockers[fieldPath].push({
-						fieldPath: fieldPath,
-						method: method,
-						args: args
-					});
-
 					return new Promise(function(resolve, reject) {
 							if (IN_DEBUG_MODE_FOR('methods')) {
 								console.info('[methods|' + bin + '] Updating server...\n', method, args);
@@ -285,11 +274,11 @@ if (Meteor.isClient) {
 									console.info('[methods|' + bin + '] Updated server.\n', method, args);
 									console.info('[methods|' + bin + '] Since Last: ' + (t_now - templateLevelUpdatePromiseLedger_LastTimings[bin]));
 								}
+
+								// Pausing for updates from the database to be complete
 								templateLevelUpdatePromiseLedger_LastTimings[bin] = t_now;
 								setTimeout(function() {
-									var unblockParams = templateLevelUpdatePromiseLedger_ChangeBlockers[fieldPath].shift();
 									if (IN_DEBUG_MODE_FOR('methods')) {
-										console.info('[methods|' + bin + '] Unblocked for', unblockParams);
 										console.info('[methods|' + bin + '] Waited: ' + ((new Date()).getTime() - templateLevelUpdatePromiseLedger_LastTimings[bin]), method, args);
 									}
 									resolve(true);
@@ -458,17 +447,9 @@ if (Meteor.isClient) {
 									var mostRecentValue = mostRecentDatabaseEntry[curr_f];
 									var newValue = options.dataTransformFromServer[match.match](v, doc);
 									if (!_.isEqual(mostRecentValue, newValue)) {
-										var changeBlocked = (typeof templateLevelUpdatePromiseLedger_ChangeBlockers[curr_f] !== "undefined") && (templateLevelUpdatePromiseLedger_ChangeBlockers[curr_f].length > 0);
-										changeBlocked = false;
-										if (changeBlocked) {
-											if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('methods')) {
-												console.log('[DB Update/methods] Change blocked for field: ' + curr_f + ' (mostRecentValue:', mostRecentValue,', newValue:', newValue, ')');
-											}
-										} else {
 											threeWay.data.set(curr_f, newValue);
 											mostRecentDatabaseEntry[curr_f] = newValue;
 											threeWay.__idReadyFor[curr_f] = true;
-										}
 									}
 
 									if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {

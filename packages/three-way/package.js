@@ -9,9 +9,13 @@ Package.describe({
 Package.onUse(function(api) {
 	api.versionsFrom('1.2.0.2');
 	api.use(['ecmascript', 'underscore', 'mongo', 'convexset:package-utils@0.1.0']);
-	api.use(['blaze', 'tracker', 'reactive-var', 'reactive-dict'], 'client');
+	api.use([
+		'blaze', 'tracker',
+		'reactive-var', 'reactive-dict',
+		'convexset:template-helpers@0.1.9'
+	], 'client');
 	api.addFiles(['three-way.js']);
-    api.export('ThreeWay');
+	api.export('ThreeWay');
 });
 
 Package.onTest(function(api) {
