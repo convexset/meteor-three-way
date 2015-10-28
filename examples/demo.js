@@ -2,23 +2,24 @@
 /* global DataCollection: true */
 /* global ThreeWay: true */
 
-var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'value', 'checked', 'html', 'visible-and-disabled', 'vm-only', 're-bind'];
+var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'methods', 'value', 'checked', 'html', 'visible-and-disabled', 'vm-only', 're-bind'];
 var selectedDebugMessages = [
-	'bindings',
-	'data-mirror',
-	'observer',
+	// 'bindings',
+	// 'data-mirror',
+	// 'observer',
 	// 'tracker',
 	// 'new-id',
-	'db',
+	// 'db',
+	'methods',
 	// 'value',
 	// 'checked',
 	// 'html',
 	// 'visible-and-disabled',
 	// 'vm-only',
-	// 're-bind'
+	// 're-bind',
 ];
 
-selectedDebugMessages = allDebugMessages.map(x => x);  // copy
+//selectedDebugMessages = allDebugMessages.map(x => x);  // copy
 if (Meteor.isClient) {
 	ThreeWay.setDebugModeOn();
 	ThreeWay.debugModeSelectNone();
@@ -115,13 +116,13 @@ if (Meteor.isServer) {
 				particulars: {
 					age: Fake.fromArray(ageRangeValues),
 				},
-				someArr: [Math.floor(Math.random() * 10), '!!!', Math.floor(Math.random() * 10)],
+				someArr: ["" + Math.floor(Math.random() * 10), '!!!', "" + Math.floor(Math.random() * 10)],
 				otherArr: [{
-					a: 10 + Math.floor(Math.random() * 10),
-					b: 20 + Math.floor(Math.random() * 10)
+					a: "" + Math.floor(10 + Math.random() * 10),
+					b: "" + Math.floor(20 + Math.random() * 10)
 				}, {
-					a: 30 + Math.floor(Math.random() * 10),
-					b: 40 + Math.floor(Math.random() * 10)
+					a: "" + Math.floor(30 + Math.random() * 10),
+					b: "" + Math.floor(40 + Math.random() * 10)
 				}, ]
 			},
 			notes: Fake.sentence(5),
@@ -198,10 +199,11 @@ if (Meteor.isClient) {
 			"hide": "VM to V Only",
 			"debugMessages": selectedDebugMessages
 		},
-		debounceInterval: 200,
+		debounceInterval: 300,
 		throttleInterval: 500,
 		throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
-		rebindPollInterval: 300
+		rebindPollInterval: 300,
+		methodInterval: 50
 	});
 
 	Template.DemoThreeWay.onCreated(function() {

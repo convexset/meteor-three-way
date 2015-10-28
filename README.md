@@ -345,6 +345,7 @@ In this example, for some reason, `tags` is stored in the view model as a string
  - `'tracker'`
  - `'new_id'`
  - `'db'`
+ - `'methods'`
  - `'value'`
  - `'checked'`
  - `'html'`

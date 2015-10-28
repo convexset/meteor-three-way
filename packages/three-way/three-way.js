@@ -6,9 +6,10 @@ ThreeWay = new __tw();
 
 var THREE_WAY_NAMESPACE = "__three_way__";
 var THREE_WAY_DATA_BOUND_ATTRIBUTE = "three-way-data-bound";
-var DEFAULT_DEBOUNCE_INTERVAL = 200;
+var DEFAULT_DEBOUNCE_INTERVAL = 500;
 var DEFAULT_THROTTLE_INTERVAL = 500;
 var DEFAULT_DOM_POLL_INTERVAL = 300;
+var DEFAULT_METHOD_INTERVAL = 100;
 
 var DEBUG_MODE = false;
 var DEBUG_MODE_ALL = false;
@@ -19,6 +20,7 @@ var DEBUG_MESSAGES = {
 	'tracker': false,
 	'new-id': false,
 	'db': false,
+	'methods': false,
 	'value': false,
 	'checked': false,
 	'html': false,
@@ -78,6 +80,7 @@ function matchParamStrings(templateStrings, itemString, matchOne) {
 		getParamsRes = getFieldParams(ts, itemString);
 		if (getParamsRes.match) {
 			matches.push({
+				fieldPath: itemString,
 				match: ts,
 				params: getParamsRes.params
 			});
@@ -90,6 +93,9 @@ function matchParamStrings(templateStrings, itemString, matchOne) {
 	return matches;
 }
 PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'matchParamStrings', matchParamStrings);
+
+
+
 
 if (Meteor.isClient) {
 	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setDebugModeOn', function setDebugModeOn() {
@@ -134,6 +140,7 @@ if (Meteor.isClient) {
 			throttleInterval: DEFAULT_THROTTLE_INTERVAL,
 			throttledUpdaters: [],
 			rebindPollInterval: DEFAULT_DOM_POLL_INTERVAL,
+			methodInterval: DEFAULT_METHOD_INTERVAL,
 		}, options, true);
 
 		if (!(options.collection instanceof Mongo.Collection)) {
@@ -224,7 +231,82 @@ if (Meteor.isClient) {
 			instance._3w_Get_NR = p => threeWay.dataMirror[p];
 			instance._3w_GetAll_NR = () => _.extend({}, threeWay.dataMirror);
 
-			var mostRecentDatabaseEntry = {};
+			var mostRecentDatabaseEntry;
+			var baseUpdaters;
+			var debouncedOrThrottledUpdaters;
+
+			////////////////////////////////////////////////////////////////
+			// For batching Meteor calls
+			//
+			var templateLevelUpdatePromiseLedger = {};
+			var templateLevelUpdatePromiseLedger_LastTimings = {};
+			var templateLevelUpdatePromiseLedger_ChangeBlockers = {};
+
+			function meteorApply_usePromiseBins(fieldPath, method, args, _options) {
+				if (!!_options) {
+					_options = {};
+				}
+				var bin = fieldPath.split('.')[0];
+				if (typeof templateLevelUpdatePromiseLedger[bin] === "undefined") {
+					templateLevelUpdatePromiseLedger[bin] = Promise.resolve(true);
+					templateLevelUpdatePromiseLedger_LastTimings[bin] = (new Date()).getTime();
+				}
+
+				if (typeof templateLevelUpdatePromiseLedger_ChangeBlockers[fieldPath] === "undefined") {
+					templateLevelUpdatePromiseLedger_ChangeBlockers[fieldPath] = [];
+				}
+
+				templateLevelUpdatePromiseLedger[bin] = templateLevelUpdatePromiseLedger[bin]
+				// need "resist change list" to "resist updates" in the observer
+				// clear it once method returns (after the methodInterval delay)
+				.then(function() {
+					templateLevelUpdatePromiseLedger_ChangeBlockers[fieldPath].push({
+						fieldPath: fieldPath,
+						method: method,
+						args: args
+					});
+
+					return new Promise(function(resolve, reject) {
+							if (IN_DEBUG_MODE_FOR('methods')) {
+								console.info('[methods|' + bin + '] Updating server...\n', method, args);
+							}
+							Meteor.apply(method, args, _options, function meteorApplyCB(err, res) {
+								if (!!err) {
+									reject(err);
+								} else {
+									resolve(res);
+								}
+							});
+						})
+						.then(function() {
+							return new Promise(function(resolve) {
+								var t_now = (new Date()).getTime();
+								if (IN_DEBUG_MODE_FOR('methods')) {
+									console.info('[methods|' + bin + '] Updated server.\n', method, args);
+									console.info('[methods|' + bin + '] Since Last: ' + (t_now - templateLevelUpdatePromiseLedger_LastTimings[bin]));
+								}
+								templateLevelUpdatePromiseLedger_LastTimings[bin] = t_now;
+								setTimeout(function() {
+									var unblockParams = templateLevelUpdatePromiseLedger_ChangeBlockers[fieldPath].shift();
+									if (IN_DEBUG_MODE_FOR('methods')) {
+										console.info('[methods|' + bin + '] Unblocked for', unblockParams);
+										console.info('[methods|' + bin + '] Waited: ' + ((new Date()).getTime() - templateLevelUpdatePromiseLedger_LastTimings[bin]), method, args);
+									}
+									resolve(true);
+								}, options.methodInterval);
+							});
+						})
+						.catch(function(err) {
+							if (IN_DEBUG_MODE_FOR('methods')) {
+								console.error('[Error updating server]', err);
+							}
+						});
+				});
+			}
+			//
+			// End Meteor call batching
+			////////////////////////////////////////////////////////////////
+
 
 			Tracker.autorun(function() {
 				threeWay.dataMirror = threeWay.data.all();
@@ -288,6 +370,24 @@ if (Meteor.isClient) {
 
 				mostRecentDatabaseEntry = {};
 				threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
+
+				// Setting Up Debounced/Throttled Updaters
+				// Old ones will trigger even if id changes since
+				// new functions are created when id changes
+				debouncedOrThrottledUpdaters = {};
+				baseUpdaters = _.object(
+					options.fields,
+					options.fields.map(function(f) {
+						return function updateServer(v, match) {
+							var params = [_id, v];
+							match.params.forEach(function(p) {
+								params.push(p);
+							});
+							// Meteor.apply(options.updatersForServer[f], params);
+							meteorApply_usePromiseBins(match.fieldPath, options.updatersForServer[f], params);
+						};
+					})
+				);
 
 				if (!!_id) {
 					if (IN_DEBUG_MODE_FOR('new-id')) {
@@ -358,9 +458,17 @@ if (Meteor.isClient) {
 									var mostRecentValue = mostRecentDatabaseEntry[curr_f];
 									var newValue = options.dataTransformFromServer[match.match](v, doc);
 									if (!_.isEqual(mostRecentValue, newValue)) {
-										threeWay.data.set(curr_f, newValue);
-										mostRecentDatabaseEntry[curr_f] = newValue;
-										threeWay.__idReadyFor[curr_f] = true;
+										var changeBlocked = (typeof templateLevelUpdatePromiseLedger_ChangeBlockers[curr_f] !== "undefined") && (templateLevelUpdatePromiseLedger_ChangeBlockers[curr_f].length > 0);
+										changeBlocked = false;
+										if (changeBlocked) {
+											if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('methods')) {
+												console.log('[DB Update/methods] Change blocked for field: ' + curr_f + ' (mostRecentValue:', mostRecentValue,', newValue:', newValue, ')');
+											}
+										} else {
+											threeWay.data.set(curr_f, newValue);
+											mostRecentDatabaseEntry[curr_f] = newValue;
+											threeWay.__idReadyFor[curr_f] = true;
+										}
 									}
 
 									if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
@@ -382,7 +490,19 @@ if (Meteor.isClient) {
 												}
 												mostRecentDatabaseEntry[curr_f] = value;
 												var matchFamily = threeWay.fieldMatchParams[curr_f].match;
-												threeWay.debouncedOrThrottledUpdaters[matchFamily](options.dataTransformToServer[matchFamily](value, _.extend({}, threeWay.dataMirror)), threeWay.fieldMatchParams[curr_f]);
+
+												if (typeof debouncedOrThrottledUpdaters[curr_f] === "undefined") {
+													// Create specific updater for field if not already done.
+													// Presents updates being lost if "fast" updates are being done
+													// for a bunch of fields matching a spec. like "someArray.*"
+													var updater = function updater(v) {
+														baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
+													};
+													debouncedOrThrottledUpdaters[curr_f] = (options.throttledUpdaters.indexOf(matchFamily) !== -1) ? _.throttle(updater, options.throttleInterval) : _.debounce(updater, options.debounceInterval);
+												}
+												var valueToSend = options.dataTransformToServer[matchFamily](value, _.extend({}, threeWay.dataMirror));
+												debouncedOrThrottledUpdaters[curr_f](valueToSend);
+
 											} else {
 												if (IN_DEBUG_MODE_FOR('db')) {
 													console.log('[DB] No update.');
@@ -438,21 +558,6 @@ if (Meteor.isClient) {
 							threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
 						}
 					});
-
-					// Setting Up Debounced/Throttled Updaters
-					// Old ones will trigger even if id changes since
-					// new functions are created when id changes
-					threeWay.debouncedOrThrottledUpdaters = _.object(options.fields,
-						options.fields.map(function(f) {
-							var update = function updateServer(v, match) {
-								var params = [_id, v];
-								match.params.forEach(function(p) {
-									params.push(p);
-								});
-								Meteor.apply(options.updatersForServer[f], params);
-							};
-							return (options.throttledUpdaters.indexOf(f) !== -1) ? _.debounce(update, options.throttleInterval) : _.debounce(update, options.debounceInterval);
-						}));
 
 				}
 			});
