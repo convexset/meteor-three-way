@@ -41,14 +41,14 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // The relevant Mongo.Collection
     collection: DataCollection,
     // Meteor methods for updating the database
-    updatersForServer: _.object([
-        ['name', 'update-name'],
-        ['emailPrefs', 'update-emailPrefs'],
-        ['personal.particulars.age', 'update-age'],
-        ['tags', 'update-tags'],
-        ['personal.someArr.*', 'update-some-arr'],
-        ['personal.otherArr.*.*', 'update-other-arr'],
-    ]),
+    updatersForServer: {
+        'name': 'update-name',
+        'emailPrefs': 'update-emailPrefs',
+        'personal.particulars.age': 'update-age',
+        'tags': 'update-tags',
+        'personal.someArr.*': 'update-some-arr',
+        'personal.otherArr.*.*': 'update-other-arr',
+    },
     // Transformations from the server to the view model
     // In this example, "tags" are stored in the view model as a comma
     // separated list in a string, while it is stored in the server as
@@ -93,7 +93,9 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // Fields for which updaters are throttle'd instead of debounce'zd
     throttledUpdaters: [],
     // "Re-Bind Poll Interval" for discovering new DOM nodes in need of data-binding
-    rebindPollInterval: 300  // Default: 300 ms
+    rebindPollInterval: 300,  // Default: 300 ms
+    // Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
+    methodInterval: 100,  // Default: 100 ms
 });
 ```
 
@@ -362,8 +364,11 @@ In this example, for some reason, `tags` is stored in the view model as a string
  - `'vm-only'`
  - `'re-bind'`
 
+## Notes
+
+Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart. The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-objects even if a single primitive value deep within was updated. It was addressed with (i) queueing implemented via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
+
 ## Roadmap
 
  - Event bindings via: `data-bind="event: change|cbFn, keyup|cbFn; ..."` where `cbFn` has signature `function(event, template, boundData, bindingInfo)`
- - ViewModel-only initializers with parsers `<data field="fieldName" initial-value="v1|v2|v3" parser="split" param="|"></data>`
  - ThreeWay instances in child templates to notify parent templates of their existence. Child instances to find their parent. =)

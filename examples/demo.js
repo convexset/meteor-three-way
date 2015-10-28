@@ -4,25 +4,25 @@
 
 var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'methods', 'value', 'checked', 'html', 'visible-and-disabled', 'style', 'attr', 'class', 'vm-only', 're-bind'];
 var selectedDebugMessages = [
-	// 'bindings',
-	// 'data-mirror',
-	// 'observer',
-	// 'tracker',
-	// 'new-id',
-	// 'db',
+	'bindings',
+	'data-mirror',
+	'observer',
+	'tracker',
+	'new-id',
+	'db',
 	'methods',
-	// 'value',
-	// 'checked',
-	// 'html',
-	// 'visible-and-disabled',
-	// 'style',
-	// 'attr',
-	// 'class',
-	// 'vm-only',
+	'value',
+	'checked',
+	'html',
+	'visible-and-disabled',
+	'style',
+	'attr',
+	'class',
+	'vm-only',
 	// 're-bind',
 ];
 
-selectedDebugMessages = allDebugMessages.map(x => x); // copy
+//selectedDebugMessages = allDebugMessages.map(x => x); // copy
 if (Meteor.isClient) {
 	ThreeWay.setDebugModeOn();
 	ThreeWay.debugModeSelectNone();
