@@ -662,7 +662,9 @@ if (Meteor.isClient) {
 						};
 
 						$(elem).change(valueChangeHandler);
-						$(elem).keyup(valueChangeHandler);
+						$(elem).on('input', function () {
+							$(this).trigger('change');
+						});
 
 						threeWay.computations.push(Tracker.autorun(function(c) {
 							var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim());

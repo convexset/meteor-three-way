@@ -258,6 +258,7 @@
 		<data field="fieldNameFontSize" initial-value="200%"></data>
 		<data field="imgAltText" initial-value="No Such Image"></data>
 		<data field="semanticUIStyling" initial-value="yes"></data>
+		<data field="sliderValue" initial-value="50"></data>
 
 		<div data-bind="class: {ui: semanticUIStyling|noIsFalse, form: semanticUIStyling|noIsFalse}">
 			<div class="field">
@@ -277,10 +278,15 @@
 				<label>[Class binding] semanticUIStyling (VM Only; no means false) <code>semanticUIStyling|noIsFalse</code> --> <span data-bind="html: semanticUIStyling|noIsFalse"></span></label>
 				<input data-bind="value: semanticUIStyling">					
 			</div>
+			<div class="field">
+				<label>[Value binding] sliderValue (VM Only)</label>
+				<input data-bind="value: sliderValue" type="range" style="width: 70%">
+				<span data-bind="html: sliderValue"></span>
+			</div>
 		</div>
 	</div>
 	
-	<div class="column">
+	<div class="column" style="height: 100px">
 		&nbsp;
 	</div>
 	
