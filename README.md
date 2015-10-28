@@ -148,7 +148,7 @@ Pre-processors actually take up-to three arguments, `(value, elem, vmData)` and 
 There's nothing much to say about this simple binding...
 
 ```html
-<input name="name" style="border: 0; width: 100%;" data-bind="value: name">
+<input name="name" data-bind="value: name">
 ```
 
 Works with `input` and `textarea` tags.
@@ -208,10 +208,6 @@ It is easy to specify fields that are "view model only". They don't even have to
 </div>
 <div>
     Additional: <span data-bind="html: additional"></span>
-</div>
-
-<div data-bind="visible: additional">
-    <strong>Set "Additional" to "none" to Make this Disappear</strong>
 </div>
 ```
 
