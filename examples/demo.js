@@ -2,7 +2,6 @@
 /* global DataCollection: true */
 /* global ThreeWay: true */
 
-var allDebugMessages = ['bindings', 'data-mirror', 'observer', 'tracker', 'new-id', 'db', 'methods', 'value', 'checked', 'html', 'visible-and-disabled', 'style', 'attr', 'class', 'vm-only', 're-bind'];
 var selectedDebugMessages = [
 	'bindings',
 	'data-mirror',
@@ -18,11 +17,12 @@ var selectedDebugMessages = [
 	'style',
 	'attr',
 	'class',
+	'event',
 	'vm-only',
 	// 're-bind',
 ];
 
-//selectedDebugMessages = allDebugMessages.map(x => x); // copy
+//selectedDebugMessages = ThreeWay.DEBUG_MESSAGES; // copy
 if (Meteor.isClient) {
 	ThreeWay.setDebugModeOn();
 	ThreeWay.debugModeSelectNone();
@@ -203,11 +203,22 @@ if (Meteor.isClient) {
 			"hide": "VM to V Only",
 			"debugMessages": selectedDebugMessages
 		},
+		eventHandlers: {
+			dragStartHandler: function(event, template, vmData) {
+				console.info("Drag Start at " + (new Date()), event, template, vmData);
+			},
+			dragEndHandler: function(event, template, vmData) {
+				console.info("Drag End at " + (new Date()), event, template, vmData);
+			},
+			saySomethingHappy: function() {
+				console.info("Let\'s chill. (Second mouseup event to fire.)");
+			},
+		},
 		debounceInterval: 300,
 		throttleInterval: 500,
 		throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
 		rebindPollInterval: 300,
-		methodInterval: 50
+		methodInterval: 50,
 	});
 
 	Template.DemoThreeWay.onCreated(function() {
@@ -246,7 +257,7 @@ if (Meteor.isClient) {
 			reactive: true
 		}),
 		num: () => Template.instance().num.get(),
-		allDebugMessages: () => allDebugMessages,
+		allDebugMessages: () => ThreeWay.DEBUG_MESSAGES,
 	});
 
 	var selectCreated = false;

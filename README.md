@@ -82,9 +82,22 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     },
     // (Global) initial values for fields that feature only in the local view model
     // Will be overridden by value tags in the rendered template of the form:
-    // <data field="additional" initial-value="view model to view only"></data>
+    // <data field="sliderValue" initial-value="50"></data>
     viewModelToViewOnly: {
-        additional: "VM to V Only"
+        sliderValue: "0"
+    },
+    // Event Handlers bound like
+    // <input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range">
+    eventHandlers: {
+        dragStartHandler: function(event, template, vmData) {
+            console.info("Drag Start at " + (new Date()), event, template, vmData);
+        },
+        dragEndHandler: function(event, template, vmData) {
+            console.info("Drag End at " + (new Date()), event, template, vmData);
+        },
+        saySomethingHappy: function() {
+            console.info("Let\'s chill. (Second mouseup event to fire.)");
+        },
     },
     // "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
     debounceInterval: 200,  // Default: 200 ms
@@ -207,6 +220,33 @@ As a "special dispensation", `visible` and `disabled` can be bound to one partic
 
  Class bindings are done via: `data-bind="class: {class1: bool1|preProc; ...}"`. However, things work more like the visible and disabled bindings in that the values to be bound to will be treated as boolean-ish.
 
+###### Event Bindings
+
+Event bindings may be achieved via: `data-bind="event: {change: cbFn, keyup:cbFn2|cbFn3, ...}"` where callbacks like `cbFn1` have signature `function(event, template, vmData)` (`vmData` being, of course, the data in the view model).
+
+The event handlers may be specified in the set up as follows:
+
+```javascript
+eventHandlers: {
+    dragStartHandler: function(event, template, vmData) {
+        console.info("Drag Start at " + (new Date()), event, template, vmData);
+    },
+    dragEndHandler: function(event, template, vmData) {
+        console.info("Drag End at " + (new Date()), event, template, vmData);
+    },
+    saySomethingHappy: function() {
+        console.info("Let\'s chill. (Second mouseup event to fire.)");
+    },
+},
+```
+
+... and bound as follows:
+
+```html
+<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range">
+```
+
+**Question**: Should these fire before or after the usual `change`-type events? Presently it happens after. (Does it matter? If it does, should it?)
 
 #### View Model to View Only Elements
 
@@ -370,5 +410,4 @@ Pre-v0.1.2, there was the issue of a race condition when multiple fields with th
 
 ## Roadmap
 
- - Event bindings via: `data-bind="event: change|cbFn, keyup|cbFn; ..."` where `cbFn` has signature `function(event, template, boundData, bindingInfo)`
  - ThreeWay instances in child templates to notify parent templates of their existence. Child instances to find their parent. =)

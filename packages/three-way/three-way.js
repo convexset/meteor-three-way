@@ -28,6 +28,7 @@ var DEBUG_MESSAGES = {
 	'style': false,
 	'attr': false,
 	'class': false,
+	'event': false,
 	'vm-only': false,
 	're-bind': false,
 };
@@ -101,6 +102,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'matchParamStrings', mat
 
 
 if (Meteor.isClient) {
+	PackageUtilities.addImmutablePropertyArray(ThreeWay, 'DEBUG_MESSAGES', _.map(DEBUG_MESSAGES, (v, k) => k));
 	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setDebugModeOn', function setDebugModeOn() {
 		DEBUG_MODE = true;
 	});
@@ -144,6 +146,7 @@ if (Meteor.isClient) {
 			throttledUpdaters: [],
 			rebindPollInterval: DEFAULT_DOM_POLL_INTERVAL,
 			methodInterval: DEFAULT_METHOD_INTERVAL,
+			eventHandlers: {}
 		}, options, true);
 
 		if (!(options.collection instanceof Mongo.Collection)) {
@@ -595,7 +598,7 @@ if (Meteor.isClient) {
 						var rawItemData = x.substr(idxColon + 1).trim();
 						var itemData;
 
-						var isDictType = (itemName === "class") || (itemName === "style") || (itemName === "attr");
+						var isDictType = (itemName === "class") || (itemName === "style") || (itemName === "attr") || (itemName === "event");
 						if (isDictType) {
 							itemData = _.object(rawItemData.substr(1, rawItemData.length - 2).split(",").map(x => x.trim()).map(function(x) {
 								return x.split(":").map(x => x.trim());
@@ -639,8 +642,7 @@ if (Meteor.isClient) {
 
 							if (IN_DEBUG_MODE_FOR('value')) {
 								console.log('[.value] Change', elem);
-								console.log('[.value] data-bind | ' + dataBind);
-								console.log('[.value] Field: ' + fieldName);
+								console.log('[.value] Field: ' + fieldName + '; data-bind | ' + dataBind);
 							}
 
 							if (elemGlobals.suppressChange) {
@@ -674,7 +676,7 @@ if (Meteor.isClient) {
 							var value = threeWay.data.get(source);
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('value')) {
-									console.log("[.value] Preparing .value update (to", source, ") for", elem);
+									console.log("[.value] Preparing .value binding (to " + source + ") for", elem);
 								}
 								if (typeof value === "undefined") {
 									return;
@@ -734,8 +736,8 @@ if (Meteor.isClient) {
 
 							if (IN_DEBUG_MODE_FOR('checked')) {
 								console.log('[.checked] Change', elem);
+								console.log('[.checked] Field: ' + fieldName + '; data-bind | ' + dataBind);
 								console.log('[.checked] data-bind | ' + dataBind);
-								console.log('[.checked] Field: ' + fieldName);
 							}
 
 							if (elemGlobals.suppressChange) {
@@ -766,7 +768,7 @@ if (Meteor.isClient) {
 							var value = threeWay.data.get(source);
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('checked')) {
-									console.log("[.checked] Preparing .checked update (to ", value, ") for", source, elem);
+									console.log("[.checked] Preparing .checked binding (to " + source + ") for", elem);
 								}
 								if ((typeof value !== "object") || (!(value instanceof Array))) {
 									return;
@@ -861,7 +863,7 @@ if (Meteor.isClient) {
 							var html = threeWay.data.get(source);
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('html')) {
-									console.log("[.html] Preparing .html update for", elem);
+									console.log("[.html] Preparing .html binding for", elem);
 									console.log("[.html] Field: " + source + "; Mappings: ", mappings);
 								}
 								if (typeof html === "undefined") {
@@ -893,7 +895,7 @@ if (Meteor.isClient) {
 
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-									console.log("[.visible] Preparing .visible update with " + source + " for", elem);
+									console.log("[.visible] Preparing .visible binding with " + source + " for", elem);
 								}
 							}
 
@@ -933,7 +935,7 @@ if (Meteor.isClient) {
 
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-									console.log("[.disabled] Preparing .disabled update with " + source + " for", elem);
+									console.log("[.disabled] Preparing .disabled binding with " + source + " for", elem);
 								}
 							}
 
@@ -975,7 +977,7 @@ if (Meteor.isClient) {
 								var value = threeWay.data.get(source);
 								if (c.firstRun) {
 									if (IN_DEBUG_MODE_FOR('style')) {
-										console.log("[.style|" + key + "] Preparing .style update for", elem);
+										console.log("[.style|" + key + "] Preparing .style binding for", elem);
 										console.log("[.style|" + key + "] Field: " + source + "; Mappings: ", mappings);
 									}
 									if (typeof value === "undefined") {
@@ -1011,7 +1013,7 @@ if (Meteor.isClient) {
 								var value = threeWay.data.get(source);
 								if (c.firstRun) {
 									if (IN_DEBUG_MODE_FOR('attr')) {
-										console.log("[.attr|" + key + "] Preparing attribute update for", elem);
+										console.log("[.attr|" + key + "] Preparing attribute binding for", elem);
 										console.log("[.attr|" + key + "] Field: " + source + "; Mappings: ", mappings);
 									}
 									if (typeof value === "undefined") {
@@ -1034,7 +1036,6 @@ if (Meteor.isClient) {
 						});
 					}
 
-
 					//////////////////////////////////////////////////////
 					// class
 					//////////////////////////////////////////////////////
@@ -1048,7 +1049,7 @@ if (Meteor.isClient) {
 								var value = threeWay.data.get(source);
 								if (c.firstRun) {
 									if (IN_DEBUG_MODE_FOR('class')) {
-										console.log("[.class|" + key + "] Preparing class update for", elem);
+										console.log("[.class|" + key + "] Preparing class binding for", elem);
 										console.log("[.class|" + key + "] Field: " + source + "; Mappings: ", mappings);
 									}
 									if (typeof value === "undefined") {
@@ -1072,6 +1073,34 @@ if (Meteor.isClient) {
 										$(elem).removeClass(key);
 									}
 								}
+							}));
+						});
+					}
+
+					//////////////////////////////////////////////////////
+					// event
+					//////////////////////////////////////////////////////
+					if (!!elemBindings.bindings.event) {
+						_.forEach(elemBindings.bindings.event.source, function(handlerString, eventName) {
+							threeWay.computations.push(Tracker.autorun(function(c) {
+								var handlerNames = handlerString.split('|').map(x => x.trim());
+
+								if (c.firstRun) {
+									if (IN_DEBUG_MODE_FOR('event')) {
+										console.log("[.event|" + eventName + "] Preparing event binding for", elem);
+										console.log("[.event|" + eventName + "] Handlers: ", handlerNames);
+									}
+								}
+
+								handlerNames.forEach(function(m) {
+									var handler = options.eventHandlers[m];
+									$(elem).on(eventName, function(event) {
+										if (IN_DEBUG_MODE_FOR('event')) {
+											console.log("[.event|" + eventName + "] Firing " + m + " for", elem);
+										}
+										handler.call(this, event, instance, _.extend({}, threeWay.dataMirror));
+									});
+								});
 							}));
 						});
 					}

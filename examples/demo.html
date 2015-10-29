@@ -279,8 +279,8 @@
 				<input data-bind="value: semanticUIStyling">					
 			</div>
 			<div class="field">
-				<label>[Value binding] sliderValue (VM Only)</label>
-				<input data-bind="value: sliderValue" type="range" style="width: 70%">
+				<label>[Value binding] sliderValue (VM Only); Drag to fire events</label>
+				<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 70%">
 				<span data-bind="html: sliderValue"></span>
 			</div>
 		</div>
