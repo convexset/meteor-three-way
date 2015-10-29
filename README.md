@@ -268,17 +268,17 @@ Note that "view model only" tag-based initializers applied only `onRendered` and
 
 The following methods are crammed onto each template instance in an `onCreated` hook.
 
-`_3w_GetId()`: gets the id of the document bound to
+`_3w_getId()`: gets the id of the document bound to
 
-`_3w_SetId(id)`: sets the id of the document to bind to
+`_3w_setId(id)`: sets the id of the document to bind to
 
-`_3w_Get(prop)`: gets a property
+`_3w_get(prop)`: gets a property
 
-`_3w_Set(prop, value)`: sets a property
+`_3w_set(prop, value)`: sets a property
 
-`_3w_Get_NR(prop)`: gets a property "non-reactively"
+`_3w_get_NR(prop)`: gets a property "non-reactively"
 
-`_3w_GetAll_NR`: gets all the data "non-reactively"
+`_3w_getAll_NR`: gets all the data "non-reactively"
 
 
 #### Additional Template Helpers

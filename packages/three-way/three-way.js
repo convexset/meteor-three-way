@@ -226,16 +226,16 @@ if (Meteor.isClient) {
 			};
 
 			instance[THREE_WAY_NAMESPACE] = threeWay;
-			instance._3w_SetId = function(id) {
+			instance._3w_setId = function(id) {
 				threeWay.id.set(id);
 			};
-			instance._3w_GetId = function() {
+			instance._3w_getId = function() {
 				return threeWay.id.get();
 			};
-			instance._3w_Get = p => threeWay.data.get(p);
-			instance._3w_Set = (p, v) => threeWay.data.set(p, v);
-			instance._3w_Get_NR = p => threeWay.dataMirror[p];
-			instance._3w_GetAll_NR = () => _.extend({}, threeWay.dataMirror);
+			instance._3w_get = p => threeWay.data.get(p);
+			instance._3w_set = (p, v) => threeWay.data.set(p, v);
+			instance._3w_get_NR = p => threeWay.dataMirror[p];
+			instance._3w_getAll_NR = () => _.extend({}, threeWay.dataMirror);
 
 			var mostRecentDatabaseEntry;
 			var baseUpdaters;

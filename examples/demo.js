@@ -31,7 +31,7 @@ if (Meteor.isClient) {
 
 
 function setUpDebugMessages(template) {
-	var selectedDebugMessages = template._3w_Get_NR('debugMessages');
+	var selectedDebugMessages = template._3w_get_NR('debugMessages');
 	console.info('Selected Debug Messages:', selectedDebugMessages);
 	ThreeWay.setDebugModeOn();
 	ThreeWay.debugModeSelectNone();
@@ -268,7 +268,7 @@ if (Meteor.isClient) {
 			console.info('Setting ID to: ' + id);
 			console.info('Note the personal.someArr array is initially only bound to one input element (item 0).');
 			setTimeout(function() {
-				template._3w_SetId(id);
+				template._3w_setId(id);
 				setTimeout(function() {
 					template.num.set(3);
 					console.info('Now (~3 sec later) personal.someArr array bound to three input elements (item 0, 1 & 2).');

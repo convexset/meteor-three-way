@@ -279,9 +279,8 @@
 				<input data-bind="value: semanticUIStyling">					
 			</div>
 			<div class="field">
-				<label>[Value binding] sliderValue (VM Only); Drag to fire events</label>
-				<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 70%">
-				<span data-bind="html: sliderValue"></span>
+				<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze (<code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code>)</label>
+				<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=1000 min=0>
 			</div>
 		</div>
 	</div>
