@@ -210,6 +210,9 @@ if (Meteor.isClient) {
 			var instance = this;
 
 			var threeWay = {
+				instanceId: null,
+				children: {},
+				__hasChild: new ReactiveDict(),
 				data: new ReactiveDict(),
 				viewModelOnlyData: {},
 				dataMirror: {},
@@ -235,7 +238,125 @@ if (Meteor.isClient) {
 			instance._3w_get = p => threeWay.data.get(p);
 			instance._3w_set = (p, v) => threeWay.data.set(p, v);
 			instance._3w_get_NR = p => threeWay.dataMirror[p];
+			instance._3w_getAll = () => threeWay.data.all();
 			instance._3w_getAll_NR = () => _.extend({}, threeWay.dataMirror);
+
+			instance._3w_parentDataGet = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.get(p);
+			instance._3w_parentDataGetAll = (levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.all();
+			instance._3w_parentDataSet = (p, v, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.set(p, v);
+			instance._3w_parentDataGet_NR = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].dataMirror[p];
+			instance._3w_parentDataGetAll_NR = (levelsUp) => _.extend({}, instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].dataMirror);
+
+			instance._3w_childDataGet = function _3w_childDataGet(p, childNameArray) {
+				if (childNameArray instanceof Array) {
+					if (childNameArray.length === 0) {
+						return;
+					}
+					var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+					if (!hasChildData) {
+						return;
+					}
+					if (childNameArray.length === 1) {
+						var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.get(p);
+						return value;
+					} else {
+						var cn = childNameArray.map(x => x);
+						cn.shift();
+						return threeWay.children[childNameArray[0]]._3w_childDataGet(p, cn);
+					}
+				} else {
+					return instance._3w_childDataGet(p, [childNameArray]);
+				}
+			};
+			instance._3w_childDataGetAll = function _3w_childDataGetAll(childNameArray) {
+				if (childNameArray instanceof Array) {
+					if (childNameArray.length === 0) {
+						return;
+					}
+					var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+					if (!hasChildData) {
+						return;
+					}
+					if (childNameArray.length === 1) {
+						var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.all();
+						return value;
+					} else {
+						var cn = childNameArray.map(x => x);
+						cn.shift();
+						return threeWay.children[childNameArray[0]]._3w_childDataGetAll(cn);
+					}
+				} else {
+					return instance._3w_childDataGetAll([childNameArray]);
+				}
+			};
+			instance._3w_childDataSet = function _3w_childDataSet(p, v, childNameArray) {
+				if (childNameArray instanceof Array) {
+					if (childNameArray.length === 0) {
+						return;
+					}
+					var hasChildData;
+					Tracker.nonreactive(function() {
+						hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+					});
+					if (!hasChildData) {
+						throw new Meteor.Error('child-does-not-exist', childNameArray[0]);
+					}
+					if (childNameArray.length === 1) {
+						var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.set(p, v);
+						return value;
+					} else {
+						var cn = childNameArray.map(x => x);
+						cn.shift();
+						return threeWay.children[childNameArray[0]]._3w_childDataSet(p, v, cn);
+					}
+				} else {
+					return instance._3w_childDataSet(p, v, [childNameArray]);
+				}
+			};
+			instance._3w_childDataGet_NR = function _3w_childDataGet_NR(p, childNameArray) {
+				var value;
+				Tracker.nonreactive(function () {
+					value = instance._3w_childDataGet(p, childNameArray);
+				});
+				return value;
+			};
+			instance._3w_childDataGetAll_NR = function _3w_childDataGetAll_NR(childNameArray) {
+				var value;
+				Tracker.nonreactive(function () {
+					value = instance._3w_childDataGetAll(childNameArray);
+				});
+				return value;
+			};
+
+			instance._3w_getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth) {
+				if (typeof levels === "undefined") {
+					levels = Number.MAX_SAFE_INTEGER;
+				}
+				if (typeof currDepth === "undefined") {
+					currDepth = 1;
+				}
+				if (levels === 0) {
+					return [];
+				}
+				var __hasChild;
+				Tracker.nonreactive(function () {
+					__hasChild = threeWay.__hasChild.all();
+				});
+				var descendants = [];
+				_.forEach(__hasChild, function(hasChild, id) {
+					if (hasChild) {
+						descendants.push({
+							id: id,
+							level: currDepth,
+							instance: threeWay.children[id],
+							templateType: threeWay.children[id].view.name
+						});
+						Array.prototype.push.apply(descendants, threeWay.children[id]._3w_getAllDescendants_NR(levels - 1, currDepth + 1));
+					}
+				});
+				return descendants;
+			};
+
 
 			var mostRecentDatabaseEntry;
 			var baseUpdaters;
@@ -555,14 +676,43 @@ if (Meteor.isClient) {
 			var threeWay = instance[THREE_WAY_NAMESPACE];
 
 			// Set initial values for data (in particular, view model only fields)
-			Array.prototype.forEach.call(instance.$("data[field]"), function(elem) {
+			Array.prototype.forEach.call(instance.$("twdata[field]"), function(elem) {
 				var field = elem.getAttribute('field');
 				var initValue = elem.getAttribute('initial-value') || null;
+				var processorString = elem.getAttribute('processors') || "";
+				var templateRestrictionString = elem.getAttribute('restrict-template-type') || "";
+				var templateRestrictions = (templateRestrictionString === "") ? [] : templateRestrictionString.split(',').map(x => x.trim());
 
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
-					console.log("[vm-only] Setting up initial value for " + field + " to ", initValue, " using ", elem);
+					console.log("[vm-only] Initialization for " + field + " with", elem);
 				}
-				threeWay.data.set(field, initValue);
+
+				var thisTemplateType = instance.view.name.split('.').pop().trim();
+				if ((templateRestrictions.length > 0) && (templateRestrictions.indexOf(thisTemplateType) === -1)) {
+					// Skip if restricted to other template type
+					if (IN_DEBUG_MODE_FOR('vm-only')) {
+						console.log("[vm-only] Skipping initialization: restricted to", templateRestrictions,"; Template Type: " + thisTemplateType);
+					}
+					return;
+				}
+
+				var processors = (processorString === "") ? [] : processorString.split('|').map(x => x.trim());
+				var value = initValue;
+
+				processors.forEach(function(m) {
+					// processors here do not provide view model data as an argument
+					value = options.preProcessors[m](value, elem, {});
+				});
+
+				if (IN_DEBUG_MODE_FOR('vm-only')) {
+					if (processors.length === 0) {
+						console.log("[vm-only] Setting up initial value for " + field + " to ", initValue, " using ", elem);
+					} else {
+						console.log("[vm-only] Setting up initial value for " + field + " using ", elem);						
+						console.log("[vm-only] Processors:", processors, "; Init Value:", initValue, "; Final value:", value);
+					}
+				}
+				threeWay.data.set(field, value);
 
 				if (typeof threeWay._dataUpdateComputations[field] === "undefined") {
 					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
@@ -664,7 +814,7 @@ if (Meteor.isClient) {
 						};
 
 						$(elem).change(valueChangeHandler);
-						$(elem).on('input', function () {
+						$(elem).on('input', function() {
 							$(this).trigger('change');
 						});
 
@@ -1068,7 +1218,7 @@ if (Meteor.isClient) {
 										console.log('[.class|' + key + '] Setting class ' + key + ' to \"' + value + '\" for', elem);
 									}
 									if (value) {
-										$(elem).addClass(key);	
+										$(elem).addClass(key);
 									} else {
 										$(elem).removeClass(key);
 									}
@@ -1120,6 +1270,29 @@ if (Meteor.isClient) {
 					setTimeout(rebindOperations, options.rebindPollInterval);
 				}
 			})(); // Invoke rebindOperations
+
+
+			// Say hi to parent now that its rendered
+			var myId = 'progenitor_' + Math.floor(Math.random() * 1e15);
+			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
+				var parentThreeWayInstance = instance.parentTemplate()[THREE_WAY_NAMESPACE];
+				myId = instance.data._3w_name;
+
+				if (!!myId) {
+					if (!!parentThreeWayInstance.children[myId]) {
+						throw new Meteor.Error('three-way-repeated-id', instance.data._3w_instanceId);
+					}
+				} else {
+					myId = instance.view.name + '_' + Math.floor(Math.random() * 1e15);
+					while (!!parentThreeWayInstance.children[myId]) {
+						myId = instance.view.name + '_' + Math.floor(Math.random() * 1e15);
+					}
+				}
+				parentThreeWayInstance.__hasChild.set(myId, true);
+				parentThreeWayInstance.children[myId] = instance;
+			}
+			threeWay.instanceId = myId;
+
 		});
 
 		tmpl.onDestroyed(function() {
@@ -1142,18 +1315,14 @@ if (Meteor.isClient) {
 		});
 
 		tmpl.helpers({
-			_3w_id: function() {
-				return Template.instance()[THREE_WAY_NAMESPACE].id.get();
-			},
-			_3w_haveData: function() {
-				return Template.instance()[THREE_WAY_NAMESPACE].haveData.get();
-			},
-			_3w_get: function(propName) {
-				return Template.instance()[THREE_WAY_NAMESPACE].data.get(propName);
-			},
-			_3w_getAll: function() {
-				return Template.instance()[THREE_WAY_NAMESPACE].data.all();
-			}
+			_3w_id: () => Template.instance()._3w_getId(),
+			_3w_haveData: () => Template.instance()[THREE_WAY_NAMESPACE].haveData.get(),
+			_3w_get: (propName) => Template.instance()._3w_get(propName),
+			_3w_getAll: () => Template.instance()._3w_getAll(),
+			_3w_parentDataGet: (p, levelsUp) => Template.instance()._3w_parentDataGet(p, levelsUp),
+			_3w_parentDataGetAll: (levelsUp) => Template.instance()._3w_parentDataGetAll(levelsUp),
+			_3w_childDataGet: (p, childNameArray) => Template.instance()._3w_childDataGet(p, childNameArray),
+			_3w_childDataGetAll: (childNameArray) => Template.instance()._3w_childDataGetAll(childNameArray),
 		});
 	});
 

@@ -2,22 +2,26 @@
 /* global DataCollection: true */
 /* global ThreeWay: true */
 
+/* global parentTemplate: true */
+/* global childTemplate: true */
+/* global grandchildTemplate: true */
+
 var selectedDebugMessages = [
-	'bindings',
-	'data-mirror',
-	'observer',
-	'tracker',
-	'new-id',
-	'db',
-	'methods',
-	'value',
-	'checked',
-	'html',
-	'visible-and-disabled',
-	'style',
-	'attr',
-	'class',
-	'event',
+	// 'bindings',
+	// 'data-mirror',
+	// 'observer',
+	// 'tracker',
+	// 'new-id',
+	// 'db',
+	// 'methods',
+	// 'value',
+	// 'checked',
+	// 'html',
+	// 'visible-and-disabled',
+	// 'style',
+	// 'attr',
+	// 'class',
+	// 'event',
 	'vm-only',
 	// 're-bind',
 ];
@@ -190,6 +194,12 @@ if (Meteor.isClient) {
 			sayHideToHide: function(v) {
 				return v.trim().toUpperCase() !== "HIDE";
 			},
+			toUpperCase: function(v) {
+				return v.toUpperCase();
+			},
+			appendTimeStamp: function(v) {
+				return v + ' (' + (new Date()) + ')';
+			},
 			not: x => !x,
 			noIsFalse: (x) => x.trim().toLowerCase() === 'no' ? false : true,
 			// This is something special to make the Semantic UI Dropdown work
@@ -222,6 +232,8 @@ if (Meteor.isClient) {
 	});
 
 	Template.DemoThreeWay.onCreated(function() {
+		parentTemplate = this;
+
 		this.id = new ReactiveVar(null);
 		this.num = new ReactiveVar(1);
 	});
@@ -283,4 +295,32 @@ if (Meteor.isClient) {
 			setTimeout(() => setUpDebugMessages(template), 50);
 		}
 	});
+
+
+	ThreeWay.prepare(Template.DemoThreeWayChild, {
+		// The relevant fields/field selectors in the database
+		fields: [],
+		// The relevant Mongo.Collection
+		collection: DataCollection,
+		// Meteor methods for updating the database
+		viewModelToViewOnly: {
+			"childData": "1234"
+		},
+	});
+	Template.DemoThreeWayChild.onCreated(function() {
+		childTemplate = this;
+	});
+
+
+	ThreeWay.prepare(Template.DemoThreeWayGrandChild, {
+		// The relevant fields/field selectors in the database
+		fields: [],
+		// The relevant Mongo.Collection
+		collection: DataCollection,
+		// Meteor methods for updating the database
+	});
+	Template.DemoThreeWayGrandChild.onCreated(function() {
+		grandchildTemplate = this;
+	});
+
 }

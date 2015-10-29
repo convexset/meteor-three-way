@@ -238,7 +238,7 @@
 		<h1>View Model Only Stuff</h1>
 		
 		<h3>Hide?</h3>
-		<data field="hide" initial-value="view model to view only"></data>
+		<twdata field="hide" initial-value="view model to view only"></twdata>
 		<div>
 			hide (View Model Only): <input data-bind="value: hide">
 		</div>
@@ -254,12 +254,12 @@
 		</div>
 		
 		<h3 data-bind="style: {color: fieldNameColor, font-size: fieldNameFontSize}">Heading Info</h3>
-		<data field="fieldNameColor" initial-value="#0000FF"></data>
-		<data field="fieldNameFontSize" initial-value="200%"></data>
-		<data field="imgAltText" initial-value="No Such Image"></data>
-		<data field="semanticUIStyling" initial-value="yes"></data>
-		<data field="sliderValue" initial-value="50"></data>
-
+		<twdata field="fieldNameColor" initial-value="#0000FF"></twdata>
+		<twdata field="fieldNameFontSize" initial-value="200%"></twdata>
+		<twdata field="imgAltText" initial-value="No Such Image (I'm not shouting it's just the processor.)" processors="toUpperCase|appendTimeStamp"></twdata>
+		<twdata field="semanticUIStyling" initial-value="yes"></twdata>
+		<twdata field="sliderValue" initial-value="50"></twdata>
+		
 		<div data-bind="class: {ui: semanticUIStyling|noIsFalse, form: semanticUIStyling|noIsFalse}">
 			<div class="field">
 				<label>[Style binding] fieldNameColor (VM Only)</label>
@@ -276,18 +276,111 @@
 			<img src="no-such-image.jpg" data-bind="attr: {alt: imgAltText}">
 			<div class="field">
 				<label>[Class binding] semanticUIStyling (VM Only; no means false) <code>semanticUIStyling|noIsFalse</code> --> <span data-bind="html: semanticUIStyling|noIsFalse"></span></label>
-				<input data-bind="value: semanticUIStyling">					
+				<input data-bind="value: semanticUIStyling">
 			</div>
 			<div class="field">
-				<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze (<code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code>)</label>
+				<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze: <code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code></label>
 				<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=1000 min=0>
 			</div>
 		</div>
+		
 	</div>
+	
+	<h3>Descendant Data</h3>
+	<div class="column">
+		<ul>
+			<li><strong>Child Data <code>childData</code></strong>: {{_3w_childDataGet 'childData' 'kiddy'}}</li>
+			<li><strong>Grandchild Data <code>grandchildData</code></strong>: {{_3w_childDataGet 'grandchildData' (arrayify2Args 'kiddy' 'grandkiddy')}}</li>
+		</ul>
+		
+		<table class="ui table celled">
+			<thead>
+				<tr><th>Field ('grandkiddy')</th>
+				<th>Value</th></tr>
+			</thead>
+			<tbody>
+				{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'grandkiddy'))}}
+					<tr>
+						<td>{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>	
+	</div>
+	
+	{{> DemoThreeWayChild _3w_name='kiddy'}}
 	
 	<div class="column" style="height: 100px">
 		&nbsp;
 	</div>
 	
+</template>
+
+
+<template name="DemoThreeWayChild">
+	<h3>Child Template</h3>
+	<ul>
+		<li><strong>Parent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 1}}</li>
+		<li><strong>My Data <code>childData</code></strong>: <input data-bind="value: childData">&nbsp;&nbsp; {{_3w_get 'childData'}}</li>
+	</ul>
+	
+	<table class="ui table celled">
+		<thead>
+			<tr><th>Field ('kiddy')</th>
+			<th>Value</th></tr>
+		</thead>
+		<tbody>
+			{{#each repackageDictionaryAsArray _3w_getAll}}
+				<tr>
+					<td>{{key}}</td>
+					<td>{{value}}</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
+	
+	<table class="ui table celled">
+		<thead>
+			<tr><th>Field ('grandkiddy')</th>
+			<th>Value</th></tr>
+		</thead>
+		<tbody>
+			{{#each repackageDictionaryAsArray (_3w_childDataGetAll 'grandkiddy')}}
+				<tr>
+					<td>{{key}}</td>
+					<td>{{value}}</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
+	
+	{{> DemoThreeWayGrandChild _3w_name='grandkiddy'}}
+</template>
+
+<template name="DemoThreeWayGrandChild">
+	<h3>Grandchild Template</h3>
+	<twdata field="grandchildData" initial-value="xyz" restrict-template-type="DemoThreeWayGrandChild"></twdata>
+	<twdata field="sharedBetweenParentAndGrandChild" initial-value="sharedBetweenParentAndGrandChild" restrict-template-type="DemoThreeWay, DemoThreeWayGrandChild"></twdata>
+	<twdata field="sharedBetweenChildAndGrandChild" initial-value="sharedBetweenChildAndGrandChild" restrict-template-type="DemoThreeWayChild, DemoThreeWayGrandChild"></twdata>
+	<ul>
+		<li><strong>Grandparent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 2}}</li>
+		<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>
+	</ul>
+	
+	<table class="ui table celled">
+		<thead>
+			<tr><th>Field (Grandparent)</th>
+			<th>Value</th></tr>
+		</thead>
+		<tbody>
+			{{#each repackageDictionaryAsArray (_3w_parentDataGetAll 2)}}
+				<tr>
+					<td>{{key}}</td>
+					<td>{{value}}</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
 	
 </template>

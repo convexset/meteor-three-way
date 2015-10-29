@@ -253,7 +253,7 @@ eventHandlers: {
 It is easy to specify fields that are "view model only". They don't even have to be declared in the set up.
 
 ```html
-<data field="additional" initial-value="view model to view only"></data>
+<twdata field="additional" initial-value="view model to view only"></twdata>
 <div>
     Additional (View Model Only): <input data-bind="value: additional">
 </div>
@@ -264,9 +264,37 @@ It is easy to specify fields that are "view model only". They don't even have to
 
 Note that "view model only" tag-based initializers applied only `onRendered` and that tag-based initializers will overwrite the values in the "Template-level" options (`options.viewModelToViewOnly`).
 
+Note also that tag-based initializers take an optional `processors` attribute, which is a pipe separated string of transformations that are applied sequentially to what is found in the `initial-value` attribute. This is useful for transforming serialized values into objects. For example:
+
+```html
+<twdata field="something" initial-value="will become uppercase and then have date appended" processors="toUpperCase|appendTimestamp"></twdata>
+```
+
+```javascript
+// In the config...
+preProcessors: {
+    toUpperCase: function(v) {
+        return v.toUpperCase();
+    },
+    appendTimeStamp: function(v) {
+        return v + ' (' + (new Date()) + ')';
+    },
+}
+```
+
+See **Pre-processor Pipelines** below for more information. While pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model, `{}` is passed in in place of view model data for such initializers.
+
+Due to the nature of jQuery selectors, a selector at a parent template might select such nodes in child templates and inadvertently pollute the local view model one way of dealing with the problem is to add a `restrict-template-type` attribute indicating the names of applicable templates as a comma separated list. Omission makes the initialization applicable to all.
+
+```html
+<twdata field="somethingElse" initial-value="value" restrict-template-type="MyTemplate, MyOtherTemplate"></twdata>
+```
+
 #### Instance Methods
 
 The following methods are crammed onto each template instance in an `onCreated` hook.
+
+###### My Data
 
 `_3w_getId()`: gets the id of the document bound to
 
@@ -280,6 +308,48 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 `_3w_getAll_NR`: gets all the data "non-reactively"
 
+###### Ancestor Data
+
+`_3w_parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
+
+`_3w_parentDataGetAll(p, levelsUp)`: returns all data from parent instance `levelsUp` levels up (default: 1)
+
+`_3w_parentDataSet(p, v, levelsUp)`: sets property `p` on parent instance to `v` `levelsUp` levels up (default: 1)
+
+`_3w_parentDataGet_NR(p, levelsUp)`: (non-reactively) returns property `p` from parent instance `levelsUp` levels up (default: 1)
+
+`_3w_parentDataGetAll_NR(levelsUp)`: (non-reactively) returns all data from parent instance `levelsUp` levels up (default: 1)
+
+###### Descendant Data
+
+`_3w_childDataGet(p, childNameArray)`: returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+
+`_3w_childDataGetAll(childNameArray)`: returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+
+`_3w_childDataSet(p, v, childNameArray)`: sets property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+
+`_3w_childDataGet_NR(p, childNameArray)`: (non-reactively) returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+
+`_3w_childDataGetAll_NR(childNameArray)`: (non-reactively) returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+
+`_3w_getAllDescendants_NR(levels)`: (non-reactively) returns all descendant instances and information on them as objects. For example...
+
+```javascript
+[
+    {
+        id: "kiddy",
+        instance: [Blaze.TemplateInstance],
+        level: 1,
+        templateType: "Template.DemoThreeWayChild",
+    },
+    {
+        id: "grandkiddy",
+        instance: [Blaze.TemplateInstance],
+        level: 2,
+        templateType: "Template.DemoThreeWayGrandChild",
+    },
+]
+```
 
 #### Additional Template Helpers
 
@@ -287,11 +357,21 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 `_3w_haveData`: returns a boolean indicating whether the view model has data yet
 
-`_3w_get`: takes an argument `propName` and (reactively) returns the relevant value in the view model.
+`_3w_get`: See previous section.
 
-`_3w_getAll`: returns all the data in the view model as a dictionary.
+`_3w_getAll`: See previous section.
 
-#### (Display) Pre-processor Pipelines
+`_3w_parentDataGet`: See previous section.
+
+`_3w_parentDataGetAll`: See previous section.
+
+`_3w_childDataGet`: See previous section.
+
+`_3w_childDataGetAll`: See previous section.
+
+
+
+#### Pre-processor Pipelines
 
 Pre-processor pipelines is a "powerful" (actually, simple) feature that allows for great flexibility in displaying data. One might go so far as to claim that it realizes the whole "view model" promise of declaratively translating data to a format that the "view" can directly work with (the exact HTML source).
 
@@ -313,7 +393,7 @@ preProcessors: {
 
 Multi-way data-bindings such as `value` and `checked` use pre-processing pipelines to deal with DOM manipulation only (e.g.: [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) via `ThreeWay.helpers.updateSemanticUIDropdown`). Pipeline functions do not manipulate value.
 
-Pre-processor pipelines have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model.
+Pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model.
 
 #### Sending Data Back to the Server
 
@@ -381,6 +461,11 @@ dataTransformToServer: {
 In this example, for some reason, `tags` is stored in the view model as a string-ified comma separated list, while it is stored as an array on the server. When the underlying observer registers a change to the database, the new value is converted and placed into the view model. When the database is to be updated, the view model value is transformed back into an array before it is sent back via the relevant Meteor method.
 
 
+#### "Family Access": Ancestor and Descendant Data
+
+`ThreeWay`-enabled templates that are connected by consecutive ancestor/descendant relationships can access each other's data.
+
+
 #### Debug
 
 `ThreeWay.setDebugModeOn()` - Turns on debug mode
@@ -407,7 +492,3 @@ In this example, for some reason, `tags` is stored in the view model as a string
 ## Notes
 
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart. The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-objects even if a single primitive value deep within was updated. It was addressed with (i) queueing implemented via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
-
-## Roadmap
-
- - ThreeWay instances in child templates to notify parent templates of their existence. Child instances to find their parent. =)
