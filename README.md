@@ -101,7 +101,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
     debounceInterval: 200,  // Default: 200 ms
     // "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
-    throttleInterval: DEFAULT_THROTTLE_INTERVAL,  // Default: 500 ms
+    throttleInterval: 500,  // Default: 500 ms
     // Fields for which updaters are throttle'd instead of debounce'zd
     throttledUpdaters: [],
     // "Re-Bind Poll Interval" for discovering new DOM nodes in need of data-binding
