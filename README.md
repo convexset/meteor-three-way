@@ -5,7 +5,9 @@
 Database to view model connectivity is provided by Meteor methods with signatures `func(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `func(id, value, param1, param2, ...)`. 
 For example, `staff.*.particulars.*` would match both `staff[3].particulars.age` and `staff[0].particulars.height`. And for the first of the two examples, `param1 === '3'` and `param2 === 'age'`.
 
-Display is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and declaratively) translate data to a format that the "view" can directly work with (the exact HTML source).
+The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
+
+Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display. However, because of the impurity of side-effects is rather directly enabled, in principle, one could use pre-processor side-effects render a [d3.js](http://d3js.org/) diagram responding to changes in data (but for simple charts there are easier ways to do things (e.g.: [this](https://atmospherejs.com/maazalik/highcharts) and [this](https://atmospherejs.com/charts/dc)).
 
 **The package works fine, but the whole code base is remains fairly young as of this commit. Have a look below and at the example (clone the repo and run meteor) to see how simple and flexible it is to use.**
 
@@ -373,7 +375,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 #### Pre-processor Pipelines
 
-Pre-processor pipelines is a "powerful" (actually, simple) feature that allows for great flexibility in displaying data. One might go so far as to claim that it realizes the whole "view model" promise of declaratively translating data to a format that the "view" can directly work with (the exact HTML source).
+Pre-processor pipelines is a "powerful" (actually, simple) feature that allows for great flexibility in presenting data.
 
 Display (one-directional) bindings like html and visible (later class, style and attr) use pre-processing pipelines to generate items for display. Consider the following examples:
 
@@ -381,6 +383,10 @@ Display (one-directional) bindings like html and visible (later class, style and
 preProcessors: {
     mapToAgeDisplay: x => ageRanges[x],
     toUpperCase: x => x.toUpperCase(),
+    alert: function(x) {
+        alert(x);
+        return x;
+    },
     // This is something special to make the Semantic UI Dropdown work
     // More helpers will be written soon...
     updateSemanticUIDropdown: ThreeWay.helpers.updateSemanticUIDropdown
@@ -389,7 +395,7 @@ preProcessors: {
 
 ... a binding like `<span data-bind="html: age|mapToAgeDisplay"></span>` would, if in the view model `age === '13_20'` and `ageRanges['13_20'] === '13 to 20'` display the text "13 to 20".
 
-... and a binding like `<span data-bind="html: age|mapToAgeDisplay|toUpperCase"></span>` would, under the same circumstances, display the text "13 TO 20".
+... and a binding like `<span data-bind="html: age|mapToAgeDisplay|alert|toUpperCase"></span>` would, under the same circumstances, annoy the user with an alert with text "13 to 20" and then display the text "13 TO 20". (Please don't do something like that.)
 
 Multi-way data-bindings such as `value` and `checked` use pre-processing pipelines to deal with DOM manipulation only (e.g.: [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) via `ThreeWay.helpers.updateSemanticUIDropdown`). Pipeline functions do not manipulate value.
 
@@ -397,7 +403,7 @@ Pre-processors have method signature `function(value, elem, vmData)` where `valu
 
 #### Sending Data Back to the Server
 
-Data is sent back to the server via Meteor methods. This allows one to control matters like authentication and the like. What they have in common is method signatures taking the `_id` of the document and the updated value next.
+Data is sent back to the server via Meteor methods. This allows one to control matters like authentication and the like. What they have in common is method signatures taking the `_id` of the document, the updated value next, and a number of additional parameters equal to the number of wildcards in the field specification.
 
 When fields are matched with wild cards, the method signatures will grow in accordance with the number of wild cards used. The "wild card" matches are passed as additional parameters to the Meteor calls. This is best demonstrated by example.
 
@@ -441,6 +447,8 @@ Meteor.methods({
 ```
 
 ... so when `doc.anotherArray[5].properties.item` in `doc` with `_id` `id` is being sent back to the server with new value `value`, what happens is a `Meteor.call(id, value, '5', 'item')` (actually, it's done via `Meteor.apply` but potato-potato... Also don't mind the string representation of array indices, it doesn't really matter.)
+
+(Please don't ask for regular expressions... Do within your own updaters.)
 
 
 #### Translation from Database to View Model
