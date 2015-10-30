@@ -3,15 +3,12 @@
 `ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view.
 
 Database to view model connectivity is provided by Meteor methods with signatures `func(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `func(id, value, param1, param2, ...)`. 
-For example, `staff.*.particulars.*` would match both `staff[3].particulars.age` and `staff[0].particulars.height`. And for the first of the two examples, `param1 === '3'` and `param2 === 'age'`.
 
 The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
 
-Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display. However, because of the impurity of side-effects is rather directly enabled, in principle, one could use pre-processor side-effects render a [d3.js](http://d3js.org/) diagram responding to changes in data (but for simple charts there are easier ways to do things (e.g.: [this](https://atmospherejs.com/maazalik/highcharts) and [this](https://atmospherejs.com/charts/dc)).
+Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
 
-**The package works fine, but the whole code base is remains fairly young as of this commit. Have a look below and at the example (clone the repo and run meteor) to see how simple and flexible it is to use.**
-
-**Additional bindings will be written soon. See the "roadmap" below.**
+**The package works fine, but the whole code base is remains fairly young as of this commit. Have a look below and at the example (clone the repository and run meteor) to see how simple and flexible it is to use.**
 
 ## Install
 
@@ -375,9 +372,11 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 #### Pre-processor Pipelines
 
-Pre-processor pipelines is a "powerful" (actually, simple) feature that allows for great flexibility in presenting data.
+Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
 
-Display (one-directional) bindings like html and visible (later class, style and attr) use pre-processing pipelines to generate items for display. Consider the following examples:
+However, because of the impurity of side-effects is rather directly enabled, in principle, one could use pre-processor side-effects render a [d3.js](http://d3js.org/) diagram responding to changes in data (but for simple charts there are easier ways to do things (e.g.: [this](https://atmospherejs.com/maazalik/highcharts) and [this](https://atmospherejs.com/charts/dc)).
+
+Display (one-directional) bindings like `html` and `visible` (later `class`, `style` and `attr`) use pre-processing pipelines to generate items for display. Consider the following examples:
 
 ```javascript
 preProcessors: {
@@ -404,6 +403,8 @@ Pre-processors have method signature `function(value, elem, vmData)` where `valu
 #### Sending Data Back to the Server
 
 Data is sent back to the server via Meteor methods. This allows one to control matters like authentication and the like. What they have in common is method signatures taking the `_id` of the document, the updated value next, and a number of additional parameters equal to the number of wildcards in the field specification.
+
+For example, `staff.*.particulars.*` would match both `staff[3].particulars.age` and `staff[0].particulars.height`. And for the first of the two examples, `param1 === '3'` and `param2 === 'age'`.
 
 When fields are matched with wild cards, the method signatures will grow in accordance with the number of wild cards used. The "wild card" matches are passed as additional parameters to the Meteor calls. This is best demonstrated by example.
 
