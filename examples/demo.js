@@ -8,7 +8,7 @@
 
 var selectedDebugMessages = [
 	// 'bindings',
-	// 'data-mirror',
+	'data-mirror',
 	// 'observer',
 	// 'tracker',
 	// 'new-id',
@@ -143,11 +143,10 @@ if (Meteor.isClient) {
 	Meteor.subscribe('demo-pub');
 
 	ThreeWay.prepare(Template.DemoThreeWay, {
-		// The relevant fields/field selectors in the database
-		fields: fields,
 		// The relevant Mongo.Collection
 		collection: DataCollection,
 		// Meteor methods for updating the database
+	    // The keys being the respective fields/field selectors for the database
 		updatersForServer: _.object(fields, fields.map(x => "update-" + x)),
 		// Transformations from the server to the view model
 		// In this example, "tags" are stored in the view model as a comma

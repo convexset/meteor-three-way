@@ -27,19 +27,10 @@ Here is the example used in the demo. The idea is to set up the bindings on the 
 
 ```javascript
 ThreeWay.prepare(Template.DemoThreeWay, {
-    // The relevant fields/field selectors for the database
-    fields: [
-        'name',
-        'emailPrefs',
-        'personal.particulars.age',
-        'notes',
-        'tags',
-        'personal.someArr.*',
-        'personal.otherArr.*.*'
-    ],
     // The relevant Mongo.Collection
     collection: DataCollection,
     // Meteor methods for updating the database
+    // The keys being the respective fields/field selectors for the database
     updatersForServer: {
         'name': 'update-name',
         'emailPrefs': 'update-emailPrefs',
@@ -501,3 +492,8 @@ In this example, for some reason, `tags` is stored in the view model as a string
 ## Notes
 
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart. The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-objects even if a single primitive value deep within was updated. It was addressed with (i) queueing implemented via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
+
+## Upcoming Features
+
+ - Autogeneration of updaters with optional authentication predicate (that takes no parameters)
+

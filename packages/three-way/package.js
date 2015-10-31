@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:three-way',
-	version: '0.1.4',
+	version: '0.1.5',
 	summary: 'Flexible and straightforward three-way data-binding for Meteor (y\'know, db-MVVM; Or db-M-VM-V)',
 	git: 'https://github.com/convexset/meteor-three-way',
 	documentation: '../../README.md'
@@ -8,7 +8,7 @@ Package.describe({
 
 Package.onUse(function(api) {
 	api.versionsFrom('1.2.0.2');
-	api.use(['ecmascript', 'underscore', 'mongo', 'convexset:package-utils@0.1.0']);
+	api.use(['ecmascript', 'underscore', 'mongo', 'convexset:package-utils@0.1.2']);
 	api.use([
 		'blaze', 'tracker',
 		'reactive-var', 'reactive-dict',

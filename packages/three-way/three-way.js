@@ -134,7 +134,6 @@ if (Meteor.isClient) {
 			throw new Meteor.Error('missing-argument', 'options required');
 		}
 		options = PackageUtilities.updateDefaultOptionsWithInput({
-			fields: [],
 			collection: null,
 			updatersForServer: {},
 			dataTransformToServer: {},
@@ -152,6 +151,7 @@ if (Meteor.isClient) {
 		if (!(options.collection instanceof Mongo.Collection)) {
 			throw new Meteor.Error('options-error', 'collection should be a Mongo.Collection');
 		}
+		options.fields = _.map(options.updatersForServer, (v, k) => k);
 		options.fields.forEach(function(f) {
 			// check
 			if (!options.updatersForServer.hasOwnProperty(f)) {
