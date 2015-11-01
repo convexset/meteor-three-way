@@ -23,6 +23,7 @@ var selectedDebugMessages = [
 	// 'class',
 	// 'event',
 	'vm-only',
+	// 'validation',
 	// 're-bind',
 ];
 

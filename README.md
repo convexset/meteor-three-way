@@ -752,7 +752,12 @@ Note that transformations actually take two parameters, the first being the valu
  - `'checked'`
  - `'html'`
  - `'visible-and-disabled'`
+ - `'style'`
+ - `'attr'`
+ - `'class'`
+ - `'event'`
  - `'vm-only'`
+ - `'validation'`
  - `'re-bind'`
 
 ## Notes

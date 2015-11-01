@@ -30,6 +30,7 @@ var DEBUG_MESSAGES = {
 	'class': false,
 	'event': false,
 	'vm-only': false,
+	'validation': false,
 	're-bind': false,
 };
 
@@ -655,8 +656,8 @@ if (Meteor.isClient) {
 													var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
 													debouncedOrThrottledUpdaters[curr_f](valueToSend);
 												} else {
-													if (IN_DEBUG_MODE_FOR('db')) {
-														console.log('[DB] Validation failed. No update.');
+													if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('validation')) {
+														console.log('[DB/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
 													}
 												}
 
@@ -727,6 +728,10 @@ if (Meteor.isClient) {
 					validateForServer = false;
 				}
 
+				if (IN_DEBUG_MODE_FOR('validation')) {
+					console.log('[validation] Doing validation... Field: ' + field + '; Value:', value);
+				}
+
 				var matchFamily = threeWay.fieldMatchParams[field] && threeWay.fieldMatchParams[field].match || null;
 				var matchParams = threeWay.fieldMatchParams[field] && threeWay.fieldMatchParams[field].params || null;
 				var vmData;
@@ -743,6 +748,10 @@ if (Meteor.isClient) {
 				if (passed && useValidatorForServer) {
 					valueToUse = options.dataTransformToServer[matchFamily](value, vmData);
 					passed = options.validatorsServer[matchFamily](valueToUse, matchParams);
+				}
+
+				if (IN_DEBUG_MODE_FOR('validation')) {
+					console.log('[validation] Validation result. Field: ' + field + '; Value:', value, '; Passed: ' + passed);
 				}
 
 				if (passed) {
