@@ -8,7 +8,7 @@ var THREE_WAY_NAMESPACE = "__three_way__";
 var THREE_WAY_DATA_BOUND_ATTRIBUTE = "three-way-data-bound";
 var DEFAULT_DEBOUNCE_INTERVAL = 500;
 var DEFAULT_THROTTLE_INTERVAL = 500;
-var DEFAULT_DOM_POLL_INTERVAL = 300;
+var DEFAULT_DOM_POLL_INTERVAL = 500;
 var DEFAULT_METHOD_INTERVAL = 100;
 
 var DEBUG_MODE = false;
@@ -326,14 +326,14 @@ if (Meteor.isClient) {
 			};
 			instance._3w_childDataGet_NR = function _3w_childDataGet_NR(p, childNameArray) {
 				var value;
-				Tracker.nonreactive(function () {
+				Tracker.nonreactive(function() {
 					value = instance._3w_childDataGet(p, childNameArray);
 				});
 				return value;
 			};
 			instance._3w_childDataGetAll_NR = function _3w_childDataGetAll_NR(childNameArray) {
 				var value;
-				Tracker.nonreactive(function () {
+				Tracker.nonreactive(function() {
 					value = instance._3w_childDataGetAll(childNameArray);
 				});
 				return value;
@@ -350,7 +350,7 @@ if (Meteor.isClient) {
 					return [];
 				}
 				var __hasChild;
-				Tracker.nonreactive(function () {
+				Tracker.nonreactive(function() {
 					__hasChild = threeWay.__hasChild.all();
 				});
 				var descendants = [];
@@ -379,14 +379,14 @@ if (Meteor.isClient) {
 			};
 			instance._3w_siblingDataGet_NR = function _3w_siblingDataGet_NR(p, siblingName) {
 				var value;
-				Tracker.nonreactive(function () {
+				Tracker.nonreactive(function() {
 					value = instance._3w_siblingDataGet(p, siblingName);
 				});
 				return value;
 			};
 			instance._3w_siblingDataGetAll_NR = function _3w_siblingDataGetAll_NR(siblingName) {
 				var value;
-				Tracker.nonreactive(function () {
+				Tracker.nonreactive(function() {
 					value = instance._3w_siblingDataGetAll(siblingName);
 				});
 				return value;
@@ -631,19 +631,34 @@ if (Meteor.isClient) {
 													console.log('[DB] Updating... ' + curr_f + ' -> ', value);
 												}
 												mostRecentDatabaseEntry[curr_f] = value;
-												var matchFamily = threeWay.fieldMatchParams[curr_f].match;
 
+												// Create specific updater for field if not already done.
+												// Presents updates being lost if "fast" updates are being done
+												// for a bunch of fields matching a spec. like "someArray.*"
+												var matchFamily = threeWay.fieldMatchParams[curr_f].match;
 												if (typeof debouncedOrThrottledUpdaters[curr_f] === "undefined") {
-													// Create specific updater for field if not already done.
-													// Presents updates being lost if "fast" updates are being done
-													// for a bunch of fields matching a spec. like "someArray.*"
 													var updater = function updater(v) {
 														baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
 													};
-													debouncedOrThrottledUpdaters[curr_f] = (options.throttledUpdaters.indexOf(matchFamily) !== -1) ? _.throttle(updater, options.throttleInterval) : _.debounce(updater, options.debounceInterval);
+													if (options.throttledUpdaters.indexOf(matchFamily) !== -1) {
+														// Throttled updater
+														debouncedOrThrottledUpdaters[curr_f] = _.throttle(updater, options.throttleInterval);
+													} else {
+														// Debounced updater
+														debouncedOrThrottledUpdaters[curr_f] = _.debounce(updater, options.debounceInterval);
+													}
 												}
-												var valueToSend = options.dataTransformToServer[matchFamily](value, _.extend({}, threeWay.dataMirror));
-												debouncedOrThrottledUpdaters[curr_f](valueToSend);
+
+												// Validate before send
+												if (threeWay.validateInput(curr_f, value)) {
+													var vmData = _.extend({}, threeWay.dataMirror);
+													var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
+													debouncedOrThrottledUpdaters[curr_f](valueToSend);
+												} else {
+													if (IN_DEBUG_MODE_FOR('db')) {
+														console.log('[DB] Validation failed. No update.');
+													}
+												}
 
 											} else {
 												if (IN_DEBUG_MODE_FOR('db')) {
@@ -686,8 +701,7 @@ if (Meteor.isClient) {
 								reactive: false
 							});
 							if (IN_DEBUG_MODE_FOR('observer')) {
-								// console.log('[Observer] Changed:', id, fields, doc);
-								console.log('[Observer] Changed:', id, fields);
+								console.log('[Observer] Changed:', id, fields, doc);
 							}
 							descendInto(fields, doc, false);
 						},
@@ -703,6 +717,49 @@ if (Meteor.isClient) {
 
 				}
 			});
+
+			threeWay.validateInput = function vmValidate(field, value, validateForServer) {
+				if (typeof validateForServer === "undefined") {
+					validateForServer = true;
+				}
+
+				if (!threeWay.fieldMatchParams[field]) {
+					validateForServer = false;
+				}
+
+				var matchFamily = threeWay.fieldMatchParams[field] && threeWay.fieldMatchParams[field].match || null;
+				var matchParams = threeWay.fieldMatchParams[field] && threeWay.fieldMatchParams[field].params || null;
+				var vmData;
+
+				var useValidatorForVM = !!matchFamily && !!options.validatorsVM[matchFamily];
+				var useValidatorForServer = validateForServer && !!matchFamily && !!options.validatorsServer[matchFamily];
+
+				var valueToUse = value;
+				var passed = true;
+				if (useValidatorForVM) {
+					vmData = _.extend({}, threeWay.dataMirror);
+					passed = options.validatorsVM[matchFamily](valueToUse, vmData, matchParams);
+				}
+				if (passed && useValidatorForServer) {
+					valueToUse = options.dataTransformToServer[matchFamily](value, vmData);
+					passed = options.validatorsServer[matchFamily](valueToUse, matchParams);
+				}
+
+				if (passed) {
+					// Valid
+					if (!!options.validateSuccessCallback[matchFamily]) {
+						options.validateSuccessCallback[matchFamily](instance, valueToUse, vmData, matchFamily, matchParams);
+					}
+				} else {
+					// Invalid
+					if (!!options.validateFailureCallback[matchFamily]) {
+						options.validateFailureCallback[matchFamily](instance, valueToUse, vmData, matchFamily, matchParams);
+					}
+				}
+
+				return passed;
+			};
+
 		});
 
 		tmpl.onRendered(function() {
@@ -725,7 +782,7 @@ if (Meteor.isClient) {
 				if ((templateRestrictions.length > 0) && (templateRestrictions.indexOf(thisTemplateType) === -1)) {
 					// Skip if restricted to other template type
 					if (IN_DEBUG_MODE_FOR('vm-only')) {
-						console.log("[vm-only] Skipping initialization: restricted to", templateRestrictions,"; Template Type: " + thisTemplateType);
+						console.log("[vm-only] Skipping initialization: restricted to", templateRestrictions, "; Template Type: " + thisTemplateType);
 					}
 					return;
 				}
@@ -742,7 +799,7 @@ if (Meteor.isClient) {
 					if (processors.length === 0) {
 						console.log("[vm-only] Setting up initial value for " + field + " to ", initValue, " using ", elem);
 					} else {
-						console.log("[vm-only] Setting up initial value for " + field + " using ", elem);						
+						console.log("[vm-only] Setting up initial value for " + field + " using ", elem);
 						console.log("[vm-only] Processors:", processors, "; Init Value:", initValue, "; Final value:", value);
 					}
 				}
@@ -874,6 +931,9 @@ if (Meteor.isClient) {
 								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 							});
 
+							// Validate here
+							threeWay.validateInput(source, value);
+
 							if (elem.value !== value) {
 								elem.value = value;
 								if (IN_DEBUG_MODE_FOR('value')) {
@@ -965,6 +1025,9 @@ if (Meteor.isClient) {
 								// pipelines do not manipulate value
 								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 							});
+
+							// Validate here
+							threeWay.validateInput(source, value);
 
 							if (elem.getAttribute('type').toLowerCase() === "radio") {
 								// Radio Button
@@ -1362,7 +1425,7 @@ if (Meteor.isClient) {
 		});
 	});
 
-	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'helpers', {
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'processors', {
 		updateSemanticUIDropdown: function updateSemanticUIDropdown(x, elem) {
 			if (typeof x !== "undefined") {
 				if (x.trim() === "") {
