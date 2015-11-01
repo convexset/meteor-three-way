@@ -129,6 +129,8 @@ For example: `<span data-bind="value: topLevelObject.nestedArray.2"></span>`.
 
 However, it would be clunky to have to specify each of `"topLevelObject.nestedArray.0"` thru `"topLevelObject.nestedArray.2"` (or more) in the options. Therefore, `options.fields` accepts wildcards such as `topLevelObject.nestedArray.*` where `*` matches numbers (for arrays) and "names" (for objects; but of course, it's all objects anyway).
 
+Note that in the case of multiple matches, the most specific match will be used, enabling "catch-all" updaters (which can be somewhat dangerous if not managed properly).
+
 
 #### Binding to the View
 
@@ -495,5 +497,6 @@ Pre-v0.1.2, there was the issue of a race condition when multiple fields with th
 
 ## Upcoming Features
 
- - Autogeneration of updaters with optional authentication predicate (that takes no parameters)
+ - ~~Autogeneration of updaters with optional authentication predicate (that takes no parameters)~~ [Upcoming package: CollectionTools]
+ - Validation pipeline before database update: with callbacks on failure/success
 

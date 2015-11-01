@@ -94,7 +94,7 @@ function matchParamStrings(templateStrings, itemString, matchOne) {
 			}
 		}
 	}
-	return matches;
+	return matches.sort((x,y) => x.params.length - y.params.length);
 }
 PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'matchParamStrings', matchParamStrings);
 
@@ -138,6 +138,10 @@ if (Meteor.isClient) {
 			updatersForServer: {},
 			dataTransformToServer: {},
 			dataTransformFromServer: {},
+			validatorsVM: {},
+			validatorsServer: {},
+			validateSuccessCallback: {},
+			validateFailureCallback: {},
 			preProcessors: {},
 			viewModelToViewOnly: {},
 			debounceInterval: DEFAULT_DEBOUNCE_INTERVAL,
@@ -537,7 +541,7 @@ if (Meteor.isClient) {
 									var matches = matchParamStrings(options.fields, curr_f); // Match all (single run)
 									if (matches.length > 1) {
 										if (IN_DEBUG_MODE_FOR('observer')) {
-											console.error('[Observer] Ambiguous matches for ' + curr_f, ' (will use first):', matches);
+											console.warn('[Observer] Ambiguous matches for ' + curr_f, ' (will use most specific):', matches);
 										}
 									}
 									threeWay.fieldMatchParams[curr_f] = (matches.length > 0) ? matches[0] : null;

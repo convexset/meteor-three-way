@@ -72,7 +72,11 @@ if (Meteor.isServer) {
 			var fn = function(id, value) {
 				var updater = {};
 				updater[field] = value;
-				console.log('update-' + field, id, value);
+				var myFieldName = 'update-' + field;
+				while (myFieldName.length < 40) {
+					myFieldName += " ";
+				}
+				console.log(myFieldName, id, '\t', value);
 				DataCollection.update(id, {
 					$set: updater
 				});
@@ -82,10 +86,26 @@ if (Meteor.isServer) {
 		}
 	});
 	Meteor.methods({
+		'update-personal.someArr.1': function(id, value) {
+			var updater = {};
+			updater['personal.someArr.1'] = value;
+			var myFieldName = '[specific] update-personal.someArr.1';
+			while (myFieldName.length < 40) {
+				myFieldName += " ";
+			}
+			console.log(myFieldName, id, '\t', value);
+			DataCollection.update(id, {
+				$set: updater
+			});
+		},
 		'update-personal.someArr.*': function(id, value, k) {
 			var updater = {};
 			updater['personal.someArr.' + k] = value;
-			console.log('update-personal.someArr.' + k, id, value);
+			var myFieldName = 'update-personal.someArr.' + k;
+			while (myFieldName.length < 40) {
+				myFieldName += " ";
+			}
+			console.log(myFieldName, id, '\t', value);
 			DataCollection.update(id, {
 				$set: updater
 			});
@@ -93,7 +113,11 @@ if (Meteor.isServer) {
 		'update-personal.otherArr.*.*': function(id, value, k, fld) {
 			var updater = {};
 			updater['personal.otherArr.' + k + '.' + fld] = value;
-			console.log('update-personal.otherArr.' + k + '.' + fld, id, value);
+			var myFieldName = 'update-personal.otherArr.' + k + '.' + fld;
+			while (myFieldName.length < 40) {
+				myFieldName += " ";
+			}
+			console.log(myFieldName, id, '\t', value);
 			DataCollection.update(id, {
 				$set: updater
 			});
@@ -138,6 +162,8 @@ if (Meteor.isServer) {
 	});
 }
 
+var updatersForServer = _.object(fields, fields.map(x => "update-" + x));
+updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
 
 if (Meteor.isClient) {
 	Meteor.subscribe('demo-pub');
@@ -146,8 +172,8 @@ if (Meteor.isClient) {
 		// The relevant Mongo.Collection
 		collection: DataCollection,
 		// Meteor methods for updating the database
-	    // The keys being the respective fields/field selectors for the database
-		updatersForServer: _.object(fields, fields.map(x => "update-" + x)),
+		// The keys being the respective fields/field selectors for the database
+		updatersForServer: updatersForServer,
 		// Transformations from the server to the view model
 		// In this example, "tags" are stored in the view model as a comma
 		// separated list in a string, while it is stored in the server as
@@ -173,6 +199,41 @@ if (Meteor.isClient) {
 				return outcome;
 			}
 		},
+		// Validators consider view-model data
+		// Useful for making sure that transformations to server values do not fail
+		// Arguments: (value, vmData, wildCardParams)
+		validatorsVM: {
+			'personal.someArr.*': function(value, vmData, wildCardParams) {
+				if (String(wildCardParams[0]) === 1) {
+					return value.indexOf('!') === -1;
+				} else {
+					return Number.isNaN(Number(value));
+				}
+			},
+		},
+		// Validators consider transformed values
+		// (no additional view-model data, work with that somewhere else)
+		// Arguments: (value, wildCardParams)
+		validatorsServer: {
+			'personal.someArr.*': function(value, vmData, wildCardParams) {
+				if (String(wildCardParams[0]) === 1) {
+					return value.indexOf('!') === -1;
+				} else {
+					return Number.isNaN(Number(value));
+				}
+			},
+			'tags': function(value, wildCardParams) {
+				if (String(wildCardParams[0]) === 1) {
+					return value.indexOf('!') === -1;
+				} else {
+					return Number.isNaN(Number(value));
+				}
+			},
+		},
+		// Success callbacks for validators
+		validateSuccessCallback: {},
+		// Failure callbacks for validators
+		validateFailureCallback: {},
 		// Pre-processors for data pre-render (view model to view)
 		preProcessors: {
 			// this takes a string of comma separated tags, splits, trims then
