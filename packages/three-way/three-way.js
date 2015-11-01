@@ -157,7 +157,8 @@ if (Meteor.isClient) {
 			throttledUpdaters: [],
 			rebindPollInterval: DEFAULT_DOM_POLL_INTERVAL,
 			methodInterval: DEFAULT_METHOD_INTERVAL,
-			eventHandlers: {}
+			eventHandlers: {},
+			helpers: {},
 		}, options, true);
 
 		if (!(options.collection instanceof Mongo.Collection)) {
@@ -179,6 +180,14 @@ if (Meteor.isClient) {
 				options.dataTransformFromServer[f] = x => x;
 			}
 		});
+
+		// Adding Helpers
+		// Helpers are called with this bound as the template instance.
+		if (typeof options.helpers['_3w_haveData'] === "undefined") {
+			options.helpers['_3w_haveData'] = function() {
+				return this[THREE_WAY_NAMESPACE].haveData.get();
+			};
+		}
 
 
 		var extendedFields = (function genObjSubFields(fields) {
@@ -1159,14 +1168,22 @@ if (Meteor.isClient) {
 							var source = pipelineSplit[0];
 							var mappings = pipelineSplit.splice(1);
 
-							var html = threeWay.data.get(source);
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('html')) {
 									console.log("[.html] Preparing .html binding for", elem);
 									console.log("[.html] Field: " + source + "; Mappings: ", mappings);
 								}
-								if (typeof html === "undefined") {
-									return;
+							}
+
+							var html;
+							if (!!options.helpers[source]) {
+								html = options.helpers[source].call(instance);
+							} else {
+								html = threeWay.data.get(source);
+								if (c.firstRun) {
+									if (typeof html === "undefined") {
+										return;
+									}
 								}
 							}
 
@@ -1199,8 +1216,8 @@ if (Meteor.isClient) {
 							}
 
 							var visible;
-							if (source === "_3w_haveData") {
-								visible = threeWay.haveData.get();
+							if (!!options.helpers[source]) {
+								visible = options.helpers[source].call(instance);
 							} else {
 								visible = threeWay.data.get(source);
 								if (c.firstRun) {
@@ -1239,8 +1256,8 @@ if (Meteor.isClient) {
 							}
 
 							var disabled;
-							if (source === "_3w_haveData") {
-								disabled = threeWay.haveData.get();
+							if (!!options.helpers[source]) {
+								disabled = options.helpers[source].call(instance);
 							} else {
 								disabled = threeWay.data.get(source);
 								if (c.firstRun) {
@@ -1273,17 +1290,24 @@ if (Meteor.isClient) {
 								var source = pipelineSplit[0];
 								var mappings = pipelineSplit.splice(1);
 
-								var value = threeWay.data.get(source);
 								if (c.firstRun) {
 									if (IN_DEBUG_MODE_FOR('style')) {
 										console.log("[.style|" + key + "] Preparing .style binding for", elem);
 										console.log("[.style|" + key + "] Field: " + source + "; Mappings: ", mappings);
 									}
-									if (typeof value === "undefined") {
-										return;
-									}
 								}
 
+								var value;
+								if (!!options.helpers[source]) {
+									value = options.helpers[source].call(instance);
+								} else {
+									value = threeWay.data.get(source);
+									if (c.firstRun) {
+										if (typeof value === "undefined") {
+											return;
+										}
+									}
+								}
 								mappings.forEach(function(m) {
 									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 								});
@@ -1309,17 +1333,24 @@ if (Meteor.isClient) {
 								var source = pipelineSplit[0];
 								var mappings = pipelineSplit.splice(1);
 
-								var value = threeWay.data.get(source);
 								if (c.firstRun) {
 									if (IN_DEBUG_MODE_FOR('attr')) {
 										console.log("[.attr|" + key + "] Preparing attribute binding for", elem);
 										console.log("[.attr|" + key + "] Field: " + source + "; Mappings: ", mappings);
 									}
-									if (typeof value === "undefined") {
-										return;
-									}
 								}
 
+								var value;
+								if (!!options.helpers[source]) {
+									value = options.helpers[source].call(instance);
+								} else {
+									value = threeWay.data.get(source);
+									if (c.firstRun) {
+										if (typeof value === "undefined") {
+											return;
+										}
+									}
+								}
 								mappings.forEach(function(m) {
 									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 								});
@@ -1345,21 +1376,28 @@ if (Meteor.isClient) {
 								var source = pipelineSplit[0];
 								var mappings = pipelineSplit.splice(1);
 
-								var value = threeWay.data.get(source);
 								if (c.firstRun) {
 									if (IN_DEBUG_MODE_FOR('class')) {
 										console.log("[.class|" + key + "] Preparing class binding for", elem);
 										console.log("[.class|" + key + "] Field: " + source + "; Mappings: ", mappings);
 									}
-									if (typeof value === "undefined") {
-										return;
-									}
 								}
 
+								var value;
+								if (!!options.helpers[source]) {
+									value = options.helpers[source].call(instance);
+								} else {
+									value = threeWay.data.get(source);
+									if (c.firstRun) {
+										if (typeof value === "undefined") {
+											return;
+										}
+									}
+								}
 								mappings.forEach(function(m) {
 									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 								});
-								value = !!value;
+								value = (!!value);
 
 								// Update Style
 								if ($(elem).hasClass(key) !== value) {

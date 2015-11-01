@@ -114,6 +114,7 @@ instance._3w_setId(_id);
 
 Now here are more of the settings, including:
  - data transformations from view model to server and from server to view model
+ - helper functions that "display"-type (one-way) bindings like `html`, `visible` and `disabled`, as well as the `class`, `style` and `attr` bindings can use for input
  - pre-processors for values in "input" elements and for "display" elements
 
 ```javascript
@@ -267,6 +268,16 @@ ThreeWay.prepare(Template.DemoThreeWay, {
             template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
         },
     },
+
+    // Helper functions that may be used as input for display-type bindings
+    // Order of search: helpers first, then data
+    // Called with this bound to template instance
+    // (be aware that arrow functions are lexically scoped)
+    helpers: {
+        altGetId: function() {
+            return this._3w_getId()
+        }
+    }
 
     // Pre-processors for data pre-render (view model to view)
     preProcessors: {
@@ -439,15 +450,6 @@ In the case of radio buttons, `checked` is bound to a string.
 <div data-bind="disabled: something">...</div>
 ```
 
-As a "special dispensation", `visible` and `disabled` can be bound to one particular helper which returns a boolean:
-
-```html
-<div data-bind="visible: _3w_haveData">...</div>
-<button data-bind="disabled: _3w_haveData">...</button>
-```
-
-... which one might find to be particularly useful.
-
 ###### Style, Attribute and Class Bindings
 
  Style bindings are done via: `data-bind="style: {font-weight: v1|preProc, font-size: v2|preProc; ...}"`. Things work just like the above html binding.
@@ -456,7 +458,25 @@ As a "special dispensation", `visible` and `disabled` can be bound to one partic
 
  Class bindings are done via: `data-bind="class: {class1: bool1|preProc; ...}"`. However, things work more like the visible and disabled bindings in that the values to be bound to will be treated as boolean-ish.
 
-###### Event Bindings
+#### Helpers
+
+Helper functions may be used as input for display-type bindings.
+Such bindings include `html`, `visible`, `disabled`, as well as the `class`, `style` and `attr` bindings.
+
+**For such bindings, the order of search is helpers first, then data.**
+
+Helpers are called with `this` bound to template instance. (Be careful of lexically scoped arrow functions.)
+
+Note that one helper, `_3w_haveData`, is automatically added to `options.helpers`
+
+```html
+<div data-bind="visible: _3w_haveData">...</div>
+<button data-bind="disabled: _3w_haveData">...</button>
+```
+
+One might find it to be particularly useful.
+
+#### Event Bindings
 
 Event bindings may be achieved via: `data-bind="event: {change: cbFn, keyup:cbFn2|cbFn3, ...}"` where callbacks like `cbFn1` have signature `function(event, template, vmData)` (`vmData` being, of course, the data in the view model).
 

@@ -298,6 +298,16 @@ if (Meteor.isClient) {
 			},
 		},
 
+		// Helper functions that may be used as input for display-type bindings
+		// Order of search: helpers first, then data
+		// Called with this bound to template instance
+		// (be aware that arrow functions are lexically scoped)
+		helpers: {
+			altGetId: function() {
+				return this._3w_getId();
+			}
+		},
+
 		// Pre-processors for data pre-render (view model to view)
 		preProcessors: {
 			// this takes a string of comma separated tags, splits, trims then
@@ -323,6 +333,12 @@ if (Meteor.isClient) {
 			},
 			appendTimeStamp: function(v) {
 				return v + ' (' + (new Date()) + ')';
+			},
+			toColor: function(v) {
+				v = (!!v) ? v : 'xxx';
+				var col = '#' + (256 + (_.map(v, (c, idx) => (5 + 7 * idx) * c.charCodeAt()).reduce((x, y) => x + y) % (4096 - 256))).toString(16);
+				console.log(col);
+				return col;
 			},
 			not: x => !x,
 			noIsFalse: (x) => x.trim().toLowerCase() === 'no' ? false : true,
