@@ -361,6 +361,29 @@ if (Meteor.isClient) {
 				return descendants;
 			};
 
+			instance._3w_siblingDataGet = function _3w_siblingDataGet(p, siblingName) {
+				return instance.parentTemplate()._3w_childDataGet(p, siblingName);
+			};
+			instance._3w_siblingDataGetAll = function _3w_siblingDataGet(siblingName) {
+				return instance.parentTemplate()._3w_childDataGetAll(siblingName);
+			};
+			instance._3w_siblingDataSet = function _3w_siblingDataSet(p, v, siblingName) {
+				return instance.parentTemplate()._3w_childDataSet(p, v, siblingName);
+			};
+			instance._3w_siblingDataGet_NR = function _3w_siblingDataGet_NR(p, siblingName) {
+				var value;
+				Tracker.nonreactive(function () {
+					value = instance._3w_siblingDataGet(p, siblingName);
+				});
+				return value;
+			};
+			instance._3w_siblingDataGetAll_NR = function _3w_siblingDataGetAll_NR(siblingName) {
+				var value;
+				Tracker.nonreactive(function () {
+					value = instance._3w_siblingDataGetAll(siblingName);
+				});
+				return value;
+			};
 
 			var mostRecentDatabaseEntry;
 			var baseUpdaters;
@@ -1327,6 +1350,8 @@ if (Meteor.isClient) {
 			_3w_parentDataGetAll: (levelsUp) => Template.instance()._3w_parentDataGetAll(levelsUp),
 			_3w_childDataGet: (p, childNameArray) => Template.instance()._3w_childDataGet(p, childNameArray),
 			_3w_childDataGetAll: (childNameArray) => Template.instance()._3w_childDataGetAll(childNameArray),
+			_3w_siblingDataGet: (p, siblingName) => Template.instance()._3w_siblingDataGet(p, siblingName),
+			_3w_siblingDataGetAll: (siblingName) => Template.instance()._3w_siblingDataGetAll(siblingName),
 		});
 	});
 

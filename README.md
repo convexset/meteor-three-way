@@ -343,6 +343,18 @@ The following methods are crammed onto each template instance in an `onCreated` 
 ]
 ```
 
+###### Sibling Data
+
+`_3w_siblingDataGet(p, siblingName)`: returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+
+`_3w_siblingDataGetAll(siblingName)`: returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
+
+`_3w_siblingDataSet(p, v, siblingName)`: sets property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+
+`_3w_siblingDataGet_NR(p, siblingName)`: (non-reactively) returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+
+`_3w_siblingDataGetAll_NR(siblingName)`: (non-reactively) returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
+
 #### Additional Template Helpers
 
 `_3w_id`: returns the `_id` of the document selected (if any)
@@ -360,6 +372,10 @@ The following methods are crammed onto each template instance in an `onCreated` 
 `_3w_childDataGet`: See previous section.
 
 `_3w_childDataGetAll`: See previous section.
+
+`_3w_siblingDataGet`: See previous section.
+
+`_3w_siblingDataGetAll`: See previous section.
 
 
 
