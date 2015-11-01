@@ -94,7 +94,14 @@ function matchParamStrings(templateStrings, itemString, matchOne) {
 			}
 		}
 	}
-	return matches.sort((x,y) => x.params.length - y.params.length);
+	return matches.sort(function(x, y) {
+		if (x.params.length !== y.params.length) {
+			// shorter param set wins
+			return x.params.length - y.params.length;
+		}
+		// later occurrence of "*" wins
+		return -(x.match.indexOf('*') - y.match.indexOf('*'));
+	});
 }
 PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'matchParamStrings', matchParamStrings);
 
