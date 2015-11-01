@@ -259,6 +259,49 @@ if (Meteor.isClient) {
 			instance._3w_parentDataGet_NR = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].dataMirror[p];
 			instance._3w_parentDataGetAll_NR = (levelsUp) => _.extend({}, instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].dataMirror);
 
+			instance._3w_childDataGetId = function _3w_childDataGetId(childNameArray) {
+				if (childNameArray instanceof Array) {
+					if (childNameArray.length === 0) {
+						return;
+					}
+					var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+					if (!hasChildData) {
+						return;
+					}
+					if (childNameArray.length === 1) {
+						return threeWay.children[childNameArray[0]]._3w_getId();
+					} else {
+						var cn = childNameArray.map(x => x);
+						cn.shift();
+						return threeWay.children[childNameArray[0]]._3w_childDataGetId(cn);
+					}
+				} else {
+					return instance._3w_childDataGetId([childNameArray]);
+				}
+			};
+			instance._3w_childDataSetId = function _3w_childDataSetId(id, childNameArray) {
+				if (childNameArray instanceof Array) {
+					if (childNameArray.length === 0) {
+						return;
+					}
+					var hasChildData;
+					Tracker.nonreactive(function() {
+						hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+					});
+					if (!hasChildData) {
+						return;
+					}
+					if (childNameArray.length === 1) {
+						threeWay.children[childNameArray[0]]._3w_setId(id);
+					} else {
+						var cn = childNameArray.map(x => x);
+						cn.shift();
+						threeWay.children[childNameArray[0]]._3w_childDataSetId(id, cn);
+					}
+				} else {
+					instance._3w_childDataSetId(id, [childNameArray]);
+				}
+			};
 			instance._3w_childDataGet = function _3w_childDataGet(p, childNameArray) {
 				if (childNameArray instanceof Array) {
 					if (childNameArray.length === 0) {
@@ -1425,13 +1468,18 @@ if (Meteor.isClient) {
 			_3w_haveData: () => Template.instance()[THREE_WAY_NAMESPACE].haveData.get(),
 			_3w_get: (propName) => Template.instance()._3w_get(propName),
 			_3w_getAll: () => Template.instance()._3w_getAll(),
+
 			_3w_parentDataGet: (p, levelsUp) => Template.instance()._3w_parentDataGet(p, levelsUp),
 			_3w_parentDataGetAll: (levelsUp) => Template.instance()._3w_parentDataGetAll(levelsUp),
+
+			_3w_childDataGetId: (childNameArray) => Template.instance()._3w_childDataGetId(childNameArray),
 			_3w_childDataGet: (p, childNameArray) => Template.instance()._3w_childDataGet(p, childNameArray),
 			_3w_childDataGetAll: (childNameArray) => Template.instance()._3w_childDataGetAll(childNameArray),
+
 			_3w_siblingDataGet: (p, siblingName) => Template.instance()._3w_siblingDataGet(p, siblingName),
 			_3w_siblingDataGetAll: (siblingName) => Template.instance()._3w_siblingDataGetAll(siblingName),
 		});
+
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'processors', {

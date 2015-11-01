@@ -518,7 +518,7 @@ preProcessors: {
 }
 ```
 
-See **Pre-processor Pipelines** below for more information. While pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model, `{}` is passed in in place of view model data for such initializers.
+See [Pre-processor Pipelines](#pre-processor-pipelines) below for more information. While pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model, `{}` is passed in in place of view model data for such initializers.
 
 Due to the nature of jQuery selectors, a selector at a parent template might select such nodes in child templates and inadvertently pollute the local view model one way of dealing with the problem is to add a `restrict-template-type` attribute indicating the names of applicable templates as a comma separated list. Omission makes the initialization applicable to all.
 
@@ -557,6 +557,10 @@ The following methods are crammed onto each template instance in an `onCreated` 
 `_3w_parentDataGetAll_NR(levelsUp)`: (non-reactively) returns all data from parent instance `levelsUp` levels up (default: 1)
 
 ###### Descendant Data
+
+`_3w_childDataGetId(childNameArray)`: returns id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+
+`_3w_childDataSetId(id, childNameArray)`: sets id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
 `_3w_childDataGet(p, childNameArray)`: returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
@@ -605,21 +609,21 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 `_3w_haveData`: returns a boolean indicating whether the view model has data yet
 
-`_3w_get`: See previous section.
+`_3w_get`: See [previous section](#instance-methods).
 
-`_3w_getAll`: See previous section.
+`_3w_getAll`: See [previous section](#instance-methods).
 
-`_3w_parentDataGet`: See previous section.
+`_3w_parentDataGet`: See [previous section](#instance-methods).
 
-`_3w_parentDataGetAll`: See previous section.
+`_3w_parentDataGetAll`: See [previous section](#instance-methods).
 
-`_3w_childDataGet`: See previous section.
+`_3w_childDataGet`: See [previous section](#instance-methods).
 
-`_3w_childDataGetAll`: See previous section.
+`_3w_childDataGetAll`: See [previous section](#instance-methods).
 
-`_3w_siblingDataGet`: See previous section.
+`_3w_siblingDataGet`: See [previous section](#instance-methods).
 
-`_3w_siblingDataGetAll`: See previous section.
+`_3w_siblingDataGetAll`: See [previous section](#instance-methods).
 
 
 
@@ -729,7 +733,14 @@ Note that transformations actually take two parameters, the first being the valu
 
 #### "Family Access": Ancestor and Descendant Data
 
-`ThreeWay`-enabled templates that are connected by consecutive ancestor/descendant relationships can access each other's data.
+`ThreeWay`-linked template instances can be connected in parent-child relationships. Data can be accessed across template boundaries in the following ways (and more):
+ - ancestor (any number of levels up)
+ - descendant (any number of levels down; requires knowledge of the relevant template instance identifiers of successive descendants passed into each template as `_3w_name` in data context)
+ - sibling (requires knowledge of the relevant template instance identifier passed into template as `_3w_name` in data context)
+
+In principle, as long at the template instance of the "highest-level" ancestor can be acquired, then any connected instance may be straight-forwardly accessed. "Sibling" data-access is syntactic sugar for this.
+
+See [Instance Methods](#instance-methods) for more information.
 
 
 #### Debug

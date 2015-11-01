@@ -79,11 +79,15 @@
 		</table>
 	</div>
 	
-	<div class="column">
-		&nbsp;
-	</div>
-	
 	<div data-bind="visible: _3w_haveData">
+		
+		<div class="column">
+			&nbsp;
+		</div>
+		<hr/>
+		<div class="column">
+			&nbsp;
+		</div>
 		
 		<div class="column">
 			<h3 id='edit-head'>Edit (View Model){{#if _3w_id}} - {{_3w_id}}{{/if}}</h3>
@@ -192,6 +196,11 @@
 		<div class="column">
 			&nbsp;
 		</div>
+		<hr/>
+		<div class="column">
+			&nbsp;
+		</div>
+		
 		
 		<div class="column">
 			<h3>Display (View Model){{#if _3w_id}} - {{_3w_id}}{{/if}}</h3>
@@ -255,6 +264,10 @@
 	<div class="column">
 		&nbsp;
 	</div>
+	<hr/>
+	<div class="column">
+		&nbsp;
+	</div>
 	
 	<div class="column">
 		<h1>View Model Only Stuff</h1>
@@ -308,11 +321,33 @@
 		
 	</div>
 	
-	<h3>Descendant Data</h3>
 	<div class="column">
+		&nbsp;
+	</div>
+	<hr/>
+	<div class="column">
+		&nbsp;
+	</div>
+	
+	<div class="column">
+		<h1>Parent-Child-Sibling Data Access</h1>
+
+		The following may look somewhat confused.
+		But to summarize things, `ThreeWay`-linked template instances connected in parent-child relationships are able to access data from each other and the instances that are connected in the following way:
+		<ul>
+			<li>ancestor (any number of levels up)</li>
+			<li>descendant (any number of levels down; requires knowledge of the relevant template instance identifiers of successive descendants passed into each template as <code>_3w_name</code> in data context)</li>
+			<li>sibling (requires knowledge of the relevant template instance identifier passed into template as <code>_3w_name</code> in data context)</li>
+		</ul>
+		<button id="randomize-child-ids">Randomize Child (Data) Ids</button>
+		
+		<h3>Descendant Data</h3>
 		<ul>
 			<li><strong>Child Data <code>childData</code></strong>: {{_3w_childDataGet 'childData' 'kiddy'}}</li>
 			<li><strong>Grandchild Data <code>grandchildData</code></strong>: {{_3w_childDataGet 'grandchildData' (arrayify2Args 'kiddy' 'grandkiddy')}}</li>
+			<li><strong>Child Id</strong>: {{_3w_childDataGetId 'kiddy'}}</li>
+			<li><strong>Grand Child One Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'grandkiddy')}}</li>
+			<li><strong>Grand Child Two Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'other_grandkiddy')}}</li>
 		</ul>
 		
 		<table class="ui table celled">
@@ -341,7 +376,7 @@
 
 
 <template name="DemoThreeWayChild">
-	<h3>Child Template</h3>
+	<h3>Child Template (Data Id: {{_3w_id}})</h3>
 	<ul>
 		<li><strong>Parent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 1}}</li>
 		<li><strong>My Data <code>childData</code></strong>: <input data-bind="value: childData">&nbsp;&nbsp; {{_3w_get 'childData'}}</li>
@@ -382,7 +417,7 @@
 </template>
 
 <template name="DemoThreeWayGrandChild">
-	<h3>Grandchild Template: <code>{{_3w_name}}</code></h3>
+	<h3>Grandchild Template: <code>{{_3w_name}}</code> (Data Id: {{_3w_id}})</h3>
 	<twdata field="grandchildData" initial-value="{{initData}}" restrict-template-type="DemoThreeWayGrandChild"></twdata>
 	<twdata field="sharedBetweenParentAndGrandChild" initial-value="init sharedBetweenParentAndGrandChild" restrict-template-type="DemoThreeWay, DemoThreeWayGrandChild"></twdata>
 	<twdata field="sharedBetweenChildAndGrandChild" initial-value="init sharedBetweenChildAndGrandChild" restrict-template-type="DemoThreeWayChild, DemoThreeWayGrandChild"></twdata>

@@ -22,7 +22,7 @@ var selectedDebugMessages = [
 	// 'attr',
 	// 'class',
 	// 'event',
-	'vm-only',
+	// 'vm-only',
 	// 'validation',
 	// 're-bind',
 ];
@@ -176,7 +176,8 @@ if (Meteor.isClient) {
 	setTimeout(function() {
 		if (Math.random() < 0.01) {
 			console.info("**************************************************");
-			console.info("* Regenerating Data");
+			console.info("* Regenerating Data...");
+			console.info("* Existing selection will be... deselected.");
 			console.info("**************************************************");
 			Meteor.call('regenerate-data');
 		}
@@ -315,10 +316,10 @@ if (Meteor.isClient) {
 				return (prefString.split(',').length <= 1) ? prefString : '<strong>' + prefString + '</strong>';
 			},
 			sayHideToHide: function(v) {
-				return v.trim().toUpperCase() !== "HIDE";
+				return (v && v.trim().toUpperCase() || "") !== "HIDE";
 			},
 			toUpperCase: function(v) {
-				return v.toUpperCase();
+				return v && v.toUpperCase() || "";
 			},
 			appendTimeStamp: function(v) {
 				return v + ' (' + (new Date()) + ')';
@@ -445,6 +446,13 @@ if (Meteor.isClient) {
 			/* global alert: true */
 			alert('Not disabled!');
 		},
+		"click button#randomize-child-ids": function() {
+			/* global alert: true */
+			var random_id_base = 'randomId_' + Math.floor(Math.random() * 10000) + '_';
+			Template.instance()._3w_childDataSetId(random_id_base + 'x', 'kiddy');
+			Template.instance()._3w_childDataSetId(random_id_base + 'x-1', ['kiddy', 'grandkiddy']);
+			Template.instance()._3w_childDataSetId(random_id_base + 'x-2', ['kiddy', 'other_grandkiddy']);
+		},
 		"change input[name=debug-messages]": function(event, template) {
 			setTimeout(() => setUpDebugMessages(template), 50);
 		}
@@ -463,9 +471,13 @@ if (Meteor.isClient) {
 	});
 	Template.DemoThreeWayChild.onCreated(function() {
 		childTemplate = this;
+		setTimeout(function() {
+			childTemplate._3w_setId("child-template-id");
+		}, 200);
 	});
 
 
+	var gcIdx = 1;
 	ThreeWay.prepare(Template.DemoThreeWayGrandChild, {
 		// The relevant fields/field selectors in the database
 		fields: [],
@@ -474,7 +486,12 @@ if (Meteor.isClient) {
 		// Meteor methods for updating the database
 	});
 	Template.DemoThreeWayGrandChild.onCreated(function() {
+		var instance = this;
 		grandchildTemplate = this;
+		setTimeout(function() {
+			instance._3w_setId("grandchild-" + gcIdx + "-template-id");
+			gcIdx += 1;
+		}, 200);
 	});
 
 }
