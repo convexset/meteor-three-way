@@ -25,13 +25,15 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
 - [Documentation](#documentation)
     - [Referring to Fields in Documents](#referring-to-fields-in-documents)
     - [Updaters to the Server](#updaters-to-the-server)
+    - [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
     - [Binding to the View](#binding-to-the-view)
         - [Binding: `html`](#binding-html)
         - [Binding: `value`](#binding-value)
         - [Binding: `checked`](#binding-checked)
         - [Bindings: `visible` and `disabled` (modern necessities)](#bindings-visible-and-disabled-modern-necessities)
         - [Style, Attribute and Class Bindings](#style-attribute-and-class-bindings)
-        - [Event Bindings](#event-bindings)
+    - [Helpers and Binding](#helpers-and-binding)
+    - [Event Bindings](#event-bindings)
     - [View Model to View Only Elements](#view-model-to-view-only-elements)
     - [Instance Methods](#instance-methods)
         - [My Data](#my-data)
@@ -40,12 +42,9 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
         - [Sibling Data](#sibling-data)
     - [Additional Template Helpers](#additional-template-helpers)
     - [Pre-processor Pipelines](#pre-processor-pipelines)
-    - [Sending Data Back to the Server](#sending-data-back-to-the-server)
-    - [Translation from Database to View Model](#translation-from-database-to-view-model)
     - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
     - [Debug](#debug)
 - [Notes](#notes)
-- [Upcoming Features](#upcoming-features)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -377,15 +376,80 @@ Note that in the case of multiple matches, the most specific match will be used,
 
 #### Updaters to the Server
 
-The keys of `options.updatersForServer` are the respective fields (or wild card specified fields) for the database.
-The method signature for these methods is `function(_id, value, ...wildCardParams)`.
-Therefore, when an update is to be made to the server, the relevant method is called with the relevant _id and value.
+Data is sent back to the server via Meteor methods. This allows one to control matters like authentication and the like. What they have in common is method signatures taking the `_id` of the document, the updated value next, and a number of additional parameters equal to the number of wildcards in the field specification.
 
-In the event that a method is associated with a "wildcard match" field name, such as `"ratings.3.rating"` (as matched to `"ratings.*.rating"`), then the matching `wildCardParams` will be passed into the method as well. In this example, one would end up with a call like:
+The keys of `options.updatersForServer` are the respective fields (or fields specified through wild cards) for the database. The method signature for these methods is `function(_id, value, ...wildCardParams)`.
+
+In the event that a method is associated with a "wildcard match" field name, such as `"ratings.3.rating"` matched to `"ratings.*.rating"`, then the matching `wildCardParams` will be passed into the method as well. In that example, one would end up with a call like:
 
 ```javascript
 Meteor.call('update-ratings.*.rating', _id, newValue, "3");
 ```
+
+(Don't mind the string representation of array indices, it doesn't really matter because Mongo field specifiers are strings.)
+
+Here are more examples:
+
+```javascript
+updatersForServer: {
+    'x': 'update-x',
+    'someArray.*': 'update-someArray.*',
+    'anotherArray.*.properties.*': 'update-anotherArray.*.properties.*'
+},
+```
+
+... which might be associated with the following methods:
+
+```javascript
+Meteor.methods({
+    'update-x': function(id, value) {
+        if (someAuthCheck(this.userId)) {
+            DataCollection.update(id, {
+                $set: {
+                    x: value
+                }
+            });
+        }
+    },
+    'update-someArray.*': function(id, value, k) {
+        var updater = {};
+        updater['someArray.' + k] = value;
+        DataCollection.update(id, {
+            $set: updater
+        });
+    },
+    'update-anotherArray.*.properties.*': function(id, value, k, fld) {
+        var updater = {};
+        updater['anotherArray.' + k + '.properties.' + fld] = value;
+        DataCollection.update(id, {
+            $set: updater
+        });
+    }
+});
+```
+
+(Also, please don't ask for regular expressions... Do that within your own updaters.)
+
+
+#### Transforms: Translation from/to Database to/from View Model
+
+The format that data is stored in a database might not be the most convenient for use in the view model (e.g.: sparse representation "at rest"), as such it may be necessary to do some translation between database and view model.
+
+Consider the following example:
+
+```javascript
+dataTransformFromServer: {
+    tags: arr => arr.join && arr.join(',') || ""
+},
+dataTransformToServer: {
+    tags: x => x.split(',').map(y => y.trim())
+},
+```
+
+In this example, for some reason, `tags` is stored in the view model as a string-ified comma separated list, while it is stored as an array on the server. When the underlying observer registers a change to the database, the new value is converted and placed into the view model. When the database is to be updated, the view model value is transformed back into an array before it is sent back via the relevant Meteor method.
+
+Note that transformations actually take two parameters, the first being the value in question and the second being all the view model data. Thus the complete method signature is `function(value, vmData)`.
+
 
 #### Binding to the View
 
@@ -458,7 +522,7 @@ In the case of radio buttons, `checked` is bound to a string.
 
  Class bindings are done via: `data-bind="class: {class1: bool1|preProc; ...}"`. However, things work more like the visible and disabled bindings in that the values to be bound to will be treated as boolean-ish.
 
-#### Helpers
+#### Helpers and Binding
 
 Helper functions may be used as input for display-type bindings.
 Such bindings include `html`, `visible`, `disabled`, as well as the `class`, `style` and `attr` bindings.
@@ -679,76 +743,6 @@ Pre-processors have method signature `function(value, elem, vmData)` where `valu
 
 **Example Use Case**: Consider an input field with some validator. An invalid value might 
 
-#### Sending Data Back to the Server
-
-Data is sent back to the server via Meteor methods. This allows one to control matters like authentication and the like. What they have in common is method signatures taking the `_id` of the document, the updated value next, and a number of additional parameters equal to the number of wildcards in the field specification.
-
-For example, `staff.*.particulars.*` would match both `staff[3].particulars.age` and `staff[0].particulars.height`. And for the first of the two examples, `param1 === '3'` and `param2 === 'age'`.
-
-When fields are matched with wild cards, the method signatures will grow in accordance with the number of wild cards used. The "wild card" matches are passed as additional parameters to the Meteor calls. This is best demonstrated by example.
-
-Consider the following examples:
-
-```javascript
-updatersForServer: {
-    'x': 'update-x',
-    'someArray.*': 'update-someArray.*',
-    'anotherArray.*.properties.*': 'update-anotherArray.*.properties.*'
-},
-```
-
-... which might be associated with the following methods:
-
-```javascript
-Meteor.methods({
-    'update-x': function(id, value) {
-        DataCollection.update(id, {
-            $set: {
-                x: value
-            }
-        }
-        });
-    },
-    'update-someArray.*': function(id, value, k) {
-        var updater = {};
-        updater['someArray.' + k] = value;
-        DataCollection.update(id, {
-            $set: updater
-        });
-    },
-    'update-anotherArray.*.properties.*': function(id, value, k, fld) {
-        var updater = {};
-        updater['anotherArray.' + k + '.properties.' + fld] = value;
-        DataCollection.update(id, {
-            $set: updater
-        });
-    }
-});
-```
-
-... so when `doc.anotherArray[5].properties.item` in `doc` with `_id` `id` is being sent back to the server with new value `value`, what happens is a `Meteor.call(id, value, '5', 'item')` (actually, it's done via `Meteor.apply` but potato-potato... Also don't mind the string representation of array indices, it doesn't really matter.)
-
-(Please don't ask for regular expressions... Do within your own updaters.)
-
-
-#### Translation from Database to View Model
-
-The format that data is stored in a database might not be the most convenient for use in the view model (e.g.: "at rest compression"), as such it may be necessary to do some translation between database and view model.
-
-Consider the following example:
-
-```javascript
-dataTransformFromServer: {
-    tags: arr => arr.join && arr.join(',') || ""
-},
-dataTransformToServer: {
-    tags: x => x.split(',').map(y => y.trim())
-},
-```
-
-In this example, for some reason, `tags` is stored in the view model as a string-ified comma separated list, while it is stored as an array on the server. When the underlying observer registers a change to the database, the new value is converted and placed into the view model. When the database is to be updated, the view model value is transformed back into an array before it is sent back via the relevant Meteor method.
-
-Note that transformations actually take two parameters, the first being the value in question and the second being all the view model data. Thus the complete method signature is `function(value, vmData)`.
 
 
 #### "Family Access": Ancestor and Descendant Data
@@ -794,7 +788,3 @@ See [Instance Methods](#instance-methods) for more information.
 ## Notes
 
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart. The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-objects even if a single primitive value deep within was updated. It was addressed with (i) queueing implemented via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
-
-## Upcoming Features
-
- - ~~Autogeneration of updaters with optional authentication predicate (that takes no parameters)~~ [Upcoming package: CollectionTools]
