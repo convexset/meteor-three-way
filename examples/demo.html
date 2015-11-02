@@ -11,6 +11,10 @@
 	<h1>ThreeWay Demo</h1>
 	
 	<div class="column">
+	Documentation available on: <a href="https://github.com/convexset/meteor-three-way" target="_blank">GitHub</a> or <a href="https://atmospherejs.com/convexset/three-way" target="_blank">Atmosphere</a>
+	</div>
+	
+	<div class="column">
 		<h3>Debug Messages</h3>
 		<div class="ui form">
 			{{#each clump allDebugMessages 4}}
@@ -213,12 +217,12 @@
 					<td><span data-bind="html: name"></span></td>
 				</tr>
 				<tr>
-					<td><strong>e-mail Preferences (bold if more than one)</strong></td>
+					<td><strong>e-mail Preferences</strong> (bold if more than one)</td>
 					<td><span data-bind="html: emailPrefs|mapToEmailPrefs|boldIfMoreThanOne"></span></td>
 				</tr>
 				<tr>
-					<td><strong>Age</strong></td>
-					<td><span data-bind="html: personal.particulars.age|mapToAgeDisplay"></span></td>
+					<td><strong>Age</strong> (color coded)</td>
+					<td><span data-bind="html: personal.particulars.age|mapToAgeDisplay; style: {color: personal.particulars.age|colorCodeAge}"></span></td>
 				</tr>
 				<tr>
 					<td><strong>Notes</strong></td>
@@ -275,49 +279,73 @@
 		<h1>View Model Only Stuff</h1>
 		
 		<h3>Hide?</h3>
-		<twdata field="hide" initial-value="view model to view only"></twdata>
-		<div>
-			hide (View Model Only): <input data-bind="value: hide">
+		<div class="ui form">
+			<div class="field">
+				<label>[value binding] hide (VM Only) | value in view model: <span style="color: blue;" data-bind="html: hide"></span></label>
+				<input data-bind="value: hide">
+
+				<div style="background-color: red; width: 100%;" data-bind="visible: hide|sayHideToHide">
+					<strong>Set <code>hide</code> to "hide" to Make this Disappear </strong>
+				</div>
+
+				<div>
+					<strong>The above is actually a <code>style.display</code> binding... Anything other than "hide" will show the annoying <span style="color: red;">red</span> <code>div</code>.</strong>
+				</div>
+
+				<div>
+				Initialized (at Template-level) via:
+<pre>viewModelToViewOnly: {
+	"hide": "Set to \"hide\" to hide",
+	...
+}</pre>
+				</div>
+			</div>
 		</div>
-		<div>
-			hide: <span data-bind="html: hide"></span>
-		</div>
-		
-		<div style="background-color: red; width: 100%;" data-bind="visible: hide|sayHideToHide">
-			<strong>Set <code>hide</code> to "hide" to Make this Disappear </strong>
-		</div>
-		<div>
-			<strong>The above is actually a <code>style.display</code> binding... Anything other than "hide" will show the annoying <span style="color: red;">red</span> <code>div</code>.</strong>
-		</div>
+
 		
 		<h3 data-bind="style: {color: fieldNameColor, font-size: fieldNameFontSize}">Heading Info</h3>
-		<twdata field="fieldNameColor" initial-value="#0000FF"></twdata>
-		<twdata field="fieldNameFontSize" initial-value="200%"></twdata>
-		<twdata field="imgAltText" initial-value="Not Found ('not shouting; blame the processor)" processors="toUpperCase|appendTimeStamp"></twdata>
-		<twdata field="semanticUIStyling" initial-value="yes"></twdata>
-		<twdata field="sliderValue" initial-value="50"></twdata>
 		
 		<div data-bind="class: {ui: semanticUIStyling|noIsFalse, form: semanticUIStyling|noIsFalse}">
 			<div class="field">
 				<label>[Style binding] fieldNameColor (VM Only)</label>
 				<input data-bind="value: fieldNameColor">
+				<twdata field="fieldNameColor" initial-value="#0000FF"></twdata>
+
+				Initialized via:
+				<pre>&lt;twdata field=&quot;fieldNameColor&quot; initial-value=&quot;#0000FF&quot;&gt;&lt;/twdata&gt;</pre>
 			</div>
 			<div class="field">
 				<label>[Style binding] fieldNameFontSize (VM Only)</label>
 				<input data-bind="value: fieldNameFontSize">
+				<twdata field="fieldNameFontSize" initial-value="200%"></twdata>
+				
+				Initialized via:
+				<pre>&lt;twdata field=&quot;fieldNameFontSize&quot; initial-value=&quot;200%&quot;&gt;&lt;/twdata&gt;</pre>
 			</div>
 			<div class="field">
 				<label>[Attribute binding] imgAltText (VM Only)</label>
 				<input data-bind="value: imgAltText">
+				<twdata field="imgAltText" initial-value="Not Found ('not shouting; blame the processor)" processors="appendTimeStamp"></twdata>
+
+				Initialized via:
+				<pre>&lt;twdata field=&quot;imgAltText&quot; initial-value=&quot;Not Found (&#039;not shouting; blame the processor)&quot; processors=&quot;appendTimeStamp&quot;&gt;&lt;/twdata&gt;</pre>
 			</div>
-			<img src="no-such-image.jpg" data-bind="attr: {alt: imgAltText}">
+			<img src="no-such-image.jpg" data-bind="attr: {alt: imgAltText|toUpperCase}">
 			<div class="field">
 				<label>[Class binding] semanticUIStyling (VM Only; no means false) <code>semanticUIStyling|noIsFalse</code> --> <span data-bind="html: semanticUIStyling|noIsFalse"></span></label>
 				<input data-bind="value: semanticUIStyling">
+				<twdata field="semanticUIStyling" initial-value="yes"></twdata>
+
+				Initialized via:
+				<pre>&lt;twdata field=&quot;semanticUIStyling&quot; initial-value=&quot;yes&quot;&gt;&lt;/twdata&gt;</pre>
 			</div>
 			<div class="field">
 				<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze: <code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code></label>
 				<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=1000 min=0>
+				<twdata field="sliderValue" initial-value="50"></twdata>
+
+				Initialized via:
+				<pre>&lt;twdata field=&quot;sliderValue&quot; initial-value=&quot;50&quot;&gt;&lt;/twdata&gt;</pre>
 			</div>
 		</div>
 		
@@ -341,6 +369,8 @@
 			<li>descendant (any number of levels down; requires knowledge of the relevant template instance identifiers of successive descendants passed into each template as <code>_3w_name</code> in data context)</li>
 			<li>sibling (requires knowledge of the relevant template instance identifier passed into template as <code>_3w_name</code> in data context)</li>
 		</ul>
+		The order of "all data" display is out of order, with illustrations of instances accessing data from each other.
+
 		<button id="randomize-child-ids">Randomize Child (Data) Ids</button>
 		
 		<h3>Descendant Data</h3>
@@ -428,7 +458,7 @@
 		<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>
 		<li><strong>Sibling Data <code>{{siblingName}}.grandchildData</code></strong>: {{_3w_siblingDataGet 'grandchildData' siblingName}}</li>
 	</ul>
-	
+
 	<table class="ui table celled">
 		<thead>
 			<tr><th>Field (Grandparent)</th>

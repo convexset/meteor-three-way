@@ -7,6 +7,7 @@
 /* global grandchildTemplate: true */
 
 var selectedDebugMessages = [
+	// 'parse',
 	// 'bindings',
 	'data-mirror',
 	// 'observer',
@@ -173,15 +174,15 @@ var updatersForServer = _.object(fields, fields.map(x => "update-" + x));
 updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
 
 if (Meteor.isClient) {
-	setTimeout(function() {
-		if (Math.random() < 0.01) {
-			console.info("**************************************************");
-			console.info("* Regenerating Data...");
-			console.info("* Existing selection will be... deselected.");
-			console.info("**************************************************");
-			Meteor.call('regenerate-data');
-		}
-	}, 60000);
+	// setInterval(function() {
+	// 	if (Math.random() < 0.001) {
+	// 		console.info("**************************************************");
+	// 		console.info("* Regenerating Data...");
+	// 		console.info("* Existing selection will be... deselected.");
+	// 		console.info("**************************************************");
+	// 		Meteor.call('regenerate-data');
+	// 	}
+	// }, 60000);
 
 	Meteor.subscribe('demo-pub');
 
@@ -330,6 +331,24 @@ if (Meteor.isClient) {
 			},
 			toUpperCase: function(v) {
 				return v && v.toUpperCase() || "";
+			},
+			colorCodeAge: function(v) {
+				if (v === '0_12') {
+					return "#8F8";
+				}
+				if (v === '13_20') {
+					return "#0F0";
+				}
+				if (v === '21_35') {
+					return "#4B0";
+				}
+				if (v === '36_65') {
+					return "#890";
+				}
+				if (v === '66_plus') {
+					return "#884";
+				}
+				return "";
 			},
 			appendTimeStamp: function(v) {
 				return v + ' (' + (new Date()) + ')';

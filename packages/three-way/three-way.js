@@ -11,9 +11,12 @@ var DEFAULT_THROTTLE_INTERVAL = 500;
 var DEFAULT_DOM_POLL_INTERVAL = 500;
 var DEFAULT_METHOD_INTERVAL = 100;
 
+var AGE_THREHOLD_OLD_ITEM = 10000;
+
 var DEBUG_MODE = false;
 var DEBUG_MODE_ALL = false;
 var DEBUG_MESSAGES = {
+	'parse': false,
 	'bindings': false,
 	'data-mirror': false,
 	'observer': false,
@@ -71,6 +74,38 @@ function getFieldParams(templateString, itemString) {
 		}
 		return match;
 	}
+}
+
+function removeOldItems(arr, threshold) {
+	if (!arr) {
+		return;
+	}
+	var currIdx = 0;
+	var currTs = (new Date()).getTime();
+	while (currIdx < arr.length) {
+		if (currTs - arr[currIdx].ts >= threshold) {
+			arr.shift();
+		} else {
+			currIdx += 1;
+		}
+	}
+}
+
+function popItemWithValue(arr, value, item, popOne) {
+	var currIdx = 0;
+	var count = 0;
+	while (!!arr && (currIdx < arr.length)) {
+		if (_.isEqual(arr[currIdx][item], value)) {
+			arr.splice(currIdx, 1);
+			count += 1;
+			if (popOne) {
+				break;
+			}
+		} else {
+			currIdx += 1;
+		}
+	}
+	return count;
 }
 
 function matchParamStrings(templateStrings, itemString, matchOne) {
@@ -446,6 +481,7 @@ if (Meteor.isClient) {
 			};
 
 			var mostRecentDatabaseEntry;
+			var recentDBUpdates;
 			var baseUpdaters;
 			var debouncedOrThrottledUpdaters;
 
@@ -572,6 +608,7 @@ if (Meteor.isClient) {
 				});
 
 				mostRecentDatabaseEntry = {};
+				recentDBUpdates = {};
 				threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
 
 				// Setting Up Debounced/Throttled Updaters
@@ -649,8 +686,8 @@ if (Meteor.isClient) {
 									// Indicate field is touched and update matches
 									threeWay.fieldMatchParams[curr_f] = match;
 									if (IN_DEBUG_MODE_FOR('db')) {
-										console.log('[db] Field match:', curr_f, match);
-										console.log('[db] All matches:', threeWay.fieldMatchParams);
+										console.log('[db|match] Field match:', curr_f, match);
+										console.log('[db|match] All matches:', threeWay.fieldMatchParams);
 									}
 
 									if (IN_DEBUG_MODE_FOR('observer')) {
@@ -660,10 +697,21 @@ if (Meteor.isClient) {
 									// Update data if changed
 									var mostRecentValue = mostRecentDatabaseEntry[curr_f];
 									var newValue = options.dataTransformFromServer[match.match](v, doc);
-									if (!_.isEqual(mostRecentValue, newValue)) {
-										threeWay.data.set(curr_f, newValue);
-										mostRecentDatabaseEntry[curr_f] = newValue;
-										threeWay.__idReadyFor[curr_f] = true;
+									if (_.isEqual(mostRecentValue, newValue)) {
+										if (IN_DEBUG_MODE_FOR('db')) {
+											console.log('[db|recieve] Most recent value matches. No change to view model.');
+										}
+									} else {
+										removeOldItems(recentDBUpdates[curr_f], AGE_THREHOLD_OLD_ITEM);
+										if (popItemWithValue(recentDBUpdates[curr_f], newValue, 'value', true) > 0) {
+											if (IN_DEBUG_MODE_FOR('db')) {
+												console.log('[db|recieve] Matches value from recent update. No change to view model.');
+											}
+										} else {
+											threeWay.data.set(curr_f, newValue);
+											mostRecentDatabaseEntry[curr_f] = newValue;
+											threeWay.__idReadyFor[curr_f] = true;
+										}
 									}
 
 									if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
@@ -675,16 +723,11 @@ if (Meteor.isClient) {
 												__id = threeWay.id.get();
 											});
 											if (IN_DEBUG_MODE_FOR('db')) {
-												console.log('[DB Update] Field: ' + curr_f + "; id: " + __id + "; isReady[f]: " + threeWay.__idReadyFor[curr_f]);
-												console.log("\tValue:", value);
-												console.log("\tMost Recent DB entry: ", mostRecentDatabaseEntry[curr_f]);
+												console.log('[db|update] Field: ' + curr_f + "; id: " + __id + "; isReady[f]: " + threeWay.__idReadyFor[curr_f]);
+												console.log("[db|update] Value:", value);
+												console.log("[db|update] Most Recent DB entry: ", mostRecentDatabaseEntry[curr_f]);
 											}
 											if ((!!__id) && threeWay.__idReadyFor[curr_f] && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
-												if (IN_DEBUG_MODE_FOR('db')) {
-													console.log('[DB] Updating... ' + curr_f + ' -> ', value);
-												}
-												mostRecentDatabaseEntry[curr_f] = value;
-
 												// Create specific updater for field if not already done.
 												// Presents updates being lost if "fast" updates are being done
 												// for a bunch of fields matching a spec. like "someArray.*"
@@ -706,16 +749,31 @@ if (Meteor.isClient) {
 												if (threeWay.validateInput(curr_f, value)) {
 													var vmData = _.extend({}, threeWay.dataMirror);
 													var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
+
+													if (IN_DEBUG_MODE_FOR('db')) {
+														console.log('[db|update] Updating... ' + curr_f + ' -> ', value);
+													}
+													if (typeof recentDBUpdates[curr_f] === "undefined") {
+														recentDBUpdates[curr_f] = [];
+													}
+													removeOldItems(recentDBUpdates[curr_f], AGE_THREHOLD_OLD_ITEM);
+													mostRecentDatabaseEntry[curr_f] = value;
+													recentDBUpdates[curr_f].push({
+														value: value,
+														sentValue: valueToSend,
+														ts: (new Date()).getTime(),
+													});
+
 													debouncedOrThrottledUpdaters[curr_f](valueToSend);
 												} else {
 													if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('validation')) {
-														console.log('[DB/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
+														console.log('[db/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
 													}
 												}
 
 											} else {
 												if (IN_DEBUG_MODE_FOR('db')) {
-													console.log('[DB] No update.');
+													console.log('[db|update] No update.');
 												}
 											}
 										});
@@ -853,6 +911,10 @@ if (Meteor.isClient) {
 
 				processors.forEach(function(m) {
 					// processors here do not provide view model data as an argument
+					if (!(options.preProcessors[m] instanceof Function)) {
+						console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+						return;
+					}
 					value = options.preProcessors[m](value, elem, {});
 				});
 
@@ -894,6 +956,8 @@ if (Meteor.isClient) {
 						elem: elem,
 						bindings: {}
 					};
+					var parseErrors = {};
+					var haveParseErrors = false;
 					dataBind.split(";").map(x => x.trim()).forEach(function(x) {
 						var idxColon = x.indexOf(":");
 						var itemName = x.substr(0, idxColon).trim().toLowerCase();
@@ -902,9 +966,25 @@ if (Meteor.isClient) {
 
 						var isDictType = (itemName === "class") || (itemName === "style") || (itemName === "attr") || (itemName === "event");
 						if (isDictType) {
-							itemData = _.object(rawItemData.substr(1, rawItemData.length - 2).split(",").map(x => x.trim()).map(function(x) {
-								return x.split(":").map(x => x.trim());
-							}));
+							if ((rawItemData[0] !== '{') || (rawItemData[rawItemData.length - 1] !== '}')) {
+								console.error('[ThreeWay] Binding parse error: ' + itemName, elem);
+								haveParseErrors = true;
+								parseErrors[itemName] = rawItemData;
+								return;
+							}
+							var objData = rawItemData
+								.substr(1, rawItemData.length - 2)
+								.split(",")
+								.map(x => x.trim())
+								.map(x => x.split(":").map(y => y.trim()));
+							var problematicItems = objData.filter(x => x.length !== 2);
+							if (problematicItems.length > 0) {
+								console.error('[ThreeWay] Binding parse error: ' + itemName, problematicItems, elem);
+								haveParseErrors = true;
+								parseErrors[itemName] = rawItemData;
+								return;
+							}
+							itemData = _.object(objData);
 						} else {
 							itemData = rawItemData;
 						}
@@ -913,7 +993,12 @@ if (Meteor.isClient) {
 							isDictType: isDictType,
 							source: itemData
 						};
+
 					});
+
+					if (IN_DEBUG_MODE_FOR('parse')) {
+						console.log('[parse] Parsed:', elem, elemBindings);
+					}
 
 					threeWay.bindings.push(elemBindings);
 					if (IN_DEBUG_MODE_FOR('bindings')) {
@@ -989,6 +1074,10 @@ if (Meteor.isClient) {
 
 							pipeline.forEach(function(m) {
 								// pipelines do not manipulate value
+								if (!(options.preProcessors[m] instanceof Function)) {
+									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+									return;
+								}
 								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 							});
 
@@ -1084,6 +1173,10 @@ if (Meteor.isClient) {
 
 							pipeline.forEach(function(m) {
 								// pipelines do not manipulate value
+								if (!(options.preProcessors[m] instanceof Function)) {
+									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+									return;
+								}
 								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 							});
 
@@ -1188,6 +1281,10 @@ if (Meteor.isClient) {
 							}
 
 							mappings.forEach(function(m) {
+								if (!(options.preProcessors[m] instanceof Function)) {
+									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+									return;
+								}
 								html = options.preProcessors[m](html, elem, _.extend({}, threeWay.dataMirror));
 							});
 
@@ -1227,6 +1324,10 @@ if (Meteor.isClient) {
 								}
 							}
 							mappings.forEach(function(m) {
+								if (!(options.preProcessors[m] instanceof Function)) {
+									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+									return;
+								}
 								visible = options.preProcessors[m](visible, elem, _.extend({}, threeWay.dataMirror));
 							});
 							visible = (!!visible) ? "" : "none";
@@ -1267,6 +1368,10 @@ if (Meteor.isClient) {
 								}
 							}
 							mappings.forEach(function(m) {
+								if (!(options.preProcessors[m] instanceof Function)) {
+									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+									return;
+								}
 								disabled = options.preProcessors[m](disabled, elem, _.extend({}, threeWay.dataMirror));
 							});
 							disabled = (!!disabled);
@@ -1309,6 +1414,10 @@ if (Meteor.isClient) {
 									}
 								}
 								mappings.forEach(function(m) {
+									if (!(options.preProcessors[m] instanceof Function)) {
+										console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+										return;
+									}
 									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 								});
 
@@ -1352,6 +1461,10 @@ if (Meteor.isClient) {
 									}
 								}
 								mappings.forEach(function(m) {
+									if (!(options.preProcessors[m] instanceof Function)) {
+										console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+										return;
+									}
 									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 								});
 
@@ -1395,6 +1508,10 @@ if (Meteor.isClient) {
 									}
 								}
 								mappings.forEach(function(m) {
+									if (!(options.preProcessors[m] instanceof Function)) {
+										console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+										return;
+									}
 									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
 								});
 								value = (!!value);
