@@ -337,7 +337,6 @@ if (Meteor.isClient) {
 			toColor: function(v) {
 				v = (!!v) ? v : 'xxx';
 				var col = '#' + (256 + (_.map(v, (c, idx) => (5 + 7 * idx) * c.charCodeAt()).reduce((x, y) => x + y) % (4096 - 256))).toString(16);
-				console.log(col);
 				return col;
 			},
 			not: x => !x,
@@ -380,13 +379,13 @@ if (Meteor.isClient) {
 
 		// Database Update Parameters
 		// "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
-		debounceInterval: 300, // default: 500
+		debounceInterval: 500, // default: 500
 		// "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
 		throttleInterval: 500, // default: 500
 		// Fields for which updaters are throttle'd instead of debounce'ed
 		throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
 		// Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
-		methodInterval: 50,
+		methodInterval: 100, // default: 100
 
 		// "Re-Bind Poll Interval" for discovering new DOM nodes in need of data-binding
 		rebindPollInterval: 500, // default: 500

@@ -2,7 +2,7 @@
 
 `ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view.
 
-Database to view model connectivity is provided by Meteor methods with signatures `func(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `func(id, value, param1, param2, ...)`. 
+Database to view model connectivity is provided by Meteor methods with signatures `function(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `function(id, value, param1, param2, ...)`. 
 
 The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
 
@@ -616,47 +616,47 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 ###### My Data
 
-`_3w_getId()`: gets the id of the document bound to
+ - `_3w_getId()`: gets the id of the document bound to
 
-`_3w_setId(id)`: sets the id of the document to bind to
+ - `_3w_setId(id)`: sets the id of the document to bind to
 
-`_3w_get(prop)`: gets a property
+ - `_3w_get(prop)`: gets a property
 
-`_3w_set(prop, value)`: sets a property
+ - `_3w_set(prop, value)`: sets a property
 
-`_3w_get_NR(prop)`: gets a property "non-reactively"
+ - `_3w_get_NR(prop)`: gets a property "non-reactively"
 
-`_3w_getAll_NR`: gets all the data "non-reactively"
+ - `_3w_getAll_NR`: gets all the data "non-reactively"
 
 ###### Ancestor Data
 
-`_3w_parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
+ - `_3w_parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
 
-`_3w_parentDataGetAll(p, levelsUp)`: returns all data from parent instance `levelsUp` levels up (default: 1)
+ - `_3w_parentDataGetAll(p, levelsUp)`: returns all data from parent instance `levelsUp` levels up (default: 1)
 
-`_3w_parentDataSet(p, v, levelsUp)`: sets property `p` on parent instance to `v` `levelsUp` levels up (default: 1)
+ - `_3w_parentDataSet(p, v, levelsUp)`: sets property `p` on parent instance to `v` `levelsUp` levels up (default: 1)
 
-`_3w_parentDataGet_NR(p, levelsUp)`: (non-reactively) returns property `p` from parent instance `levelsUp` levels up (default: 1)
+ - `_3w_parentDataGet_NR(p, levelsUp)`: (non-reactively) returns property `p` from parent instance `levelsUp` levels up (default: 1)
 
-`_3w_parentDataGetAll_NR(levelsUp)`: (non-reactively) returns all data from parent instance `levelsUp` levels up (default: 1)
+ - `_3w_parentDataGetAll_NR(levelsUp)`: (non-reactively) returns all data from parent instance `levelsUp` levels up (default: 1)
 
 ###### Descendant Data
 
-`_3w_childDataGetId(childNameArray)`: returns id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `_3w_childDataGetId(childNameArray)`: returns id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
-`_3w_childDataSetId(id, childNameArray)`: sets id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `_3w_childDataSetId(id, childNameArray)`: sets id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
-`_3w_childDataGet(p, childNameArray)`: returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `_3w_childDataGet(p, childNameArray)`: returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
-`_3w_childDataGetAll(childNameArray)`: returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `_3w_childDataGetAll(childNameArray)`: returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
-`_3w_childDataSet(p, v, childNameArray)`: sets property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `_3w_childDataSet(p, v, childNameArray)`: sets property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
-`_3w_childDataGet_NR(p, childNameArray)`: (non-reactively) returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `_3w_childDataGet_NR(p, childNameArray)`: (non-reactively) returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
-`_3w_childDataGetAll_NR(childNameArray)`: (non-reactively) returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `_3w_childDataGetAll_NR(childNameArray)`: (non-reactively) returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
-`_3w_getAllDescendants_NR(levels)`: (non-reactively) returns all descendant instances and information on them as objects. For example...
+ - `_3w_getAllDescendants_NR(levels)`: (non-reactively) returns all descendant instances and information on them as objects. For example...
 
 ```javascript
 [
@@ -677,37 +677,37 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 ###### Sibling Data
 
-`_3w_siblingDataGet(p, siblingName)`: returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `_3w_siblingDataGet(p, siblingName)`: returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
 
-`_3w_siblingDataGetAll(siblingName)`: returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `_3w_siblingDataGetAll(siblingName)`: returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
 
-`_3w_siblingDataSet(p, v, siblingName)`: sets property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `_3w_siblingDataSet(p, v, siblingName)`: sets property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
 
-`_3w_siblingDataGet_NR(p, siblingName)`: (non-reactively) returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `_3w_siblingDataGet_NR(p, siblingName)`: (non-reactively) returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
 
-`_3w_siblingDataGetAll_NR(siblingName)`: (non-reactively) returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `_3w_siblingDataGetAll_NR(siblingName)`: (non-reactively) returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
 
 #### Additional Template Helpers
 
-`_3w_id`: returns the `_id` of the document selected (if any)
+ - `_3w_id`: returns the `_id` of the document selected (if any)
 
-`_3w_haveData`: returns a boolean indicating whether the view model has data yet
+ - `_3w_haveData`: returns a boolean indicating whether the view model has data yet
 
-`_3w_get`: See [previous section](#instance-methods).
+ - `_3w_get`: See [previous section](#instance-methods).
 
-`_3w_getAll`: See [previous section](#instance-methods).
+ - `_3w_getAll`: See [previous section](#instance-methods).
 
-`_3w_parentDataGet`: See [previous section](#instance-methods).
+ - `_3w_parentDataGet`: See [previous section](#instance-methods).
 
-`_3w_parentDataGetAll`: See [previous section](#instance-methods).
+ - `_3w_parentDataGetAll`: See [previous section](#instance-methods).
 
-`_3w_childDataGet`: See [previous section](#instance-methods).
+ - `_3w_childDataGet`: See [previous section](#instance-methods).
 
-`_3w_childDataGetAll`: See [previous section](#instance-methods).
+ - `_3w_childDataGetAll`: See [previous section](#instance-methods).
 
-`_3w_siblingDataGet`: See [previous section](#instance-methods).
+ - `_3w_siblingDataGet`: See [previous section](#instance-methods).
 
-`_3w_siblingDataGetAll`: See [previous section](#instance-methods).
+ - `_3w_siblingDataGetAll`: See [previous section](#instance-methods).
 
 
 
