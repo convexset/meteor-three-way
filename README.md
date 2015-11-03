@@ -1,6 +1,6 @@
 # ThreeWay
 
-`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view.
+`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package). 
 
 Database to view model connectivity is provided by Meteor methods with signatures `function(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `function(id, value, param1, param2, ...)`. 
 The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
@@ -8,8 +8,6 @@ The user is responsible for ensuring the right subscriptions are in place so `Th
 The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
 
 Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
-
-**The package works fine, but the whole code base is remains fairly young as of this commit. Have a look below and at the example (clone the repository and run meteor) to see how simple and flexible it is to use.**
 
 ## Table of Contents
 
