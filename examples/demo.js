@@ -253,6 +253,7 @@ if (Meteor.isClient) {
 		// Arguments: (value, wildCardParams)
 		validatorsServer: {
 			tags: function(value) {
+				console.log('tags-validation', value)
 				return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
 			},
 			'personal.someArr.*': function(value, wildCardParams) {
@@ -306,10 +307,14 @@ if (Meteor.isClient) {
 				console.info('altGetId called!', Template.instance() && Template.instance().view.name);
 				return this._3w_getId();
 			},
-			asColor: function(...rgb) {
-				var col = _.range(3).map(idx => !!rgb[idx] && !Number.isNaN(Number(rgb[idx])) ? Math.min(255, Math.max(0, Math.floor(Number(rgb[idx])))) : 128);
+			makeRGB: function(...rgb) {
+				var col = _.range(3)
+					.map(idx => !!rgb[idx] && !Number.isNaN(Number(rgb[idx])) ? Number(rgb[idx]) : 128)
+					.map(x => Math.min(255, Math.max(0, Math.floor(x))))
+					.map(x => x.toString(16))
+					.map(x => x.length < 2 ? '0'+x : x);
 				return "#" + col.join('');
-			}
+			},
 		},
 
 		// Pre-processors for data pre-render (view model to view)

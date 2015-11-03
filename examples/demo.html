@@ -204,8 +204,13 @@
 				<p>If you are feeling frisky, try manually manipulating the DOM to see if the data binding responds:</p>
 				<pre>$("input[name='personal.someArr.2']").attr('data-bind', 'value: personal.someArr.0')</pre>
 				<p>should link "#2" of the <code>personal.someArr</code> data-entry row with the value of "#0"...</p>
-				<p>Alternatively, try adding a node below like so:</p>
-				<pre>$('#below-me').append('&lt;input data-bind=&quot;value: personal.otherArr.1.b&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;')</pre>
+				<p>Alternatively, try adding a nodes below like so:</p>
+<pre>
+$(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.0&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+$(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.1&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+$(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.2&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+$(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-color: personal.someArr.0#personal.someArr.1#personal.someArr.2|makeRGB}&#039;);
+</pre>
 			</div>
 
 			<div id="below-me">

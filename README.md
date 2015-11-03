@@ -792,8 +792,10 @@ Pre-v0.1.2, there was the issue of a race condition when multiple fields with th
 
 ## Outstanding
 
- - Helpers may also come from template helpers (but it's a bit one way, so probably makes sense to define stuff mostly in template helpers)
- - Document Mutation Observer binding
+ - Documentation: Helpers may also come from template helpers (but it's a bit one way, so probably makes sense to define stuff mostly in template helpers)
+ - ThreeWay helpers to be phased out
+ - Helpers not unified with pre-processors also because of different method signature
+ - Documentation: Mutation Observers used to handle DOM changes
     - template life cycle
     - necessary for proper response to nodes being added
     - `restrict-template-type` attribute
@@ -804,4 +806,3 @@ Pre-v0.1.2, there was the issue of a race condition when multiple fields with th
     - input1#input2#input3|pp1|pp2|pp3
     - pass arrays if more than one item (assume someone is doing destructuring)
     - certain display features respond to more than one input
- - Attributes to use `"three-way"` name space 

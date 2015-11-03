@@ -932,7 +932,7 @@ if (Meteor.isClient) {
 			////////////////////////////////////////////////////////////
 
 			// Call helpers and pre-processors in template context
-			var processInTemplateContext = function processInTemplateContext(source, mappings, elem, computation, useHelpers, processorsMutateValue, additionalFirstRunFailureCondition) {
+			var processInTemplateContext = function processInTemplateContext(source, mappings, elem, computation, useHelpers, processorsMutateValue, additionalFailureCondition) {
 				var thisTemplate = instance.view.template;
 
 				if (typeof useHelpers === "undefined") {
@@ -941,35 +941,71 @@ if (Meteor.isClient) {
 				if (typeof processorsMutateValue === "undefined") {
 					processorsMutateValue = true;
 				}
-				if (typeof additionalFirstRunFailureCondition !== "function") {
-					additionalFirstRunFailureCondition = () => false;
+				if (typeof additionalFailureCondition !== "function") {
+					additionalFailureCondition = () => false;
 				}
-				var value;
 
 				var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
 				Template._currentTemplateInstanceFunc = () => instance;
-				if (useHelpers && thisTemplate.__helpers.has(source)) {
-					value = thisTemplate.__helpers.get(source).call(instance);
-				} else if (useHelpers && !!options.helpers[source]) {
-					value = options.helpers[source].call(instance);
-				} else {
-					value = threeWay.data.get(source);
-					if (computation.firstRun) {
-						if ((typeof value === "undefined") || additionalFirstRunFailureCondition(value)) {
-							return;
-						}
+				var getFailed = false;
+				var sourceElems = source.split("#").map(x => x.trim());
+				console.log(source, sourceElems)
+				var value = sourceElems.map(function(src) {
+					var _value;
+					if (useHelpers && thisTemplate.__helpers.has(src)) {
+						console.log('\t\tthisTemplate.__helpers');
+						_value = thisTemplate.__helpers.get(src).call(instance);
+					} else if (useHelpers && !!options.helpers[src]) {
+						console.log('\t\toptions.helpers[src]');
+						_value = options.helpers[src].call(instance);
+					} else {
+						_value = threeWay.data.get(src);
 					}
+
+					if ((typeof _value === "undefined") || additionalFailureCondition(_value)) {
+						console.log('\t', _value, 'typeof _value:', typeof _value, '; additionalFailureCondition(_value):', additionalFailureCondition(_value))
+						getFailed = true;
+					} else {
+						return _value;
+					}
+				});
+				console.log('\tgetFailed:', getFailed, '; computation.firstRun:', computation.firstRun)
+				if (getFailed) {
+					console.log('\t+++ [fail]', value)
+					return;
 				}
-				mappings.forEach(function(m) {
+				console.log('\t+++ [get]', value)
+
+				if ((mappings.length === 0) && (value.length === 1)) {
+					// if single valued and no mappings, "unbox"
+					value = value[0];
+				}
+				_.forEach(mappings, function(m, idx) {
 					if (!(options.preProcessors[m] instanceof Function)) {
 						console.error('[ThreeWay] No such pre-processor: ' + m, elem);
 						return;
 					}
-					var mutatedValue = options.preProcessors[m].call(instance, value, elem, _.extend({}, threeWay.dataMirror));
+
+					var mutatedValue;
+					if (idx === 0) {
+						var args = value.map(x => x);
+						console.log('\t***', m, args)
+						mutatedValue = options.preProcessors[m].apply(instance, args.concat([elem, _.extend({}, threeWay.dataMirror)]));
+
+						if (!processorsMutateValue) {
+							value = value[0];
+						}
+					} else {
+						console.log('\t***', m, value)
+						mutatedValue = options.preProcessors[m].call(instance, value, elem, _.extend({}, threeWay.dataMirror));
+					}
+
 					if (processorsMutateValue) {
 						value = mutatedValue;
 					}
+					console.log('\t-->', value)
 				});
+				console.log('\t==>', value)
 				Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
 
 				return value;
@@ -1055,7 +1091,7 @@ if (Meteor.isClient) {
 					// Check value and checked for multivariate binding
 					['value', 'checked'].forEach(function(bindingType) {
 						if (!!elemBindings.bindings[bindingType]) {
-							var pipelineSplit = elemBindings.bindings[bindingType].source.split('|').map(x => x.trim());	
+							var pipelineSplit = elemBindings.bindings[bindingType].source.split('|').map(x => x.trim());
 							var source = pipelineSplit[0];
 							if (source.split("#").length > 1) {
 								console.error('[ThreeWay] Binding parse error: Multivariate bindings not allowed for ' + bindingType + ' binding. Using first element.', elem);
@@ -1236,8 +1272,8 @@ if (Meteor.isClient) {
 						}
 
 						elemGlobals.suppressChangesToSSOT = true;
-						var additionalFirstRunFailureCondition = v => (typeof v !== "object") || (!(v instanceof Array));
-						var value = processInTemplateContext(source, pipeline, elem, c, false, false, additionalFirstRunFailureCondition);
+						var additionalFailureCondition = (elem.getAttribute('type').toLowerCase() === "radio") ? () => false : v => (typeof v !== "object") || (!(v instanceof Array));
+						var value = processInTemplateContext(source, pipeline, elem, c, false, false, additionalFailureCondition);
 						// (..., false, false): helpers not used and pipelines do not manipulate value
 
 						// Validate here
