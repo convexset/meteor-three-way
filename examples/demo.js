@@ -125,43 +125,50 @@ if (Meteor.isServer) {
 	});
 
 	// Init. data
+	var lastRegenTimestamp = 0;
 	Meteor.methods({
 		'regenerate-data': function() {
-			DataCollection.remove({});
-			_.range(10).forEach(function() {
-				var user = Fake.user();
-				var tags = [];
-				allTags.forEach(function(tag) {
-					if (Math.random() < 0.4) {
-						tags.push(tag);
-					}
-				});
-				var _emPrefs = [];
-				emailPrefsValues.forEach(function(x) {
-					if (Math.random() < 0.6) {
-						_emPrefs.push(x);
-					}
-				});
-				DataCollection.insert({
-					name: user.fullname,
-					emailPrefs: _emPrefs,
-					personal: {
-						particulars: {
-							age: Fake.fromArray(ageRangeValues),
+			var currTimestamp = (new Date()).getTime();
+			if (currTimestamp - lastRegenTimestamp < 2 * 60 * 1000) {
+				throw new Meteor.Error("Last data regeneration too recent.");
+			} else {
+				lastRegenTimestamp = currTimestamp;
+				DataCollection.remove({});
+				_.range(10).forEach(function() {
+					var user = Fake.user();
+					var tags = [];
+					allTags.forEach(function(tag) {
+						if (Math.random() < 0.4) {
+							tags.push(tag);
+						}
+					});
+					var _emPrefs = [];
+					emailPrefsValues.forEach(function(x) {
+						if (Math.random() < 0.6) {
+							_emPrefs.push(x);
+						}
+					});
+					DataCollection.insert({
+						name: user.fullname,
+						emailPrefs: _emPrefs,
+						personal: {
+							particulars: {
+								age: Fake.fromArray(ageRangeValues),
+							},
+							someArr: ["" + Math.floor(Math.random() * 10), '!!!', "" + Math.floor(Math.random() * 10)],
+							otherArr: [{
+								a: "" + Math.floor(10 + Math.random() * 10),
+								b: "" + Math.floor(20 + Math.random() * 10)
+							}, {
+								a: "" + Math.floor(30 + Math.random() * 10),
+								b: "" + Math.floor(40 + Math.random() * 10)
+							}, ]
 						},
-						someArr: ["" + Math.floor(Math.random() * 10), '!!!', "" + Math.floor(Math.random() * 10)],
-						otherArr: [{
-							a: "" + Math.floor(10 + Math.random() * 10),
-							b: "" + Math.floor(20 + Math.random() * 10)
-						}, {
-							a: "" + Math.floor(30 + Math.random() * 10),
-							b: "" + Math.floor(40 + Math.random() * 10)
-						}, ]
-					},
-					notes: Fake.sentence(5),
-					tags: tags,
+						notes: Fake.sentence(5),
+						tags: tags,
+					});
 				});
-			});
+			}
 		}
 	});
 
