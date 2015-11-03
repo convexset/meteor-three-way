@@ -949,32 +949,25 @@ if (Meteor.isClient) {
 				Template._currentTemplateInstanceFunc = () => instance;
 				var getFailed = false;
 				var sourceElems = source.split("#").map(x => x.trim());
-				console.log(source, sourceElems)
 				var value = sourceElems.map(function(src) {
 					var _value;
-					if (useHelpers && thisTemplate.__helpers.has(src)) {
-						console.log('\t\tthisTemplate.__helpers');
-						_value = thisTemplate.__helpers.get(src).call(instance);
-					} else if (useHelpers && !!options.helpers[src]) {
-						console.log('\t\toptions.helpers[src]');
+					if (useHelpers && !!options.helpers[src]) {
 						_value = options.helpers[src].call(instance);
+					} else if (useHelpers && thisTemplate.__helpers.has(src)) {
+						_value = thisTemplate.__helpers.get(src).call(instance);
 					} else {
 						_value = threeWay.data.get(src);
 					}
 
 					if ((typeof _value === "undefined") || additionalFailureCondition(_value)) {
-						console.log('\t', _value, 'typeof _value:', typeof _value, '; additionalFailureCondition(_value):', additionalFailureCondition(_value))
 						getFailed = true;
 					} else {
 						return _value;
 					}
 				});
-				console.log('\tgetFailed:', getFailed, '; computation.firstRun:', computation.firstRun)
 				if (getFailed) {
-					console.log('\t+++ [fail]', value)
 					return;
 				}
-				console.log('\t+++ [get]', value)
 
 				if ((mappings.length === 0) && (value.length === 1)) {
 					// if single valued and no mappings, "unbox"
@@ -989,23 +982,21 @@ if (Meteor.isClient) {
 					var mutatedValue;
 					if (idx === 0) {
 						var args = value.map(x => x);
-						console.log('\t***', m, args)
 						mutatedValue = options.preProcessors[m].apply(instance, args.concat([elem, _.extend({}, threeWay.dataMirror)]));
-
 						if (!processorsMutateValue) {
+							// Yeah... this feels hacky... But it is all a
+							// sacrifice to realize multi-variable data-binding
+							// ... not sure if it is worth it
 							value = value[0];
 						}
 					} else {
-						console.log('\t***', m, value)
 						mutatedValue = options.preProcessors[m].call(instance, value, elem, _.extend({}, threeWay.dataMirror));
 					}
 
 					if (processorsMutateValue) {
 						value = mutatedValue;
 					}
-					console.log('\t-->', value)
 				});
-				console.log('\t==>', value)
 				Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
 
 				return value;

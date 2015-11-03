@@ -5,7 +5,7 @@
 Database to view model connectivity is provided by Meteor methods with signatures `function(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `function(id, value, param1, param2, ...)`. 
 The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
 
-The data binding responds to changes in the DOM. So Blaze can generate and change the data binding and things will work.
+The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
 
 Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
 
@@ -25,6 +25,8 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
     - [Set Up: The Full Parameter Set](#set-up-the-full-parameter-set)
 - [Documentation](#documentation)
     - [Referring to Fields in Documents](#referring-to-fields-in-documents)
+    - [Dynamic Data-Binding](#dynamic-data-binding)
+        - [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances)
     - [Updaters to the Server](#updaters-to-the-server)
     - [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
     - [Binding to the View](#binding-to-the-view)
@@ -33,10 +35,12 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
         - [Binding: `checked`](#binding-checked)
         - [Bindings: `visible` and `disabled` (modern necessities)](#bindings-visible-and-disabled-modern-necessities)
         - [Style, Attribute and Class Bindings](#style-attribute-and-class-bindings)
-    - [Helpers and Binding](#helpers-and-binding)
+    - [Helpers, Template Helpers and Binding](#helpers-template-helpers-and-binding)
+        - [Multi-variable Display Bindings](#multi-variable-display-bindings)
     - [Event Bindings](#event-bindings)
     - [View Model to View Only Elements](#view-model-to-view-only-elements)
     - [Instance Methods](#instance-methods)
+        - [Organizing the DOM](#organizing-the-dom)
         - [My Data](#my-data)
         - [Ancestor Data](#ancestor-data)
         - [Descendant Data](#descendant-data)
@@ -46,6 +50,8 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
     - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
     - [Debug](#debug)
 - [Notes](#notes)
+    - [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
+    - [Dynamic Data Binding](#dynamic-data-binding)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -270,7 +276,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     },
 
     // Helper functions that may be used as input for display-type bindings
-    // Order of search: helpers first, then data
+    // Order of search: three-way helpers, then template helpers, then data
     // Called with this bound to template instance
     // (be aware that arrow functions are lexically scoped)
     helpers: {
@@ -338,9 +344,6 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
     // Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
     methodInterval: 50,
-
-    // "Re-Bind Poll Interval" for discovering new DOM nodes in need of data-binding
-    rebindPollInterval: 500, // default: 500
 });
 ```
 
@@ -374,6 +377,37 @@ Here is an example of binding to one of them: `<span data-bind="value: topLevelO
 However, it would be clunky to have to specify each of `"topLevelObject.nestedArray.0"` thru `"topLevelObject.nestedArray.2"` (or more) in the set-up options. Therefore, `options.updatersForServer` accepts wildcards (in key names) such as `topLevelObject.nestedArray.*` where `*` matches numbers (for arrays) and "names" (for objects; but of course, it's all objects anyway).
 
 Note that in the case of multiple matches, the most specific match will be used, enabling "catch-all" updaters (which can be somewhat dangerous if not managed properly).
+
+#### Dynamic Data-Binding
+
+The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings. For example:
+
+```html
+{{#each fields}}
+    <div>{{name}}: <input data-bind="value: particulars.{{field}}"></div>
+{{/each}}
+```
+
+... might generate...
+
+```html
+<div>Name: <input data-bind="value: particulars.name"></div>
+<div>e-mail: <input data-bind="value: particulars.email"></div>
+<div>D.O.B.: <input data-bind="value: particulars.dob"></div>
+```
+
+... and should a new field be added, data binding will take effect.
+
+###### Using Dynamic Data Bindings with Multiple `ThreeWay` instances
+
+Dynamic data binding works without a hitch (hopefully) when a template is operating in a vacuum. Multiple `ThreeWay` instances (See: ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data) for more information) work fine in the absence of dynamic data binding. But when DOM elements (to be data bound) are being added and removed dynamically, it is important to create certainty about which `ThreeWay` instance a given DOM element should be bound to.
+
+Briefly, the start of the template life cycle for a template and a child template is as follows: (i) parent created, (ii) child created, (iii) child rendered, (iv) parent rendered. Monitoring call backs work on a "first-come-first-bound" basis, with child nodes getting the first pick.
+
+To ensure proper bindings, the `_3w_setRoot(selectorString)` method should be used to select a root node (via a template-level jQuery selector), preferably in an `onRendered` hook. It is advisable for every template to be wrapped in a `div` element with a template specific class. This ensures that exactly one node will be selected by the selector (as required) even if multiple instances of the same template are created. (A design decision was made to not require a root node, but to leave it to the user to handle this matter.)
+
+For more specificity, the `restrict-template-type` attribute can be set (with a comma separated list of template names) on DOM elements to specify which `ThreeWay`-linked template types should be used to data bind individual elements.
+
 
 #### Updaters to the Server
 
@@ -523,14 +557,14 @@ In the case of radio buttons, `checked` is bound to a string.
 
  Class bindings are done via: `data-bind="class: {class1: bool1|preProc; ...}"`. However, things work more like the visible and disabled bindings in that the values to be bound to will be treated as boolean-ish.
 
-#### Helpers and Binding
+#### Helpers, Template Helpers and Binding
 
 Helper functions may be used as input for display-type bindings.
 Such bindings include `html`, `visible`, `disabled`, as well as the `class`, `style` and `attr` bindings.
 
-**For such bindings, the order of search is helpers first, then data.**
+**For such bindings, the order of search is helpers first, then template helpers, then data.**
 
-Helpers are called with `this` bound to template instance. (Be careful of lexically scoped arrow functions.)
+Helpers are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
 
 Note that one helper, `_3w_haveData`, is automatically added to `options.helpers`
 
@@ -540,6 +574,19 @@ Note that one helper, `_3w_haveData`, is automatically added to `options.helpers
 ```
 
 One might find it to be particularly useful.
+
+A tenuous design decision has been made not to phase out helpers. A less tenuous design decision is to not unify helpers with pre-processors based on their different method signatures.
+
+###### Multi-variable Display Bindings
+
+Sometimes one variable alone is not enough to determine the state of a DOM property. For example, to determine whether a phone number is valid, might depend both on the number and on the country. On the other hand, that example is faulty since a validation callback can do the relevant computations with full access to the view model.
+
+But anyway, usefulness aside, this is one example of such a binding: 
+```html
+<div data-bind="style: {background-color: colR#colG#colB|makeRGB}">
+```
+
+... it is also an example that you might find in the demo. (Look for the bit asking you to some nodes to the DOM via the console.)
 
 #### Event Bindings
 
@@ -614,6 +661,10 @@ Due to the nature of jQuery selectors, a selector at a parent template might sel
 #### Instance Methods
 
 The following methods are crammed onto each template instance in an `onCreated` hook.
+
+###### Organizing the DOM
+
+ - `_3w_setRoot(selectorString)`: selects the root of the `ThreeWay` instance using a selector string (`Template.instance().$` will be used); child nodes of the single node (the method throws an error if more than one node is matched), present and forthcoming, will be watched for changes (and the respective data bindings updated); See [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information
 
 ###### My Data
 
@@ -742,8 +793,13 @@ Multi-way data-bindings such as `value` and `checked` use pre-processing pipelin
 
 Pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model.
 
-**Example Use Case**: Consider an input field with some validator. An invalid value might 
+**Example Use Case**: Consider an input field with some validator. An invalid value might cause some validation error message to be set to be non-empty, and that change in view model data might trigger various forms of presentation. For example:
 
+```html
+<div data-bind="html: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+```
+
+Pre-processors are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
 
 
 #### "Family Access": Ancestor and Descendant Data
@@ -788,21 +844,13 @@ See [Instance Methods](#instance-methods) for more information.
 
 ## Notes
 
+#### Database Updates and Observer Callbacks
+
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart. The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-objects even if a single primitive value deep within was updated. It was addressed with (i) queueing implemented via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
 
-## Outstanding
+#### Dynamic Data Binding
 
- - Documentation: Helpers may also come from template helpers (but it's a bit one way, so probably makes sense to define stuff mostly in template helpers)
- - ThreeWay helpers to be phased out
- - Helpers not unified with pre-processors also because of different method signature
- - Documentation: Mutation Observers used to handle DOM changes
-    - template life cycle
-    - necessary for proper response to nodes being added
-    - `restrict-template-type` attribute
-    - _3w_setRoot(selectorString)
-    - responds to node add/remove
-    - responds to `data-bind` attribute changes (responsive to blaze)
- - Multi-parameter inputs for display bindings
-    - input1#input2#input3|pp1|pp2|pp3
-    - pass arrays if more than one item (assume someone is doing destructuring)
-    - certain display features respond to more than one input
+Pre-v0.1.9, dynamic rebinding was incomplete and carried out by polling the DOM. As of v0.1.9, [Mutation Observers](https://developer.mozilla.org/en/docs/Web/API/MutationObserver) have been used to deal with things in an event-driven manner.
+
+The mixing of dynamic data-binding and the possibility of multiple `ThreeWay` instances poses some challenges with regards to the question of which `ThreeWay` instance a new DOM element should be data bound with.
+See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information.

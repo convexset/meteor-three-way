@@ -276,7 +276,7 @@ if (Meteor.isClient) {
 
 		// Success callbacks for validators
 		validateSuccessCallback: {
-			'tags': function(template) {  // function(template, value, vmData, field, params) {
+			'tags': function(template) { // function(template, value, vmData, field, params) {
 				//console.info('[Validated!] tags:', value, field, params);
 				template._3w_set('tagsValidationErrorText', '');
 			},
@@ -299,12 +299,12 @@ if (Meteor.isClient) {
 		},
 
 		// Helper functions that may be used as input for display-type bindings
-		// Order of search: helpers first, then data
+		// Order of search: three-way helpers, then template helpers, then data
 		// Called with this bound to template instance
 		// (be aware that arrow functions are lexically scoped)
 		helpers: {
 			altGetId: function() {
-				console.info('altGetId called!', Template.instance() && Template.instance().view.name);
+				// console.info('altGetId called!', Template.instance() && Template.instance().view.name);
 				return this._3w_getId();
 			},
 		},
@@ -363,7 +363,7 @@ if (Meteor.isClient) {
 					.map(idx => !!rgb[idx] && !Number.isNaN(Number(rgb[idx])) ? Number(rgb[idx]) : 128)
 					.map(x => Math.min(255, Math.max(0, Math.floor(x))))
 					.map(x => x.toString(16))
-					.map(x => x.length < 2 ? '0'+x : x);
+					.map(x => x.length < 2 ? '0' + x : x);
 				return "#" + col.join('');
 			},
 			not: x => !x,
@@ -413,9 +413,6 @@ if (Meteor.isClient) {
 		throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
 		// Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
 		methodInterval: 100, // default: 100
-
-		// "Re-Bind Poll Interval" for discovering new DOM nodes in need of data-binding
-		rebindPollInterval: 500, // default: 500
 	});
 
 	Template.DemoThreeWay.onCreated(function() {
@@ -439,11 +436,6 @@ if (Meteor.isClient) {
 				}
 			}
 		})();
-
-		var instance = this;
-		setTimeout(function() {
-			setUpDebugMessages(instance);
-		}, 500);
 	});
 
 	Template.DemoThreeWay.helpers({
