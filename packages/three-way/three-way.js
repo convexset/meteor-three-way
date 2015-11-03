@@ -1790,6 +1790,8 @@ if (Meteor.isClient) {
 									}
 									stopBindingToNode(node);
 									threeWay.__bindElem(node);
+								} else if (!node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE)) {
+									threeWay.__bindElem(node);
 								}
 							}
 						}

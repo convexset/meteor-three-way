@@ -307,14 +307,6 @@ if (Meteor.isClient) {
 				console.info('altGetId called!', Template.instance() && Template.instance().view.name);
 				return this._3w_getId();
 			},
-			makeRGB: function(...rgb) {
-				var col = _.range(3)
-					.map(idx => !!rgb[idx] && !Number.isNaN(Number(rgb[idx])) ? Number(rgb[idx]) : 128)
-					.map(x => Math.min(255, Math.max(0, Math.floor(x))))
-					.map(x => x.toString(16))
-					.map(x => x.length < 2 ? '0'+x : x);
-				return "#" + col.join('');
-			},
 		},
 
 		// Pre-processors for data pre-render (view model to view)
@@ -361,10 +353,18 @@ if (Meteor.isClient) {
 			appendTimeStamp: function(v) {
 				return v + ' (' + (new Date()) + ')';
 			},
-			toColor: function(v) {
+			stringToColor: function(v) {
 				v = (!!v) ? v : 'xxx';
 				var col = '#' + (256 + (_.map(v, (c, idx) => (5 + 7 * idx) * c.charCodeAt()).reduce((x, y) => x + y) % (4096 - 256))).toString(16);
 				return col;
+			},
+			makeRGB: function(...rgb) {
+				var col = _.range(3)
+					.map(idx => !!rgb[idx] && !Number.isNaN(Number(rgb[idx])) ? Number(rgb[idx]) : 128)
+					.map(x => Math.min(255, Math.max(0, Math.floor(x))))
+					.map(x => x.toString(16))
+					.map(x => x.length < 2 ? '0'+x : x);
+				return "#" + col.join('');
 			},
 			not: x => !x,
 			noIsFalse: x => (!!x) && (x.trim().toLowerCase() === 'no' ? false : true),

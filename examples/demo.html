@@ -197,7 +197,7 @@
 			</table>
 
 			<div>
-				Incidentally, here is the current id via a helper and an upper case pre-processor (colour based on id via a style binding): <span data-bind="html: _3w_id|toUpperCase; style: {color: altGetId|toColor}"></span>.
+				Incidentally, here is the current id via a helper and an upper case pre-processor (colour based on id via a style binding): <span data-bind="html: _3w_id|toUpperCase; style: {color: altGetId|stringToColor}"></span>.
 			</div>
 
 			<div>
@@ -206,6 +206,7 @@
 				<p>should link "#2" of the <code>personal.someArr</code> data-entry row with the value of "#0"...</p>
 				<p>Alternatively, try adding a nodes below like so:</p>
 <pre>
+$(&#039;#below-me&#039;).append(&#039;&lt;h3&gt;Multivariable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h3&gt;&#039;);
 $(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.0&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
 $(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.1&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
 $(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.2&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
@@ -213,7 +214,7 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 </pre>
 			</div>
 
-			<div id="below-me">
+			<div id="below-me" style="text-align: center; padding: 20px; border-radius: 5px;">
 			</div>
 
 		</div>
