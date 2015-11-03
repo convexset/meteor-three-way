@@ -3,8 +3,9 @@
 `ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view.
 
 Database to view model connectivity is provided by Meteor methods with signatures `function(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `function(id, value, param1, param2, ...)`. 
-
 The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
+
+The data binding responds to changes in the DOM. So Blaze can generate and change the data binding and things will work.
 
 Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
 
@@ -783,8 +784,24 @@ See [Instance Methods](#instance-methods) for more information.
  - `'event'`
  - `'vm-only'`
  - `'validation'`
- - `'re-bind'`
+ - `'bind'`
 
 ## Notes
 
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart. The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-objects even if a single primitive value deep within was updated. It was addressed with (i) queueing implemented via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
+
+## Outstanding
+
+ - Helpers may also come from template helpers (but it's a bit one way, so probably makes sense to define stuff mostly in template helpers)
+ - Document Mutation Observer binding
+    - template life cycle
+    - necessary for proper response to nodes being added
+    - `restrict-template-type` attribute
+    - _3w_setRoot(selectorString)
+    - responds to node add/remove
+    - responds to `data-bind` attribute changes (responsive to blaze)
+ - Multi-parameter inputs for display bindings
+    - input1#input2#input3|pp1|pp2|pp3
+    - pass arrays if more than one item (assume someone is doing destructuring)
+    - certain display features respond to more than one input
+ - Attributes to use `"three-way"` name space 

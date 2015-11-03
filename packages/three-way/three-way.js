@@ -4,14 +4,18 @@
 var __tw = function ThreeWay() {};
 ThreeWay = new __tw();
 
-var THREE_WAY_NAMESPACE = "__three_way__";
-var THREE_WAY_DATA_BOUND_ATTRIBUTE = "three-way-data-bound";
-var DEFAULT_DEBOUNCE_INTERVAL = 500;
-var DEFAULT_THROTTLE_INTERVAL = 500;
-var DEFAULT_DOM_POLL_INTERVAL = 500;
-var DEFAULT_METHOD_INTERVAL = 100;
+const THREE_WAY_NAMESPACE = "__three_way__";
+const DATA_BIND_ATTRIBUTE = "data-bind";
+const THREE_WAY_ATTRIBUTE_NAMESPACE = "three-way";
+const THREE_WAY_DATA_BINDING_ID = "three-way-id";
+const THREE_WAY_DATA_BINDING_INSTANCE = "three-way-instance";
+const RESTRICT_TEMPLATE_TYPE_ATTRIBUTE = 'restrict-template-type';
+const DEFAULT_DEBOUNCE_INTERVAL = 500;
+const DEFAULT_THROTTLE_INTERVAL = 500;
+const DEFAULT_DOM_POLL_INTERVAL = 500;
+const DEFAULT_METHOD_INTERVAL = 100;
 
-var AGE_THREHOLD_OLD_ITEM = 10000;
+const AGE_THREHOLD_OLD_ITEM = 10000;
 
 var DEBUG_MODE = false;
 var DEBUG_MODE_ALL = false;
@@ -34,7 +38,7 @@ var DEBUG_MESSAGES = {
 	'event': false,
 	'vm-only': false,
 	'validation': false,
-	're-bind': false,
+	'bind': false,
 };
 
 function IN_DEBUG_MODE_FOR(message_class) {
@@ -169,6 +173,31 @@ if (Meteor.isClient) {
 		}
 	});
 
+	var idIndices = [0];
+
+	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'getNewId', function getNewId() {
+		function padLeft(s, num, char) {
+			var res = s.toString();
+			while (res.length < num) {
+				res = char + res;
+			}
+			return res;
+		}
+
+		idIndices[0] += 1;
+		var idx = 0;
+		while ((idx < idIndices.length) && (idIndices[idx] >= 10000)) {
+			idIndices[idx] = 0;
+			if (typeof idIndices[idx + 1] !== "undefined") {
+				idIndices[idx + 1] += 1;
+			} else {
+				idIndices[idx + 1] = 1;
+			}
+			idx++;
+		}
+		return 'tw-' + idIndices.map(x => padLeft(x, 4, '0')).join('-');
+	});
+
 	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'prepare', function prepare(tmpl, options) {
 		if (typeof tmpl === "undefined") {
 			throw new Meteor.Error('missing-argument', 'template required');
@@ -266,7 +295,7 @@ if (Meteor.isClient) {
 			var instance = this;
 
 			var threeWay = {
-				instanceId: null,
+				instanceId: new ReactiveVar(null),
 				children: {},
 				__hasChild: new ReactiveDict(),
 				data: new ReactiveDict(),
@@ -278,13 +307,28 @@ if (Meteor.isClient) {
 				haveData: new ReactiveVar(false),
 				id: new ReactiveVar(null),
 				observer: null,
-				bindings: [],
 				computations: [],
 				_dataUpdateComputations: {},
 				doRebindOperations: true,
+				boundElemComputations: {},
+				boundElemEventHandlers: {},
+				mutationObserver: null,
+				rootNode: document.body,
+				_rootNode: new ReactiveVar("document.body"),
 			};
 
 			instance[THREE_WAY_NAMESPACE] = threeWay;
+			var __rootChanges = 0;
+			instance._3w_setRoot = function(selectorString) {
+				var nodes = instance.$(selectorString);
+				if (nodes.length === 1) {
+					__rootChanges += 1;
+					threeWay.rootNode = nodes[0];
+					threeWay._rootNode.set(__rootChanges + '|' + threeWay.rootNode.toString());
+				} else {
+					throw new Meteor.Error("expected-single-node-selector", selectorString);
+				}
+			};
 			instance._3w_setId = function(id) {
 				threeWay.id.set(id);
 			};
@@ -879,313 +923,357 @@ if (Meteor.isClient) {
 				return passed;
 			};
 
-		});
 
-		tmpl.onRendered(function() {
-			var instance = this;
-			var threeWay = instance[THREE_WAY_NAMESPACE];
 
-			// Set initial values for data (in particular, view model only fields)
-			Array.prototype.forEach.call(instance.$("twdata[field]"), function(elem) {
-				var field = elem.getAttribute('field');
-				var initValue = elem.getAttribute('initial-value') || null;
-				var processorString = elem.getAttribute('processors') || "";
-				var templateRestrictionString = elem.getAttribute('restrict-template-type') || "";
-				var templateRestrictions = (templateRestrictionString === "") ? [] : templateRestrictionString.split(',').map(x => x.trim());
+			////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////
+			// Prepare For Bindings!!!
+			////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////
 
-				if (IN_DEBUG_MODE_FOR('vm-only')) {
-					console.log("[vm-only] Initialization for " + field + " with", elem);
+			// Call helpers and pre-processors in template context
+			var processInTemplateContext = function processInTemplateContext(source, mappings, elem, computation, useHelpers, processorsMutateValue, additionalFirstRunFailureCondition) {
+				var thisTemplate = instance.view.template;
+
+				if (typeof useHelpers === "undefined") {
+					useHelpers = true;
 				}
+				if (typeof processorsMutateValue === "undefined") {
+					processorsMutateValue = true;
+				}
+				if (typeof additionalFirstRunFailureCondition !== "function") {
+					additionalFirstRunFailureCondition = () => false;
+				}
+				var value;
 
-				var thisTemplateType = instance.view.name.split('.').pop().trim();
-				if ((templateRestrictions.length > 0) && (templateRestrictions.indexOf(thisTemplateType) === -1)) {
-					// Skip if restricted to other template type
-					if (IN_DEBUG_MODE_FOR('vm-only')) {
-						console.log("[vm-only] Skipping initialization: restricted to", templateRestrictions, "; Template Type: " + thisTemplateType);
+				var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
+				Template._currentTemplateInstanceFunc = () => instance;
+				if (useHelpers && thisTemplate.__helpers.has(source)) {
+					value = thisTemplate.__helpers.get(source).call(instance);
+				} else if (useHelpers && !!options.helpers[source]) {
+					value = options.helpers[source].call(instance);
+				} else {
+					value = threeWay.data.get(source);
+					if (computation.firstRun) {
+						if ((typeof value === "undefined") || additionalFirstRunFailureCondition(value)) {
+							return;
+						}
 					}
-					return;
 				}
-
-				var processors = (processorString === "") ? [] : processorString.split('|').map(x => x.trim());
-				var value = initValue;
-
-				processors.forEach(function(m) {
-					// processors here do not provide view model data as an argument
+				mappings.forEach(function(m) {
 					if (!(options.preProcessors[m] instanceof Function)) {
 						console.error('[ThreeWay] No such pre-processor: ' + m, elem);
 						return;
 					}
-					value = options.preProcessors[m](value, elem, {});
-				});
-
-				if (IN_DEBUG_MODE_FOR('vm-only')) {
-					if (processors.length === 0) {
-						console.log("[vm-only] Setting up initial value for " + field + " to ", initValue, " using ", elem);
-					} else {
-						console.log("[vm-only] Setting up initial value for " + field + " using ", elem);
-						console.log("[vm-only] Processors:", processors, "; Init Value:", initValue, "; Final value:", value);
+					var mutatedValue = options.preProcessors[m].call(instance, value, elem, _.extend({}, threeWay.dataMirror));
+					if (processorsMutateValue) {
+						value = mutatedValue;
 					}
-				}
-				threeWay.data.set(field, value);
+				});
+				Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
 
-				if (typeof threeWay._dataUpdateComputations[field] === "undefined") {
-					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
-						threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
-						if (IN_DEBUG_MODE_FOR('vm-only')) {
-							console.log("[vm-only] vm-only data:", threeWay.viewModelOnlyData);
-						}
-					});
-				}
-			});
+				return value;
+			};
 
-
-			(function rebindOperations() { // Invoke and setTimeout on completion
-				if (IN_DEBUG_MODE_FOR('re-bind')) {
-					console.log("[re-bind] Checking for new elements to bind.");
+			////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////
+			// Begin Big Rebind Operation
+			////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////
+			var bindElem = function bindElem(elem) {
+				if (!elem.getAttribute) {
+					throw new Meteor.Error('unexpected-error-not-elem', elem);
 				}
 
-				Array.prototype.forEach.call(instance.$("[data-bind]"), function(elem) {
-					if (!!elem.getAttribute(THREE_WAY_DATA_BOUND_ATTRIBUTE)) {
-						// Already data-bound
+				if (!!elem.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID)) {
+					// Already data-bound
+					return;
+				}
+
+				var instanceId;
+				Tracker.nonreactive(function() {
+					instanceId = threeWay.instanceId.get();
+				});
+				if (!instanceId) {
+					instanceId = "~~id-unassigned~~";
+				}
+				if (!!elem.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE)) {
+					if (elem.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE) !== instanceId) {
+						// Already data-bound to other node
 						return;
 					}
+				}
 
-					var dataBind = elem.getAttribute('data-bind');
+				var dataBind = elem.getAttribute(DATA_BIND_ATTRIBUTE);
 
-					var elemBindings = {
-						elem: elem,
-						bindings: {}
-					};
-					var parseErrors = {};
-					var haveParseErrors = false;
-					dataBind.split(";").map(x => x.trim()).forEach(function(x) {
-						var idxColon = x.indexOf(":");
-						var itemName = x.substr(0, idxColon).trim().toLowerCase();
-						var rawItemData = x.substr(idxColon + 1).trim();
-						var itemData;
+				var elemBindings = {
+					elem: elem,
+					bindings: {}
+				};
+				var parseErrors = {};
+				var haveParseErrors = false;
+				dataBind.split(";").map(x => x.trim()).forEach(function(x) {
+					var idxColon = x.indexOf(":");
+					var itemName = x.substr(0, idxColon).trim().toLowerCase();
+					var rawItemData = x.substr(idxColon + 1).trim();
+					var itemData;
 
-						var isDictType = (itemName === "class") || (itemName === "style") || (itemName === "attr") || (itemName === "event");
-						if (isDictType) {
-							if ((rawItemData[0] !== '{') || (rawItemData[rawItemData.length - 1] !== '}')) {
-								console.error('[ThreeWay] Binding parse error: ' + itemName, elem);
-								haveParseErrors = true;
-								parseErrors[itemName] = rawItemData;
-								return;
-							}
-							var objData = rawItemData
-								.substr(1, rawItemData.length - 2)
-								.split(",")
-								.map(x => x.trim())
-								.map(x => x.split(":").map(y => y.trim()));
-							var problematicItems = objData.filter(x => x.length !== 2);
-							if (problematicItems.length > 0) {
-								console.error('[ThreeWay] Binding parse error: ' + itemName, problematicItems, elem);
-								haveParseErrors = true;
-								parseErrors[itemName] = rawItemData;
-								return;
-							}
-							itemData = _.object(objData);
-						} else {
-							itemData = rawItemData;
+					var isDictType = (itemName === "class") || (itemName === "style") || (itemName === "attr") || (itemName === "event");
+					if (isDictType) {
+						if ((rawItemData[0] !== '{') || (rawItemData[rawItemData.length - 1] !== '}')) {
+							console.error('[ThreeWay] Binding parse error: ' + itemName, elem);
+							haveParseErrors = true;
+							parseErrors[itemName] = rawItemData;
+							return;
 						}
+						var objData = rawItemData
+							.substr(1, rawItemData.length - 2)
+							.split(",")
+							.map(x => x.trim())
+							.map(x => x.split(":").map(y => y.trim()));
+						var problematicItems = objData.filter(x => (x.length !== 2) || (x[0].length === 0) || (x[1].length === 0));
+						if (problematicItems.length > 0) {
+							console.error('[ThreeWay] Binding parse error: ' + itemName, problematicItems, elem);
+							haveParseErrors = true;
+							parseErrors[itemName] = rawItemData;
+							return;
+						}
+						itemData = _.object(objData);
+					} else {
+						itemData = rawItemData;
+						if (itemData.length === 0) {
+							console.error('[ThreeWay] Binding parse error: ' + itemName, itemData, elem);
+							return;
+						}
+					}
 
-						elemBindings.bindings[itemName] = {
-							isDictType: isDictType,
-							source: itemData
-						};
+					elemBindings.bindings[itemName] = {
+						isDictType: isDictType,
+						source: itemData
+					};
 
+					// Check value and checked for multivariate binding
+					['value', 'checked'].forEach(function(bindingType) {
+						if (!!elemBindings.bindings[bindingType]) {
+							var pipelineSplit = elemBindings.bindings[bindingType].source.split('|').map(x => x.trim());	
+							var source = pipelineSplit[0];
+							if (source.split("#").length > 1) {
+								console.error('[ThreeWay] Binding parse error: Multivariate bindings not allowed for ' + bindingType + ' binding. Using first element.', elem);
+								pipelineSplit[0] = source.split("#")[0];
+								elemBindings.bindings[bindingType].source = pipelineSplit.join('|');
+							}
+						}
 					});
 
-					if (IN_DEBUG_MODE_FOR('parse')) {
-						console.log('[parse] Parsed:', elem, elemBindings);
-					}
 
-					threeWay.bindings.push(elemBindings);
-					if (IN_DEBUG_MODE_FOR('bindings')) {
-						console.log("[bindings] Creating Bindings for ", elem, elemBindings.bindings);
-					}
+				});
 
-					//////////////////////////////////////////////////////
-					//////////////////////////////////////////////////////
-					//////////////////////////////////////////////////////
-					// Dealing With Update Bindings
-					//////////////////////////////////////////////////////
-					//////////////////////////////////////////////////////
+				if (IN_DEBUG_MODE_FOR('parse')) {
+					console.log('[parse] Parsed:', elem, elemBindings);
+				}
 
-					var elemGlobals = {
-						suppressChange: false
+				if (IN_DEBUG_MODE_FOR('bindings')) {
+					console.log("[bindings] Creating Bindings for ", elem, elemBindings.bindings);
+				}
+
+				//////////////////////////////////////////////////////
+				// Dealing With Update Bindings
+				//////////////////////////////////////////////////////
+
+				var elemGlobals = {
+					suppressChangesToSSOT: false
+				};
+				var boundElemComputations = [];
+				var boundElemEventHandlers = [];
+				var bindEventToThisElem = function bindEventToThisElem(eventName, handler) {
+					$(elem).on(eventName, handler);
+					boundElemEventHandlers.push({
+						eventName: eventName,
+						handler: handler
+					});
+				};
+
+
+				//////////////////////////////////////////////////////
+				// .value
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.value) {
+
+					var valueChangeHandler = function valueChangeHandler() { // function(event)
+						var value = elem.value;
+						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim());
+						var fieldName = pipelineSplit[0];
+						var curr_value = threeWay.dataMirror[fieldName];
+
+						if (IN_DEBUG_MODE_FOR('value')) {
+							console.log('[.value] Change', elem);
+							console.log('[.value] Field: ' + fieldName + '; data-bind | ' + dataBind);
+						}
+
+						if (elemGlobals.suppressChangesToSSOT) {
+							if (IN_DEBUG_MODE_FOR('value')) {
+								console.log('[.value] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
+							}
+						} else {
+							if (value !== curr_value) {
+								if (IN_DEBUG_MODE_FOR('value')) {
+									console.log('[.value] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
+								}
+								threeWay.data.set(fieldName, value);
+								Tracker.flush();
+							} else {
+								if (IN_DEBUG_MODE_FOR('value')) {
+									console.log('[.value] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
+								}
+							}
+						}
 					};
 
-					//////////////////////////////////////////////////////
-					// .value
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.value) {
+					bindEventToThisElem('change', valueChangeHandler);
+					bindEventToThisElem('input', function() {
+						$(this).trigger('change');
+					});
 
-						var valueChangeHandler = function valueChangeHandler() { // function(event)
-							var value = elem.value;
-							var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim());
-							var fieldName = pipelineSplit[0];
-							var curr_value = threeWay.dataMirror[fieldName];
+					threeWay.computations.push(Tracker.autorun(function(c) {
+						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim());
+						var source = pipelineSplit[0];
+						var pipeline = pipelineSplit.splice(1);
 
+						if (c.firstRun) {
 							if (IN_DEBUG_MODE_FOR('value')) {
-								console.log('[.value] Change', elem);
-								console.log('[.value] Field: ' + fieldName + '; data-bind | ' + dataBind);
+								console.log("[.value] Preparing .value binding (to " + source + ") for", elem);
 							}
+						}
 
-							if (elemGlobals.suppressChange) {
-								if (IN_DEBUG_MODE_FOR('value')) {
-									console.log('[.value] Change Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
+						elemGlobals.suppressChangesToSSOT = true;
+						var value = processInTemplateContext(source, pipeline, elem, c, false, false);
+						// (..., false, false): helpers not used and pipelines do not manipulate value
+
+						// Validate here
+						threeWay.validateInput(source, value);
+
+						if (elem.value !== value) {
+							elem.value = value;
+							if (IN_DEBUG_MODE_FOR('value')) {
+								console.log('[.value] Setting .value to \"' + value + '\" for', elem);
+							}
+						} else {
+							if (IN_DEBUG_MODE_FOR('value')) {
+								console.log('[.value] Not updating .value of', elem);
+							}
+						}
+						elemGlobals.suppressChangesToSSOT = false;
+					}));
+					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+
+				}
+
+
+				//////////////////////////////////////////////////////
+				// .checked
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.checked) {
+
+					var checkedChangeHandler = function checkedChangeHandler() { // function(event)
+						var elem_value = elem.value;
+						var elem_checked = elem.checked;
+
+						var fieldName = elemBindings.bindings.checked.source;
+						var curr_value = threeWay.dataMirror[fieldName];
+
+						var new_value;
+						var isRadio = elem.getAttribute('type').toLowerCase() === "radio";
+						if (isRadio) {
+							new_value = elem_value;
+						} else {
+							new_value = (!!curr_value ? curr_value : []).map(x => x); // copy
+							if (!elem_checked) {
+								var idx = new_value.indexOf(elem_value);
+								if (idx > -1) {
+									new_value.splice(idx, 1);
 								}
 							} else {
-								if (value !== curr_value) {
-									if (IN_DEBUG_MODE_FOR('value')) {
-										console.log('[.value] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
-									}
-									threeWay.data.set(fieldName, value);
-								} else {
-									if (IN_DEBUG_MODE_FOR('value')) {
-										console.log('[.value] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
-									}
-								}
+								new_value.push(elem_value);
 							}
-						};
+						}
 
-						$(elem).change(valueChangeHandler);
-						$(elem).on('input', function() {
-							$(this).trigger('change');
-						});
+						if (IN_DEBUG_MODE_FOR('checked')) {
+							console.log('[.checked] Change', elem);
+							console.log('[.checked] Field: ' + fieldName + '; data-bind | ' + dataBind);
+							console.log('[.checked] data-bind | ' + dataBind);
+						}
 
-						threeWay.computations.push(Tracker.autorun(function(c) {
-							var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim());
-							var source = pipelineSplit[0];
-							var pipeline = pipelineSplit.splice(1);
-
-							var value = threeWay.data.get(source);
-							if (c.firstRun) {
-								if (IN_DEBUG_MODE_FOR('value')) {
-									console.log("[.value] Preparing .value binding (to " + source + ") for", elem);
-								}
-								if (typeof value === "undefined") {
-									return;
-								}
-							}
-
-							elemGlobals.suppressChange = true;
-
-							pipeline.forEach(function(m) {
-								// pipelines do not manipulate value
-								if (!(options.preProcessors[m] instanceof Function)) {
-									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-									return;
-								}
-								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
-							});
-
-							// Validate here
-							threeWay.validateInput(source, value);
-
-							if (elem.value !== value) {
-								elem.value = value;
-								if (IN_DEBUG_MODE_FOR('value')) {
-									console.log('[.value] Setting .value to \"' + value + '\" for', elem);
-								}
-							} else {
-								if (IN_DEBUG_MODE_FOR('value')) {
-									console.log('[.value] Not updating .value of', elem);
-								}
-							}
-							elemGlobals.suppressChange = false;
-						}));
-
-					}
-
-
-					//////////////////////////////////////////////////////
-					// .checked
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.checked) {
-
-						var checkedChangeHandler = function checkedChangeHandler() { // function(event)
-							var elem_value = elem.value;
-							var elem_checked = elem.checked;
-
-							var fieldName = elemBindings.bindings.checked.source;
-							var curr_value = threeWay.dataMirror[fieldName];
-
-							var new_value;
-							var isRadio = elem.getAttribute('type').toLowerCase() === "radio";
-							if (isRadio) {
-								new_value = elem_value;
-							} else {
-								new_value = (!!curr_value ? curr_value : []).map(x => x); // copy
-								if (!elem_checked) {
-									var idx = new_value.indexOf(elem_value);
-									if (idx > -1) {
-										new_value.splice(idx, 1);
-									}
-								} else {
-									new_value.push(elem_value);
-								}
-							}
-
+						if (elemGlobals.suppressChangesToSSOT) {
 							if (IN_DEBUG_MODE_FOR('checked')) {
-								console.log('[.checked] Change', elem);
-								console.log('[.checked] Field: ' + fieldName + '; data-bind | ' + dataBind);
-								console.log('[.checked] data-bind | ' + dataBind);
+								console.log('[.checked] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 							}
-
-							if (elemGlobals.suppressChange) {
+						} else {
+							if (!_.isEqual(new_value, curr_value)) {
 								if (IN_DEBUG_MODE_FOR('checked')) {
-									console.log('[.checked] Change Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
+									console.log('[.checked] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 								}
+								threeWay.data.set(fieldName, new_value);
+								Tracker.flush();
 							} else {
-								if (!_.isEqual(new_value, curr_value)) {
+								if (IN_DEBUG_MODE_FOR('checked')) {
+									console.log('[.checked] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
+								}
+							}
+						}
+					};
+
+					bindEventToThisElem('change', checkedChangeHandler);
+
+					threeWay.computations.push(Tracker.autorun(function(c) {
+						var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim());
+						var source = pipelineSplit[0];
+						var pipeline = pipelineSplit.splice(1);
+
+						if (c.firstRun) {
+							if (IN_DEBUG_MODE_FOR('checked')) {
+								console.log("[.checked] Preparing .checked binding (to " + source + ") for", elem);
+							}
+						}
+
+						elemGlobals.suppressChangesToSSOT = true;
+						var additionalFirstRunFailureCondition = v => (typeof v !== "object") || (!(v instanceof Array));
+						var value = processInTemplateContext(source, pipeline, elem, c, false, false, additionalFirstRunFailureCondition);
+						// (..., false, false): helpers not used and pipelines do not manipulate value
+
+						// Validate here
+						threeWay.validateInput(source, value);
+
+						if (elem.getAttribute('type').toLowerCase() === "radio") {
+							// Radio Button
+							if (_.isEqual(elem.value, value)) {
+								// Should be checked now
+								if (!elem.checked) {
+									elem.checked = true;
 									if (IN_DEBUG_MODE_FOR('checked')) {
-										console.log('[.checked] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
+										console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
 									}
-									threeWay.data.set(fieldName, new_value);
 								} else {
 									if (IN_DEBUG_MODE_FOR('checked')) {
-										console.log('[.checked] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
+										console.log('[.checked] Not updating .checked of', elem);
+									}
+								}
+							} else {
+								// Should be unchecked now
+								if (elem.checked) {
+									elem.checked = false;
+									if (IN_DEBUG_MODE_FOR('checked')) {
+										console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
+									}
+								} else {
+									if (IN_DEBUG_MODE_FOR('checked')) {
+										console.log('[.checked] Not updating .checked of', elem);
 									}
 								}
 							}
-						};
-
-						$(elem).change(checkedChangeHandler);
-
-						threeWay.computations.push(Tracker.autorun(function(c) {
-							var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim());
-							var source = pipelineSplit[0];
-							var pipeline = pipelineSplit.splice(1);
-
-							var value = threeWay.data.get(source);
-							if (c.firstRun) {
-								if (IN_DEBUG_MODE_FOR('checked')) {
-									console.log("[.checked] Preparing .checked binding (to " + source + ") for", elem);
-								}
-								if ((typeof value !== "object") || (!(value instanceof Array))) {
-									return;
-								}
-							}
-
-							elemGlobals.suppressChange = true;
-
-							pipeline.forEach(function(m) {
-								// pipelines do not manipulate value
-								if (!(options.preProcessors[m] instanceof Function)) {
-									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-									return;
-								}
-								options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
-							});
-
-							// Validate here
-							threeWay.validateInput(source, value);
-
-							if (elem.getAttribute('type').toLowerCase() === "radio") {
-								// Radio Button
-								if (_.isEqual(elem.value, value)) {
+						} else if (elem.getAttribute('type').toLowerCase() === "checkbox") {
+							// Check Boxes
+							if ((!!value) && (value instanceof Array)) {
+								if (value.indexOf(elem.value) > -1) {
 									// Should be checked now
 									if (!elem.checked) {
 										elem.checked = true;
@@ -1210,373 +1298,326 @@ if (Meteor.isClient) {
 										}
 									}
 								}
-							} else if (elem.getAttribute('type').toLowerCase() === "checkbox") {
-								// Check Boxes
-								if ((!!value) && (value instanceof Array)) {
-									if (value.indexOf(elem.value) > -1) {
-										// Should be checked now
-										if (!elem.checked) {
-											elem.checked = true;
-											if (IN_DEBUG_MODE_FOR('checked')) {
-												console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
-											}
-										} else {
-											if (IN_DEBUG_MODE_FOR('checked')) {
-												console.log('[.checked] Not updating .checked of', elem);
-											}
-										}
-									} else {
-										// Should be unchecked now
-										if (elem.checked) {
-											elem.checked = false;
-											if (IN_DEBUG_MODE_FOR('checked')) {
-												console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
-											}
-										} else {
-											if (IN_DEBUG_MODE_FOR('checked')) {
-												console.log('[.checked] Not updating .checked of', elem);
-											}
-										}
-									}
-								} else {
-									if (IN_DEBUG_MODE_FOR('checked')) {
-										console.warn('[.checked] Not bound to an array:', elem);
-									}
-								}
-
-							}
-
-							elemGlobals.suppressChange = false;
-						}));
-
-					}
-
-
-					//////////////////////////////////////////////////////
-					// .html
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.html) {
-						threeWay.computations.push(Tracker.autorun(function(c) {
-							var pipelineSplit = elemBindings.bindings.html.source.split('|').map(x => x.trim());
-							var source = pipelineSplit[0];
-							var mappings = pipelineSplit.splice(1);
-
-							if (c.firstRun) {
-								if (IN_DEBUG_MODE_FOR('html')) {
-									console.log("[.html] Preparing .html binding for", elem);
-									console.log("[.html] Field: " + source + "; Mappings: ", mappings);
-								}
-							}
-
-							var html;
-							if (!!options.helpers[source]) {
-								html = options.helpers[source].call(instance);
 							} else {
-								html = threeWay.data.get(source);
-								if (c.firstRun) {
-									if (typeof html === "undefined") {
-										return;
-									}
+								if (IN_DEBUG_MODE_FOR('checked')) {
+									console.warn('[.checked] Not bound to an array:', elem);
 								}
 							}
 
-							mappings.forEach(function(m) {
-								if (!(options.preProcessors[m] instanceof Function)) {
-									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-									return;
-								}
-								html = options.preProcessors[m](html, elem, _.extend({}, threeWay.dataMirror));
-							});
+						}
 
-							if (elem.innerHTML !== html) {
-								if (IN_DEBUG_MODE_FOR('html')) {
-									console.log('[.html] Setting .innerHTML to \"' + html + '\" for', elem);
-								}
-								elem.innerHTML = html;
-							}
-						}));
-					}
+						elemGlobals.suppressChangesToSSOT = false;
+					}));
+					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 
-					//////////////////////////////////////////////////////
-					// .visible
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.visible) {
-						threeWay.computations.push(Tracker.autorun(function(c) {
-							var pipelineSplit = elemBindings.bindings.visible.source.split('|').map(x => x.trim());
-							var source = pipelineSplit[0];
-							var mappings = pipelineSplit.splice(1);
-
-							if (c.firstRun) {
-								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-									console.log("[.visible] Preparing .visible binding with " + source + " for", elem);
-								}
-							}
-
-							var visible;
-							if (!!options.helpers[source]) {
-								visible = options.helpers[source].call(instance);
-							} else {
-								visible = threeWay.data.get(source);
-								if (c.firstRun) {
-									if (typeof visible === "undefined") {
-										return;
-									}
-								}
-							}
-							mappings.forEach(function(m) {
-								if (!(options.preProcessors[m] instanceof Function)) {
-									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-									return;
-								}
-								visible = options.preProcessors[m](visible, elem, _.extend({}, threeWay.dataMirror));
-							});
-							visible = (!!visible) ? "" : "none";
-
-							if (elem.style.display !== visible) {
-								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-									console.log('[.visible] Setting .style[visible] to \"' + visible + '\" for', elem);
-								}
-								elem.style.display = visible;
-							}
-						}));
-					}
-
-					//////////////////////////////////////////////////////
-					// .disabled
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.disabled) {
-						threeWay.computations.push(Tracker.autorun(function(c) {
-							var pipelineSplit = elemBindings.bindings.disabled.source.split('|').map(x => x.trim());
-							var source = pipelineSplit[0];
-							var mappings = pipelineSplit.splice(1);
-
-							if (c.firstRun) {
-								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-									console.log("[.disabled] Preparing .disabled binding with " + source + " for", elem);
-								}
-							}
-
-							var disabled;
-							if (!!options.helpers[source]) {
-								disabled = options.helpers[source].call(instance);
-							} else {
-								disabled = threeWay.data.get(source);
-								if (c.firstRun) {
-									if (typeof disabled === "undefined") {
-										return;
-									}
-								}
-							}
-							mappings.forEach(function(m) {
-								if (!(options.preProcessors[m] instanceof Function)) {
-									console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-									return;
-								}
-								disabled = options.preProcessors[m](disabled, elem, _.extend({}, threeWay.dataMirror));
-							});
-							disabled = (!!disabled);
-
-							if (elem.disabled !== disabled) {
-								if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-									console.log('[.disabled] Setting .disabled to \"' + disabled + '\" for', elem);
-								}
-								elem.disabled = disabled;
-							}
-						}));
-					}
-
-					//////////////////////////////////////////////////////
-					// style
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.style) {
-						_.forEach(elemBindings.bindings.style.source, function(pipelineString, key) {
-							threeWay.computations.push(Tracker.autorun(function(c) {
-								var pipelineSplit = pipelineString.split('|').map(x => x.trim());
-								var source = pipelineSplit[0];
-								var mappings = pipelineSplit.splice(1);
-
-								if (c.firstRun) {
-									if (IN_DEBUG_MODE_FOR('style')) {
-										console.log("[.style|" + key + "] Preparing .style binding for", elem);
-										console.log("[.style|" + key + "] Field: " + source + "; Mappings: ", mappings);
-									}
-								}
-
-								var value;
-								if (!!options.helpers[source]) {
-									value = options.helpers[source].call(instance);
-								} else {
-									value = threeWay.data.get(source);
-									if (c.firstRun) {
-										if (typeof value === "undefined") {
-											return;
-										}
-									}
-								}
-								mappings.forEach(function(m) {
-									if (!(options.preProcessors[m] instanceof Function)) {
-										console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-										return;
-									}
-									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
-								});
-
-								// Update Style
-								if (elem.style[key] !== value) {
-									if (IN_DEBUG_MODE_FOR('style')) {
-										console.log('[.style|' + key + '] Setting style.' + key + ' to \"' + value + '\" for', elem);
-									}
-									elem.style[key] = value;
-								}
-							}));
-						});
-					}
-
-					//////////////////////////////////////////////////////
-					// attr
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.attr) {
-						_.forEach(elemBindings.bindings.attr.source, function(pipelineString, key) {
-							threeWay.computations.push(Tracker.autorun(function(c) {
-								var pipelineSplit = pipelineString.split('|').map(x => x.trim());
-								var source = pipelineSplit[0];
-								var mappings = pipelineSplit.splice(1);
-
-								if (c.firstRun) {
-									if (IN_DEBUG_MODE_FOR('attr')) {
-										console.log("[.attr|" + key + "] Preparing attribute binding for", elem);
-										console.log("[.attr|" + key + "] Field: " + source + "; Mappings: ", mappings);
-									}
-								}
-
-								var value;
-								if (!!options.helpers[source]) {
-									value = options.helpers[source].call(instance);
-								} else {
-									value = threeWay.data.get(source);
-									if (c.firstRun) {
-										if (typeof value === "undefined") {
-											return;
-										}
-									}
-								}
-								mappings.forEach(function(m) {
-									if (!(options.preProcessors[m] instanceof Function)) {
-										console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-										return;
-									}
-									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
-								});
-
-								// Update Style
-								if ($(elem).attr(key) !== value) {
-									if (IN_DEBUG_MODE_FOR('attr')) {
-										console.log('[.attr|' + key + '] Setting attribute ' + key + ' to \"' + value + '\" for', elem);
-									}
-									$(elem).attr(key, value);
-								}
-							}));
-						});
-					}
-
-					//////////////////////////////////////////////////////
-					// class
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.class) {
-						_.forEach(elemBindings.bindings.class.source, function(pipelineString, key) {
-							threeWay.computations.push(Tracker.autorun(function(c) {
-								var pipelineSplit = pipelineString.split('|').map(x => x.trim());
-								var source = pipelineSplit[0];
-								var mappings = pipelineSplit.splice(1);
-
-								if (c.firstRun) {
-									if (IN_DEBUG_MODE_FOR('class')) {
-										console.log("[.class|" + key + "] Preparing class binding for", elem);
-										console.log("[.class|" + key + "] Field: " + source + "; Mappings: ", mappings);
-									}
-								}
-
-								var value;
-								if (!!options.helpers[source]) {
-									value = options.helpers[source].call(instance);
-								} else {
-									value = threeWay.data.get(source);
-									if (c.firstRun) {
-										if (typeof value === "undefined") {
-											return;
-										}
-									}
-								}
-								mappings.forEach(function(m) {
-									if (!(options.preProcessors[m] instanceof Function)) {
-										console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-										return;
-									}
-									value = options.preProcessors[m](value, elem, _.extend({}, threeWay.dataMirror));
-								});
-								value = (!!value);
-
-								// Update Style
-								if ($(elem).hasClass(key) !== value) {
-									if (IN_DEBUG_MODE_FOR('class')) {
-										console.log('[.class|' + key + '] Setting class ' + key + ' to \"' + value + '\" for', elem);
-									}
-									if (value) {
-										$(elem).addClass(key);
-									} else {
-										$(elem).removeClass(key);
-									}
-								}
-							}));
-						});
-					}
-
-					//////////////////////////////////////////////////////
-					// event
-					//////////////////////////////////////////////////////
-					if (!!elemBindings.bindings.event) {
-						_.forEach(elemBindings.bindings.event.source, function(handlerString, eventName) {
-							threeWay.computations.push(Tracker.autorun(function(c) {
-								var handlerNames = handlerString.split('|').map(x => x.trim());
-
-								if (c.firstRun) {
-									if (IN_DEBUG_MODE_FOR('event')) {
-										console.log("[.event|" + eventName + "] Preparing event binding for", elem);
-										console.log("[.event|" + eventName + "] Handlers: ", handlerNames);
-									}
-								}
-
-								handlerNames.forEach(function(m) {
-									var handler = options.eventHandlers[m];
-									$(elem).on(eventName, function(event) {
-										if (IN_DEBUG_MODE_FOR('event')) {
-											console.log("[.event|" + eventName + "] Firing " + m + " for", elem);
-										}
-										handler.call(this, event, instance, _.extend({}, threeWay.dataMirror));
-									});
-								});
-							}));
-						});
-					}
-
-					//////////////////////////////////////////////////////
-					//////////////////////////////////////////////////////
-					// End Dealing with Bindings
-					//////////////////////////////////////////////////////
-					//////////////////////////////////////////////////////
-
-					elem.setAttribute(THREE_WAY_DATA_BOUND_ATTRIBUTE, true);
-
-				});
-
-				if (threeWay.doRebindOperations) {
-					// Recheck later
-					setTimeout(rebindOperations, options.rebindPollInterval);
 				}
-			})(); // Invoke rebindOperations
 
 
+				//////////////////////////////////////////////////////
+				// .html
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.html) {
+					threeWay.computations.push(Tracker.autorun(function(c) {
+						var pipelineSplit = elemBindings.bindings.html.source.split('|').map(x => x.trim());
+						var source = pipelineSplit[0];
+						var mappings = pipelineSplit.splice(1);
+
+						if (c.firstRun) {
+							if (IN_DEBUG_MODE_FOR('html')) {
+								console.log("[.html] Preparing .html binding for", elem);
+								console.log("[.html] Field: " + source + "; Mappings: ", mappings);
+							}
+						}
+
+						var html = processInTemplateContext(source, mappings, elem, c);
+
+						if (elem.innerHTML !== html) {
+							if (IN_DEBUG_MODE_FOR('html')) {
+								console.log('[.html] Setting .innerHTML to \"' + html + '\" for', elem);
+							}
+							elem.innerHTML = html;
+						}
+					}));
+					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+				}
+
+				//////////////////////////////////////////////////////
+				// .visible
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.visible) {
+					threeWay.computations.push(Tracker.autorun(function(c) {
+						var pipelineSplit = elemBindings.bindings.visible.source.split('|').map(x => x.trim());
+						var source = pipelineSplit[0];
+						var mappings = pipelineSplit.splice(1);
+
+						if (c.firstRun) {
+							if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
+								console.log("[.visible] Preparing .visible binding with " + source + " for", elem);
+							}
+						}
+
+						var visible = processInTemplateContext(source, mappings, elem, c);
+						visible = (!!visible) ? "" : "none";
+
+						if (elem.style.display !== visible) {
+							if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
+								console.log('[.visible] Setting .style[visible] to \"' + visible + '\" for', elem);
+							}
+							elem.style.display = visible;
+						}
+					}));
+					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+				}
+
+				//////////////////////////////////////////////////////
+				// .disabled
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.disabled) {
+					threeWay.computations.push(Tracker.autorun(function(c) {
+						var pipelineSplit = elemBindings.bindings.disabled.source.split('|').map(x => x.trim());
+						var source = pipelineSplit[0];
+						var mappings = pipelineSplit.splice(1);
+
+						if (c.firstRun) {
+							if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
+								console.log("[.disabled] Preparing .disabled binding with " + source + " for", elem);
+							}
+						}
+
+						var disabled = processInTemplateContext(source, mappings, elem, c);
+						disabled = (!!disabled);
+
+						if (elem.disabled !== disabled) {
+							if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
+								console.log('[.disabled] Setting .disabled to \"' + disabled + '\" for', elem);
+							}
+							elem.disabled = disabled;
+						}
+					}));
+					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+				}
+
+				//////////////////////////////////////////////////////
+				// style
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.style) {
+					_.forEach(elemBindings.bindings.style.source, function(pipelineString, key) {
+						threeWay.computations.push(Tracker.autorun(function(c) {
+							var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+							var source = pipelineSplit[0];
+							var mappings = pipelineSplit.splice(1);
+
+							if (c.firstRun) {
+								if (IN_DEBUG_MODE_FOR('style')) {
+									console.log("[.style|" + key + "] Preparing .style binding for", elem);
+									console.log("[.style|" + key + "] Field: " + source + "; Mappings: ", mappings);
+								}
+							}
+
+							var value = processInTemplateContext(source, mappings, elem, c);
+
+							// Update Style
+							if (elem.style[key] !== value) {
+								if (IN_DEBUG_MODE_FOR('style')) {
+									console.log('[.style|' + key + '] Setting style.' + key + ' to \"' + value + '\" for', elem);
+								}
+								elem.style[key] = value;
+							}
+						}));
+						boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+					});
+				}
+
+				//////////////////////////////////////////////////////
+				// attr
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.attr) {
+					_.forEach(elemBindings.bindings.attr.source, function(pipelineString, key) {
+						threeWay.computations.push(Tracker.autorun(function(c) {
+							var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+							var source = pipelineSplit[0];
+							var mappings = pipelineSplit.splice(1);
+
+							if (c.firstRun) {
+								if (IN_DEBUG_MODE_FOR('attr')) {
+									console.log("[.attr|" + key + "] Preparing attribute binding for", elem);
+									console.log("[.attr|" + key + "] Field: " + source + "; Mappings: ", mappings);
+								}
+							}
+
+							var value = processInTemplateContext(source, mappings, elem, c);
+
+							// Update Style
+							if ($(elem).attr(key) !== value) {
+								if (IN_DEBUG_MODE_FOR('attr')) {
+									console.log('[.attr|' + key + '] Setting attribute ' + key + ' to \"' + value + '\" for', elem);
+								}
+								$(elem).attr(key, value);
+							}
+						}));
+						boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+					});
+				}
+
+				//////////////////////////////////////////////////////
+				// class
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.class) {
+					_.forEach(elemBindings.bindings.class.source, function(pipelineString, key) {
+						threeWay.computations.push(Tracker.autorun(function(c) {
+							var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+							var source = pipelineSplit[0];
+							var mappings = pipelineSplit.splice(1);
+
+							if (c.firstRun) {
+								if (IN_DEBUG_MODE_FOR('class')) {
+									console.log("[.class|" + key + "] Preparing class binding for", elem);
+									console.log("[.class|" + key + "] Field: " + source + "; Mappings: ", mappings);
+								}
+							}
+
+							var value = processInTemplateContext(source, mappings, elem, c);
+							value = (!!value);
+
+							// Update Style
+							if ($(elem).hasClass(key) !== value) {
+								if (IN_DEBUG_MODE_FOR('class')) {
+									console.log('[.class|' + key + '] Setting class ' + key + ' to \"' + value + '\" for', elem);
+								}
+								if (value) {
+									$(elem).addClass(key);
+								} else {
+									$(elem).removeClass(key);
+								}
+							}
+						}));
+						boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+					});
+				}
+
+				//////////////////////////////////////////////////////
+				// event
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.event) {
+					_.forEach(elemBindings.bindings.event.source, function(handlerString, eventName) {
+						threeWay.computations.push(Tracker.autorun(function(c) {
+							var handlerNames = handlerString.split('|').map(x => x.trim());
+
+							if (c.firstRun) {
+								if (IN_DEBUG_MODE_FOR('event')) {
+									console.log("[.event|" + eventName + "] Preparing event binding for", elem);
+									console.log("[.event|" + eventName + "] Handlers: ", handlerNames);
+								}
+							}
+
+							handlerNames.forEach(function(m) {
+								var handler = options.eventHandlers[m];
+								bindEventToThisElem(eventName, function(event) {
+									if (IN_DEBUG_MODE_FOR('event')) {
+										console.log("[.event|" + eventName + "] Firing " + m + " for", elem);
+									}
+									var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
+									Template._currentTemplateInstanceFunc = () => instance;
+									handler.call(this, event, instance, _.extend({}, threeWay.dataMirror));
+									Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
+								});
+							});
+						}));
+						boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+					});
+				}
+
+				var thisElemId = ThreeWay.getNewId();
+				elem.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID, thisElemId);
+				Tracker.autorun(function(c) {
+					var instanceId = threeWay.instanceId.get();
+					if (!!instanceId) {
+						if (IN_DEBUG_MODE_FOR('bind')) {
+							console.log("[bind] Element bound to " + instanceId + " (twbId: " + elem.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID) + ")", elem);
+						}
+						elem.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE, instanceId);
+						c.stop();
+					}
+				});
+				threeWay.boundElemComputations[thisElemId] = boundElemComputations;
+				threeWay.boundElemEventHandlers[thisElemId] = boundElemComputations;
+			};
+
+			threeWay.__bindElem = bindElem;
+
+			////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////
+			// End Big Rebind Operation
+			////////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////////
+		});
+
+		tmpl.onRendered(function() {
+			var instance = this;
+			var thisTemplateName = instance.view.name.split('.').pop().trim();
+			var threeWay = instance[THREE_WAY_NAMESPACE];
+
+
+			//////////////////////////////////////////////////////////////////
+			// Set initial values for data (in particular, VM-only fields)
+			//////////////////////////////////////////////////////////////////
+			Array.prototype.forEach.call(instance.$("twdata[field]"), function(elem) {
+				var field = elem.getAttribute('field');
+				var initValue = elem.getAttribute('initial-value') || null;
+				var processorString = elem.getAttribute('processors') || "";
+				var templateRestrictionString = elem.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE) || "";
+				var templateRestrictions = (templateRestrictionString === "") ? [] : templateRestrictionString.split(',').map(x => x.trim());
+
+				if (IN_DEBUG_MODE_FOR('vm-only')) {
+					console.log("[vm-only] Initialization for " + field + " with", elem);
+				}
+
+				if ((templateRestrictions.length > 0) && (templateRestrictions.indexOf(thisTemplateName) === -1)) {
+					// Skip if restricted to other template type
+					if (IN_DEBUG_MODE_FOR('vm-only')) {
+						console.log("[vm-only] Skipping initialization: restricted to", templateRestrictions, "; Template Type: " + thisTemplateName);
+					}
+					return;
+				}
+
+				var processors = (processorString === "") ? [] : processorString.split('|').map(x => x.trim());
+				var value = initValue;
+
+				var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
+				Template._currentTemplateInstanceFunc = () => instance;
+				processors.forEach(function(m) {
+					// processors here do not provide view model data as an argument
+					if (!(options.preProcessors[m] instanceof Function)) {
+						console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+						return;
+					}
+					value = options.preProcessors[m](value, elem, {});
+				});
+				Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
+
+				if (IN_DEBUG_MODE_FOR('vm-only')) {
+					if (processors.length === 0) {
+						console.log("[vm-only] Setting up initial value for " + field + " to ", initValue, " using ", elem);
+					} else {
+						console.log("[vm-only] Setting up initial value for " + field + " using ", elem);
+						console.log("[vm-only] Processors:", processors, "; Init Value:", initValue, "; Final value:", value);
+					}
+				}
+				threeWay.data.set(field, value);
+
+				if (typeof threeWay._dataUpdateComputations[field] === "undefined") {
+					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
+						threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
+						if (IN_DEBUG_MODE_FOR('vm-only')) {
+							console.log("[vm-only] vm-only data:", threeWay.viewModelOnlyData);
+						}
+					});
+				}
+			});
+
+			//////////////////////////////////////////////////////////////////
 			// Say hi to parent now that its rendered
+			//////////////////////////////////////////////////////////////////
 			var myId = 'progenitor_' + Math.floor(Math.random() * 1e15);
 			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
 				var parentThreeWayInstance = instance.parentTemplate()[THREE_WAY_NAMESPACE];
@@ -1595,8 +1636,149 @@ if (Meteor.isClient) {
 				parentThreeWayInstance.__hasChild.set(myId, true);
 				parentThreeWayInstance.children[myId] = instance;
 			}
-			threeWay.instanceId = myId;
+			threeWay.instanceId.set(myId);
 
+			//////////////////////////////////////////////////////////////////
+			// Initial Node Binding
+			//  - Template lifecycle:
+			//    Parent Create, Child Create, Child Rendered, Parent Rendered
+			//  - Nodes of children get bound first
+			//  - Parent gets the rest
+			//////////////////////////////////////////////////////////////////
+			if (IN_DEBUG_MODE_FOR('bind')) {
+				console.log("[bind] Init on " + myId + ": Checking for new elements to bind.");
+			}
+			Array.prototype.forEach.call(instance.$("[data-bind]"), threeWay.__bindElem);
+
+
+			//////////////////////////////////////////////////////////////////
+			// Setup binding and re-binding
+			//////////////////////////////////////////////////////////////////
+
+			var lastGCOfComputations = 0;
+			Tracker.autorun(function() {
+				threeWay._rootNode.get();
+				var rootNode = threeWay.rootNode;
+
+				if (!!threeWay.mutationObserver) {
+					threeWay.mutationObserver.disconnect();
+				}
+
+				threeWay.mutationObserver = new MutationObserver(function respondToMutation(mutations) { // (mutations, mutationObserverInstance)
+					var instanceId;
+					var thisTemplateName = instance.view.name.split('.').pop().trim();
+
+					Tracker.nonreactive(function() {
+						instanceId = threeWay.instanceId.get();
+					});
+					if (!instanceId) {
+						instanceId = "~~id-unassigned~~";
+					}
+
+					mutations.forEach(function(mutation) {
+						if (!!mutation.addedNodes) {
+							Array.prototype.forEach.call(mutation.addedNodes, function(node) {
+								if ((!!node.getAttribute) && !!node.getAttribute(DATA_BIND_ATTRIBUTE)) {
+									if (!node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID)) {
+										//THREE_WAY_DATA_BINDING_INSTANCE
+										if (IN_DEBUG_MODE_FOR('bind')) {
+											console.log("[bind] Node added on " + instanceId, node);
+										}
+										var templateRestrictionsAttr = node.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE);
+										var templateRestrictions = templateRestrictionsAttr && templateRestrictionsAttr.split(',').map(x => x.trim()) || [];
+										if (templateRestrictions.indexOf(thisTemplateName) === -1) {
+											threeWay.__bindElem(node);
+										}
+									}
+								}
+							});
+						}
+
+						function stopBindingToNode(node) {
+							var thisElemId = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID);
+							if (!!thisElemId) {
+								// Clear computations
+								if (!!threeWay.boundElemComputations[thisElemId]) {
+									threeWay.boundElemComputations[thisElemId].forEach(function(c) {
+										c.stop();
+									});
+									delete threeWay.boundElemComputations[thisElemId];
+								}
+
+								// Clear event handlers
+								if (!!threeWay.boundElemEventHandlers[thisElemId]) {
+									threeWay.boundElemEventHandlers[thisElemId].forEach(function(handlerInfo) {
+										$(node).unbind(handlerInfo.eventName, handlerInfo.handler);
+									});
+									delete threeWay.boundElemEventHandlers[thisElemId];
+								}
+
+								// If 1min has passed since the last culling of stopped computations, ...
+								// ... and 10% of the time otherwise... cull stopped computations
+								var timeDelta = (new Date()).getTime() - lastGCOfComputations;
+								if ((timeDelta > 60000) || (Math.random() < Math.min(0.1, timeDelta * 1e-4))) {
+									var numComputationsStart = threeWay.computations.length;
+									threeWay.computations = threeWay.computations.filter(c => !c.stopped);
+									var numComputationsEnd = threeWay.computations.length;
+									lastGCOfComputations = (new Date()).getTime();
+									if (IN_DEBUG_MODE_FOR('bind')) {
+										console.log("[bind] GC. # active computations: " + numComputationsEnd + " (# removed: " + (numComputationsStart - numComputationsEnd) + ")");
+									}
+								}
+							}
+
+							$(node).removeAttr(THREE_WAY_DATA_BINDING_ID);
+							// $(node).removeAttr(THREE_WAY_DATA_BINDING_INSTANCE);
+						}
+
+						if (!!mutation.removedNodes) {
+							Array.prototype.forEach.call(mutation.removedNodes, function(node) {
+								if ((!!node.getAttribute) && !!node.getAttribute(DATA_BIND_ATTRIBUTE)) {
+									if (node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE) === instanceId) {
+										var thisElemId = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID);
+										if (IN_DEBUG_MODE_FOR('bind')) {
+											console.log("[bind] Node removed on " + instanceId + " (twbId: " + thisElemId + ")", node);
+										}
+										stopBindingToNode(node);
+									}
+								}
+							});
+						}
+
+						if (!!mutation.target && !!mutation.target.getAttribute) {
+							if (mutation.attributeName === DATA_BIND_ATTRIBUTE) {
+								var node = mutation.target;
+								if (node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE) === instanceId) {
+									if (IN_DEBUG_MODE_FOR('bind')) {
+										console.log("[bind] " + DATA_BIND_ATTRIBUTE + " attribute changed (bound to: " + instanceId + ")", node);
+									}
+									stopBindingToNode(node);
+									threeWay.__bindElem(node);
+								}
+							}
+						}
+					});
+				});
+
+				if (IN_DEBUG_MODE_FOR('bind')) {
+					var instanceId;
+					var thisTemplateName = instance.view.name.split('.').pop().trim();
+
+					Tracker.nonreactive(function() {
+						instanceId = threeWay.instanceId.get();
+					});
+					if (!instanceId) {
+						instanceId = "~~id-unassigned~~";
+					}
+					console.log("[bind] Starting Mutation Observer for " + instanceId + " (" + thisTemplateName + ") on ", rootNode);
+				}
+				threeWay.mutationObserver.observe(rootNode, {
+					childList: true,
+					subtree: true,
+					attributes: true,
+					characterData: false
+				});
+			});
 		});
 
 		tmpl.onDestroyed(function() {
@@ -1616,6 +1798,10 @@ if (Meteor.isClient) {
 			_.forEach(threeWay._dataUpdateComputations, function(c) {
 				c.stop();
 			});
+
+			if (!!threeWay.mutationObserver) {
+				threeWay.mutationObserver.disconnect();
+			}
 		});
 
 		tmpl.helpers({

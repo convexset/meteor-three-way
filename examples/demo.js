@@ -9,7 +9,7 @@
 var selectedDebugMessages = [
 	// 'parse',
 	// 'bindings',
-	'data-mirror',
+	// 'data-mirror',
 	// 'observer',
 	// 'tracker',
 	// 'new-id',
@@ -25,23 +25,21 @@ var selectedDebugMessages = [
 	// 'event',
 	// 'vm-only',
 	// 'validation',
-	// 're-bind',
+	// 'bind',
 ];
 
 //selectedDebugMessages = ThreeWay.DEBUG_MESSAGES; // copy
-if (Meteor.isClient) {
-	ThreeWay.setDebugModeOn();
-	ThreeWay.debugModeSelectNone();
-	selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
-}
 
 
 function setUpDebugMessages(template) {
-	var selectedDebugMessages = template._3w_get_NR('debugMessages');
-	console.info('Selected Debug Messages:', selectedDebugMessages);
+	var _selectedDebugMessages = template && template._3w_get_NR('debugMessages') || selectedDebugMessages;
+	console.info('Selected Debug Messages:', _selectedDebugMessages);
 	ThreeWay.setDebugModeOn();
 	ThreeWay.debugModeSelectNone();
-	selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
+	_selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
+}
+if (Meteor.isClient) {
+	setUpDebugMessages();
 }
 
 var fields = [
@@ -277,12 +275,12 @@ if (Meteor.isClient) {
 
 		// Success callbacks for validators
 		validateSuccessCallback: {
-			'tags': function(template, value, vmData, field, params) {
-				console.info('[Validated!] tags:', value, field, params);
+			'tags': function(template) {  // function(template, value, vmData, field, params) {
+				//console.info('[Validated!] tags:', value, field, params);
 				template._3w_set('tagsValidationErrorText', '');
 			},
 			'personal.someArr.*': function(template, value, vmData, field, params) {
-				console.info('[Validated!] personal.someArr.*', value, field, params);
+				//console.info('[Validated!] personal.someArr.*', value, field, params);
 				template._3w_set('someArrValidationErrorText.' + params[0], '');
 			},
 		},
@@ -305,7 +303,12 @@ if (Meteor.isClient) {
 		// (be aware that arrow functions are lexically scoped)
 		helpers: {
 			altGetId: function() {
+				console.info('altGetId called!', Template.instance() && Template.instance().view.name);
 				return this._3w_getId();
+			},
+			asColor: function(...rgb) {
+				var col = _.range(3).map(idx => !!rgb[idx] && !Number.isNaN(Number(rgb[idx])) ? Math.min(255, Math.max(0, Math.floor(Number(rgb[idx])))) : 128);
+				return "#" + col.join('');
 			}
 		},
 
@@ -359,8 +362,8 @@ if (Meteor.isClient) {
 				return col;
 			},
 			not: x => !x,
-			noIsFalse: (x) => x.trim().toLowerCase() === 'no' ? false : true,
-			trueIfNonEmpty: x => x.length > 0,
+			noIsFalse: x => (!!x) && (x.trim().toLowerCase() === 'no' ? false : true),
+			trueIfNonEmpty: x => (!!x) && x.length > 0,
 			grayIfTrue: x => (!!x) ? "#ccc" : "",
 			redIfTrue: x => (!!x) ? "red" : "",
 			// This is something "special" to make the Semantic UI Dropdown work
@@ -432,7 +435,10 @@ if (Meteor.isClient) {
 			}
 		})();
 
-		setUpDebugMessages(Template.instance());
+		var instance = this;
+		setTimeout(function() {
+			setUpDebugMessages(instance);
+		}, 500);
 	});
 
 	Template.DemoThreeWay.helpers({
@@ -509,6 +515,9 @@ if (Meteor.isClient) {
 			childTemplate._3w_setId("child-template-id");
 		}, 200);
 	});
+	Template.DemoThreeWayChild.onRendered(function() {
+		this._3w_setRoot(".DemoThreeWayChild");
+	});
 
 
 	var gcIdx = 1;
@@ -526,6 +535,9 @@ if (Meteor.isClient) {
 			instance._3w_setId("grandchild-" + gcIdx + "-template-id");
 			gcIdx += 1;
 		}, 200);
+	});
+	Template.DemoThreeWayGrandChild.onRendered(function() {
+		this._3w_setRoot(".DemoThreeWayGrandChild");
 	});
 
 }

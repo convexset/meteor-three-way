@@ -196,7 +196,21 @@
 				</tr>
 			</table>
 
-			Incidentally, here is the current id via a helper and an upper case pre-processor (colour based on id via a style binding): <span data-bind="html: altGetId|toUpperCase; style: {color: altGetId|toColor}"></span>.
+			<div>
+				Incidentally, here is the current id via a helper and an upper case pre-processor (colour based on id via a style binding): <span data-bind="html: _3w_id|toUpperCase; style: {color: altGetId|toColor}"></span>.
+			</div>
+
+			<div>
+				<p>If you are feeling frisky, try manually manipulating the DOM to see if the data binding responds:</p>
+				<pre>$("input[name='personal.someArr.2']").attr('data-bind', 'value: personal.someArr.0')</pre>
+				<p>should link "#2" of the <code>personal.someArr</code> data-entry row with the value of "#0"...</p>
+				<p>Alternatively, try adding a node below like so:</p>
+				<pre>$('#below-me').append('&lt;input data-bind=&quot;value: personal.otherArr.1.b&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;')</pre>
+			</div>
+
+			<div id="below-me">
+			</div>
+
 		</div>
 		
 		<div class="column">
@@ -408,85 +422,88 @@
 
 
 <template name="DemoThreeWayChild">
-	<h3>Child Template (Data Id: {{_3w_id}})</h3>
-	<ul>
-		<li><strong>Parent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 1}}</li>
-		<li><strong>My Data <code>childData</code></strong>: <input data-bind="value: childData">&nbsp;&nbsp; {{_3w_get 'childData'}}</li>
-	</ul>
-	
-	<table class="ui table celled">
-		<thead>
-			<tr><th>Field ('kiddy')</th>
-			<th>Value</th></tr>
-		</thead>
-		<tbody>
-			{{#each repackageDictionaryAsArray _3w_getAll}}
-				<tr>
-					<td>{{key}}</td>
-					<td>{{value}}</td>
-				</tr>
-			{{/each}}
-		</tbody>
-	</table>
-	
-	<table class="ui table celled">
-		<thead>
-			<tr><th>Field ('grandkiddy')</th>
-			<th>Value</th></tr>
-		</thead>
-		<tbody>
-			{{#each repackageDictionaryAsArray (_3w_childDataGetAll 'grandkiddy')}}
-				<tr>
-					<td>{{key}}</td>
-					<td>{{value}}</td>
-				</tr>
-			{{/each}}
-		</tbody>
-	</table>
-	
-	{{> DemoThreeWayGrandChild _3w_name='grandkiddy' initData="grandkiddy one" siblingName="other_grandkiddy"}}
-	{{> DemoThreeWayGrandChild _3w_name='other_grandkiddy' initData="grandkiddy two" siblingName="grandkiddy"}}
+	<div class="DemoThreeWayChild">
+		<h3>Child Template (Data Id: {{_3w_id}})</h3>
+		<ul>
+			<li><strong>Parent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 1}}</li>
+			<li><strong>My Data <code>childData</code></strong>: <input data-bind="value: childData">&nbsp;&nbsp; {{_3w_get 'childData'}}</li>
+		</ul>
+		
+		<table class="ui table celled">
+			<thead>
+				<tr><th>Field ('kiddy')</th>
+				<th>Value</th></tr>
+			</thead>
+			<tbody>
+				{{#each repackageDictionaryAsArray _3w_getAll}}
+					<tr>
+						<td>{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
+		
+		<table class="ui table celled">
+			<thead>
+				<tr><th>Field ('grandkiddy')</th>
+				<th>Value</th></tr>
+			</thead>
+			<tbody>
+				{{#each repackageDictionaryAsArray (_3w_childDataGetAll 'grandkiddy')}}
+					<tr>
+						<td>{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
+		
+		{{> DemoThreeWayGrandChild _3w_name='grandkiddy' initData="grandkiddy one" siblingName="other_grandkiddy"}}
+		{{> DemoThreeWayGrandChild _3w_name='other_grandkiddy' initData="grandkiddy two" siblingName="grandkiddy"}}
+	</div>
 </template>
 
 <template name="DemoThreeWayGrandChild">
-	<h3>Grandchild Template: <code>{{_3w_name}}</code> (Data Id: {{_3w_id}})</h3>
-	<twdata field="grandchildData" initial-value="{{initData}}" restrict-template-type="DemoThreeWayGrandChild"></twdata>
-	<twdata field="sharedBetweenParentAndGrandChild" initial-value="init sharedBetweenParentAndGrandChild" restrict-template-type="DemoThreeWay, DemoThreeWayGrandChild"></twdata>
-	<twdata field="sharedBetweenChildAndGrandChild" initial-value="init sharedBetweenChildAndGrandChild" restrict-template-type="DemoThreeWayChild, DemoThreeWayGrandChild"></twdata>
-	<ul>
-		<li><strong>Grandparent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 2}}</li>
-		<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>
-		<li><strong>Sibling Data <code>{{siblingName}}.grandchildData</code></strong>: {{_3w_siblingDataGet 'grandchildData' siblingName}}</li>
-	</ul>
+	<div class="DemoThreeWayGrandChild">
+		<h3>Grandchild Template: <code>{{_3w_name}}</code> (Data Id: {{_3w_id}})</h3>
+		<twdata field="grandchildData" initial-value="{{initData}}" restrict-template-type="DemoThreeWayGrandChild"></twdata>
+		<twdata field="sharedBetweenParentAndGrandChild" initial-value="init sharedBetweenParentAndGrandChild" restrict-template-type="DemoThreeWay, DemoThreeWayGrandChild"></twdata>
+		<twdata field="sharedBetweenChildAndGrandChild" initial-value="init sharedBetweenChildAndGrandChild" restrict-template-type="DemoThreeWayChild, DemoThreeWayGrandChild"></twdata>
+		<ul>
+			<li><strong>Grandparent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 2}}</li>
+			<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>
+			<li><strong>Sibling Data <code>{{siblingName}}.grandchildData</code></strong>: {{_3w_siblingDataGet 'grandchildData' siblingName}}</li>
+		</ul>
 
-	<table class="ui table celled">
-		<thead>
-			<tr><th>Field (Grandparent)</th>
-			<th>Value</th></tr>
-		</thead>
-		<tbody>
-			{{#each repackageDictionaryAsArray (_3w_parentDataGetAll 2)}}
-				<tr>
-					<td>{{key}}</td>
-					<td>{{value}}</td>
-				</tr>
-			{{/each}}
-		</tbody>
-	</table>
-	
-	<table class="ui table celled">
-		<thead>
-			<tr><th>Field (Sibling: {{siblingName}})</th>
-			<th>Value</th></tr>
-		</thead>
-		<tbody>
-			{{#each repackageDictionaryAsArray (_3w_siblingDataGetAll siblingName)}}
-				<tr>
-					<td>{{key}}</td>
-					<td>{{value}}</td>
-				</tr>
-			{{/each}}
-		</tbody>
-	</table>
-	
+		<table class="ui table celled">
+			<thead>
+				<tr><th>Field (Grandparent)</th>
+				<th>Value</th></tr>
+			</thead>
+			<tbody>
+				{{#each repackageDictionaryAsArray (_3w_parentDataGetAll 2)}}
+					<tr>
+						<td>{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
+		
+		<table class="ui table celled">
+			<thead>
+				<tr><th>Field (Sibling: {{siblingName}})</th>
+				<th>Value</th></tr>
+			</thead>
+			<tbody>
+				{{#each repackageDictionaryAsArray (_3w_siblingDataGetAll siblingName)}}
+					<tr>
+						<td>{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
+	</div>
 </template>
