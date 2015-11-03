@@ -16,7 +16,7 @@
 		</p>
 
 		<p>
-			Database to view model connectivity is provided by Meteor methods with signatures `function(id, value)`, with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods with signature `function(id, value, param1, param2, ...)`. The user is responsible for ensuring the right subscriptions are in place so <code>ThreeWay</code> can retrieve records from the local database cache.
+			Database to view model connectivity is provided by Meteor methods (with signatures <code>function(id, value)</code>), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature <code>function(id, value, param1, param2, ...)</code>). The user is responsible for ensuring the right subscriptions are in place so <code>ThreeWay</code> can retrieve records from the local database cache.
 		</p>
 
 		<p>
@@ -35,7 +35,7 @@
 	</div>
 	
 	<div class="column">
-		<h3>Debug Messages</h3>
+		<h3>Debug Messages (Look in the console!)</h3>
 		<div class="ui form">
 			{{#each clump allDebugMessages 4}}
 				<div class="fields">
