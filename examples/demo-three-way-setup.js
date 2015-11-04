@@ -1,10 +1,12 @@
-/* global Fake: true */
-/* global DataCollection: true */
 /* global ThreeWay: true */
+/* global Demo: true */
 
-/* global parentTemplate: true */
-/* global childTemplate: true */
-/* global grandchildTemplate: true */
+
+////////////////////////////////////////////////////////////
+// Preamble
+////////////////////////////////////////////////////////////
+var updatersForServer = _.object(Demo.fields, Demo.fields.map(x => "update-" + x));
+updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
 
 var selectedDebugMessages = [
 	// 'parse',
@@ -27,180 +29,16 @@ var selectedDebugMessages = [
 	// 'validation',
 	// 'bind',
 ];
-
 //selectedDebugMessages = ThreeWay.DEBUG_MESSAGES; // copy
 
 
-function setUpDebugMessages(template) {
-	var _selectedDebugMessages = template && template._3w_get_NR('debugMessages') || selectedDebugMessages;
-	console.info('Selected Debug Messages:', _selectedDebugMessages);
-	ThreeWay.setDebugModeOn();
-	ThreeWay.debugModeSelectNone();
-	_selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
-}
+////////////////////////////////////////////////////////////
+// Parent Template
+////////////////////////////////////////////////////////////
 if (Meteor.isClient) {
-	setUpDebugMessages();
-}
-
-var fields = [
-	'name',
-	'emailPrefs',
-	'personal.particulars.age',
-	'notes',
-	'tags',
-	'personal.someArr.*',
-	'personal.otherArr.*.*'
-];
-
-
-DataCollection = new Mongo.Collection('data');
-var allTags = ['tag1', 'tag2', 'tag3', 'tag4', 'tag5'];
-var ageRangeValues = ['0_12', '13_20', '21_35', '36_65', '66_plus'];
-var ageRanges = _.object(ageRangeValues, ['0 to 12', '13 to 20', '21 to 35', '36 to 65', '66 and over']);
-var emailPrefsValues = ['opt1', 'opt2', 'opt3'];
-var emailPrefsAll = _.object(emailPrefsValues, ['Spam Away', 'Only My Orders', 'XYZ']);
-
-function randomId() {
-	var data = DataCollection.find({}, {
-		reactive: false
-	}).fetch();
-	return data[Math.floor(data.length * Math.random())]._id;
-}
-
-if (Meteor.isServer) {
-	// The publication
-	Meteor.publish('demo-pub', function() {
-		return DataCollection.find({});
-	});
-
-	fields.forEach(function(field) {
-		if (field.indexOf('*') === -1) {
-			var methods = {};
-			var fn = function(id, value) {
-				var updater = {};
-				updater[field] = value;
-				var myFieldName = 'update-' + field;
-				while (myFieldName.length < 40) {
-					myFieldName += " ";
-				}
-				console.log(myFieldName, id, '\t', value);
-				DataCollection.update(id, {
-					$set: updater
-				});
-			};
-			methods['update-' + field] = fn;
-			Meteor.methods(methods);
-		}
-	});
-	Meteor.methods({
-		'update-personal.someArr.1': function(id, value) {
-			var updater = {};
-			updater['personal.someArr.1'] = value;
-			var myFieldName = '[specific] update-personal.someArr.1';
-			while (myFieldName.length < 40) {
-				myFieldName += " ";
-			}
-			console.log(myFieldName, id, '\t', value);
-			DataCollection.update(id, {
-				$set: updater
-			});
-		},
-		'update-personal.someArr.*': function(id, value, k) {
-			var updater = {};
-			updater['personal.someArr.' + k] = value;
-			var myFieldName = 'update-personal.someArr.' + k;
-			while (myFieldName.length < 40) {
-				myFieldName += " ";
-			}
-			console.log(myFieldName, id, '\t', value);
-			DataCollection.update(id, {
-				$set: updater
-			});
-		},
-		'update-personal.otherArr.*.*': function(id, value, k, fld) {
-			var updater = {};
-			updater['personal.otherArr.' + k + '.' + fld] = value;
-			var myFieldName = 'update-personal.otherArr.' + k + '.' + fld;
-			while (myFieldName.length < 40) {
-				myFieldName += " ";
-			}
-			console.log(myFieldName, id, '\t', value);
-			DataCollection.update(id, {
-				$set: updater
-			});
-		}
-	});
-
-	// Init. data
-	var lastRegenTimestamp = 0;
-	Meteor.methods({
-		'regenerate-data': function() {
-			var currTimestamp = (new Date()).getTime();
-			if (currTimestamp - lastRegenTimestamp < 2 * 60 * 1000) {
-				throw new Meteor.Error("Last data regeneration too recent.");
-			} else {
-				lastRegenTimestamp = currTimestamp;
-				DataCollection.remove({});
-				_.range(10).forEach(function() {
-					var user = Fake.user();
-					var tags = [];
-					allTags.forEach(function(tag) {
-						if (Math.random() < 0.4) {
-							tags.push(tag);
-						}
-					});
-					var _emPrefs = [];
-					emailPrefsValues.forEach(function(x) {
-						if (Math.random() < 0.6) {
-							_emPrefs.push(x);
-						}
-					});
-					DataCollection.insert({
-						name: user.fullname,
-						emailPrefs: _emPrefs,
-						personal: {
-							particulars: {
-								age: Fake.fromArray(ageRangeValues),
-							},
-							someArr: ["" + Math.floor(Math.random() * 10), '!!!', "" + Math.floor(Math.random() * 10)],
-							otherArr: [{
-								a: "" + Math.floor(10 + Math.random() * 10),
-								b: "" + Math.floor(20 + Math.random() * 10)
-							}, {
-								a: "" + Math.floor(30 + Math.random() * 10),
-								b: "" + Math.floor(40 + Math.random() * 10)
-							}, ]
-						},
-						notes: Fake.sentence(5),
-						tags: tags,
-					});
-				});
-			}
-		}
-	});
-
-	Meteor.call('regenerate-data');
-}
-
-var updatersForServer = _.object(fields, fields.map(x => "update-" + x));
-updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
-
-if (Meteor.isClient) {
-	// setInterval(function() {
-	// 	if (Math.random() < 0.001) {
-	// 		console.info("**************************************************");
-	// 		console.info("* Regenerating Data...");
-	// 		console.info("* Existing selection will be... deselected.");
-	// 		console.info("**************************************************");
-	// 		Meteor.call('regenerate-data');
-	// 	}
-	// }, 60000);
-
-	var sub = Meteor.subscribe('demo-pub');
-
 	ThreeWay.prepare(Template.DemoThreeWay, {
 		// The relevant Mongo.Collection
-		collection: DataCollection,
+		collection: Demo.collection,
 
 		// Meteor methods for updating the database
 		// The keys being the respective fields/field selectors for the database
@@ -328,11 +166,11 @@ if (Meteor.isClient) {
 			// joins them to make the result "more presentable"
 			tagsTextDisplay: x => (!x) ? "" : x.split(',').map(x => x.trim()).join(', '),
 			// this maps a key to the corresponding long form description
-			mapToAgeDisplay: x => ageRanges[x],
+			mapToAgeDisplay: x => Demo.ageRanges[x],
 			// this maps an array of keys to the corresponding long form
 			// descriptions and then joins them
 			mapToEmailPrefs: function(prefs, elem, vmData) {
-				var outcome = prefs.map(x => emailPrefsAll[x]).join(", ");
+				var outcome = prefs.map(x => Demo.emailPrefsAll[x]).join(", ");
 				console.log('preProcessors[\'mapToEmailPrefs\']\nValue: ', prefs, "\nDOM Element:", elem, "\nView Model Data:", vmData, '-->', outcome);
 				return outcome;
 			},
@@ -427,85 +265,15 @@ if (Meteor.isClient) {
 		// Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
 		methodInterval: 100, // default: 100
 	});
-
-	Template.DemoThreeWay.onCreated(function() {
-		parentTemplate = this;
-
-		this.num = new ReactiveVar(1);
-	});
-
-	Template.DemoThreeWay.onRendered(function() {
-		(function createDropdown() {
-			if (!selectCreated) {
-				var selector = $('.ui.dropdown');
-				if (selector.length > 0) {
-					selectCreated = true;
-					selector.dropdown({
-						allowAdditions: true
-					});
-				} else {
-					setTimeout(createDropdown, 10);
-				}
-			}
-		})();
-	});
-
-	Template.DemoThreeWay.helpers({
-		data: () => DataCollection.find(),
-		allTags: () => allTags.map(x => x),
-		ageRanges: () => _.extend({}, ageRanges),
-		emailPrefsAll: () => _.extend({}, emailPrefsAll),
-		emailPrefsToCSL: function(arr) {
-			return arr.map(x => emailPrefsAll[x]).join(", ");
-		},
-		num: () => Template.instance().num.get(),
-		allDebugMessages: () => ThreeWay.DEBUG_MESSAGES,
-		toLowerCase: x => x.toLowerCase && x.toLowerCase()
-	});
-
-	var selectCreated = false;
-	Template.DemoThreeWay.events({
-		"click button.select-data": function(event, template) {
-			template.num.set(1);
-			var id = event.target.getAttribute('id').split('-')[1];
-			console.info('Setting ID to: ' + id);
-			console.info('Note the personal.someArr array is initially only bound to one input element (item 0).');
-
-			// Set time out to allow the effects of setting num to 1 to set in
-			// so the additional elements are only rendered later
-			setTimeout(function() {
-				template._3w_setId(id);
-
-				setTimeout(function() {
-					$('html, body').animate({
-						scrollTop: Math.max(0, $("#edit-head").offset().top - 120)
-					}, 500);
-				}, 50);
-
-				setTimeout(function() {
-					template.num.set(3);
-					console.info('Now (~3 sec later) personal.someArr array bound to three input elements (item 0, 1 & 2).');
-				}, 3000);
-			}, 50);
-		},
-		"click button.talk": function() {
-			/* global alert: true */
-			alert('Not disabled!');
-		},
-		"click button#randomize-child-ids": function() {
-			/* global alert: true */
-			Template.instance()._3w_childDataSetId(randomId(), 'kiddy');
-			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'grandkiddy']);
-			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'other_grandkiddy']);
-		},
-		"change input[name=debug-messages]": function(event, template) {
-			setTimeout(() => setUpDebugMessages(template), 50);
-		}
-	});
+}
 
 
+////////////////////////////////////////////////////////////
+// Child Template
+////////////////////////////////////////////////////////////
+if (Meteor.isClient) {
 	ThreeWay.prepare(Template.DemoThreeWayChild, {
-		collection: DataCollection,
+		collection: Demo.collection,
 		updatersForServer: {
 			'name': 'update-name'
 		},
@@ -513,39 +281,17 @@ if (Meteor.isClient) {
 			"childData": "1234"
 		},
 	});
-	Template.DemoThreeWayChild.onCreated(function() {
-		childTemplate = this;
-	});
-	Template.DemoThreeWayChild.onRendered(function() {
-		var instance = this;
-		instance._3w_setRoot(".DemoThreeWayChild");
-		Tracker.autorun(function() {
-			// sub.ready changes once... supposedly...
-			if (sub.ready()) {
-				instance._3w_setId(randomId());
-			}
-		});
-	});
+}
 
 
+////////////////////////////////////////////////////////////
+// Grand Child Template
+////////////////////////////////////////////////////////////
+if (Meteor.isClient) {
 	ThreeWay.prepare(Template.DemoThreeWayGrandChild, {
-		collection: DataCollection,
+		collection: Demo.collection,
 		updatersForServer: {
 			'name': 'update-name'
 		},
 	});
-	Template.DemoThreeWayGrandChild.onCreated(function() {
-		grandchildTemplate = this;
-	});
-	Template.DemoThreeWayGrandChild.onRendered(function() {
-		var instance = this;
-		instance._3w_setRoot(".DemoThreeWayGrandChild");
-		Tracker.autorun(function() {
-			// sub.ready changes once... supposedly...
-			if (sub.ready()) {
-				instance._3w_setId(randomId());
-			}
-		});
-	});
-
 }
