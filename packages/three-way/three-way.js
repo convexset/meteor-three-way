@@ -1853,7 +1853,6 @@ if (Meteor.isClient) {
 			_3w_siblingDataGet: (p, siblingName) => Template.instance()._3w_siblingDataGet(p, siblingName),
 			_3w_siblingDataGetAll: (siblingName) => Template.instance()._3w_siblingDataGetAll(siblingName),
 		});
-
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'processors', {
@@ -1868,6 +1867,33 @@ if (Meteor.isClient) {
 				}
 			}
 			return x;
-		}
+		},
+	});
+
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'transformations', {
+		stringToDate: function stringToDate(ds) {
+			var splt = ds.split('-');
+			var dt = new Date();
+			if (splt.length === 3) {
+				var day = Number(splt[2]);
+				var mth = Number(splt[1]);
+				var yr = Number(splt[0]);
+				if (!Number.isNaN(day) && !Number.isNaN(mth) && !Number.isNaN(yr)) {
+					dt = new Date(yr, mth - 1, day);
+				}
+			}
+			return dt;
+		},
+		stringFromDate: function stringFromDate(dt) {
+			if (!(dt instanceof Date)) {
+				dt = new Date();
+			}
+			var mm = dt.getMonth() + 1;
+			var dd = dt.getDate();
+			mm = mm < 10 ? '0' + mm : mm;
+			dd = dd < 10 ? '0' + dd : dd;
+			var ds = dt.getFullYear() + '-' + mm + '-' + dd;
+			return ds;
+		},
 	});
 }
