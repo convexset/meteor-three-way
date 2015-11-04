@@ -7,7 +7,7 @@ The user is responsible for ensuring the right subscriptions are in place so `Th
 
 The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
 
-Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
+Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) and certain animations). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
 
 ## Table of Contents
 
@@ -560,11 +560,11 @@ In the case of radio buttons, `checked` is bound to a string.
 Helper functions may be used as input for display-type bindings.
 Such bindings include `html`, `visible`, `disabled`, as well as the `class`, `style` and `attr` bindings.
 
-**For such bindings, the order of search is helpers first, then template helpers, then data.**
+**For such bindings, the order of search is helpers first, then template helpers, then data. (so `ThreeWay` helpers shadow template helpers)**
 
 Helpers are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
 
-Note that one helper, `_3w_haveData`, is automatically added to `options.helpers`
+It is useful to highlight `_3w_haveData`, which is automatically added to the set of template helpers.
 
 ```html
 <div data-bind="visible: _3w_haveData">...</div>
@@ -839,6 +839,52 @@ See [Instance Methods](#instance-methods) for more information.
  - `'vm-only'`
  - `'validation'`
  - `'bind'`
+
+
+## Extras
+
+
+#### Default Pre-processors
+
+Default pre-processors may be used directly without need for definition. They are added to the list of pre-processors and may be overwritten if the user so chooses.
+
+ - `truthy`: returns a boolean which reflects the "truthiness" of the value
+ - `not`: returns a boolean which reflects the "falsiness" of the value
+ - `isNonEmptyString`: returns the described true/false value
+ - `isNonEmptyArray`: returns the described true/false value
+ - `toUpperCase`: transforms the value to a string (`undefined` to `""`) and returns it in upper case
+ - `toLowerCase`: transforms the value to a string (`undefined` to `""`) and returns it in lower case
+
+#### Extra Pre-Processors
+
+Extra processors may be accessed via the `ThreeWay.processors` namespace. (e.g.: `ThreeWay.processors.updateSemanticUIDropdown` or `ThreeWay.processors.undefinedToEmptyStringFilter`)
+
+- `updateSemanticUIDropdown`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)
+
+- `undefinedToEmptyStringFilter`: maps `undefined`'s to empty strings and passes other values
+
+#### Extra Pre-Processor Generators
+
+Similar to the above, but these are generators for pre-processor take one or more parameters and return a pre-processor.
+
+- `undefinedFilterGenerator(defaultValue)`: a function that returns a function that maps `undefined`'s to `defaultValue` and passes other values
+
+
+#### Extra Transformations
+
+Built-in transformations, for mapping from server to view model and back, may be accessed via the `ThreeWay.transformations` namespace. (e.g.: `ThreeWay.transformations.dateToString` or `ThreeWay.transformations.dateFromString`) Generally, the naming convention is understood to be "server-side value" on left and "view model value" on right.
+
+- `dateFromString`: maps a string of the form "YYYY-MM-DD" to a `Date`
+- `dateToString`: maps a `Date` to a string of the form "YYYY-MM-DD"
+- `arrayFromCommaDelimitedString`: maps a comma delimited string to an array of a separated values (empty string maps to empty array)
+- `arrayToCommaDelimitedString`: maps an array to a comma delimited string
+
+#### Extra Transformation Generators
+
+Similar to the above, but these are generators for transformations that take one or more parameters and return a transformation.
+
+ - `arrayFromDelimitedString(delimiter)`: generates transformations like `arrayFromCommaDelimitedString` above
+ - `arrayToDelimitedString(delimiter)`: generates transformations like `arrayToCommaDelimitedString` above
 
 ## Notes
 

@@ -53,12 +53,7 @@ if (Meteor.isClient) {
 		dataTransformToServer: {
 			// tags: x => (x.trim().length > 0) ? x.split(',').map(y => y.trim()) : [];
 			tags: function(x, vmData) {
-				var outcome;
-				if (!x || (x.trim() === '')) {
-					outcome = [];
-				} else {
-					outcome = x.split(',').map(y => y.trim());
-				}
+				var outcome = ThreeWay.transformations.arrayFromCommaDelimitedString(x);
 				console.log('dataTransformToServer[\'tags\']:', x, vmData, '-->', outcome);
 				return outcome;
 			}
@@ -72,7 +67,7 @@ if (Meteor.isClient) {
 		dataTransformFromServer: {
 			// tags: arr => arr.join && arr.join(',') || ""
 			tags: function(arr, doc) {
-				var outcome = arr.join && arr.join(',') || "";
+				var outcome = ThreeWay.transformations.arrayToCommaDelimitedString(arr);
 				console.log('dataTransformFromServer[\'tags\']:', arr, doc, '-->', outcome);
 				return outcome;
 			}

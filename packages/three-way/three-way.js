@@ -245,12 +245,25 @@ if (Meteor.isClient) {
 			}
 		});
 
-		// Adding Helpers
-		// Helpers are called with this bound as the template instance.
-		if (typeof options.helpers['_3w_haveData'] === "undefined") {
-			options.helpers['_3w_haveData'] = function() {
-				return this[THREE_WAY_NAMESPACE].haveData.get();
-			};
+
+		// Adding Pre-Processors
+		if (typeof options.preProcessors['not'] === "undefined") {
+			options.preProcessors['not'] = x => !x;
+		}
+		if (typeof options.preProcessors['truthy'] === "undefined") {
+			options.preProcessors['truthy'] = x => !!x;
+		}
+		if (typeof options.preProcessors['isNonEmptyString'] === "undefined") {
+			options.preProcessors['isNonEmptyString'] = x => (typeof x === "string") && x.length > 0;
+		}
+		if (typeof options.preProcessors['isNonEmptyArray'] === "undefined") {
+			options.preProcessors['isNonEmptyArray'] = x => (x instanceof Array) && x.length > 0;
+		}
+		if (typeof options.preProcessors['toUpperCase'] === "undefined") {
+			options.preProcessors['toUpperCase'] = x => (typeof x === "undefined") ? "" : x.toString().toUpperCase();
+		}
+		if (typeof options.preProcessors['toLowerCase'] === "undefined") {
+			options.preProcessors['toLowerCase'] = x => (typeof x === "undefined") ? "" : x.toString().toLowerCase();
 		}
 
 
@@ -1855,6 +1868,12 @@ if (Meteor.isClient) {
 		});
 	});
 
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'processorGenerators', {
+		undefinedFilterGenerator: function undefinedFilter(defaultValue) {
+			return x => (typeof x === "undefined") ? defaultValue : x;
+		},
+	});
+
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'processors', {
 		updateSemanticUIDropdown: function updateSemanticUIDropdown(x, elem) {
 			if (typeof x !== "undefined") {
@@ -1868,10 +1887,30 @@ if (Meteor.isClient) {
 			}
 			return x;
 		},
+		undefinedToEmptyStringFilter: ThreeWay.processorGenerators.undefinedFilterGenerator(""),
+	});
+
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'transformationGenerators', {
+		arrayFromDelimitedString: function arrayFromDelimitedString(delimiter) {
+			return function arrayFromDelimitedString(x) {
+				var outcome;
+				if (!x || (x.trim() === '')) {
+					outcome = [];
+				} else {
+					outcome = x.split(delimiter).map(y => y.trim());
+				}
+				return outcome;
+			};
+		},
+		arrayToDelimitedString: function arrayToDelimitedString(delimiter) {
+			return function arrayToDelimitedString(arr) {
+				return arr.join && arr.join(delimiter) || "";
+			};
+		},
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'transformations', {
-		stringToDate: function stringToDate(ds) {
+		dateFromString: function dateFromString(ds) {
 			var splt = ds.split('-');
 			var dt = new Date();
 			if (splt.length === 3) {
@@ -1884,7 +1923,7 @@ if (Meteor.isClient) {
 			}
 			return dt;
 		},
-		stringFromDate: function stringFromDate(dt) {
+		dateToString: function dateToString(dt) {
 			if (!(dt instanceof Date)) {
 				dt = new Date();
 			}
@@ -1895,5 +1934,8 @@ if (Meteor.isClient) {
 			var ds = dt.getFullYear() + '-' + mm + '-' + dd;
 			return ds;
 		},
+		arrayFromCommaDelimitedString: ThreeWay.transformationGenerators.arrayFromDelimitedString(","),
+		arrayToCommaDelimitedString: ThreeWay.transformationGenerators.arrayToDelimitedString(","),
 	});
+
 }
