@@ -335,6 +335,9 @@ if (Meteor.isClient) {
 			instance._3w_getId = function() {
 				return threeWay.id.get();
 			};
+			instance._3w_get3wInstanceId = function() {
+				return threeWay.instanceId.get();
+			};
 			instance._3w_get = p => threeWay.data.get(p);
 			instance._3w_set = (p, v) => threeWay.data.set(p, v);
 			instance._3w_get_NR = p => threeWay.dataMirror[p];
@@ -1835,6 +1838,7 @@ if (Meteor.isClient) {
 
 		tmpl.helpers({
 			_3w_id: () => Template.instance()._3w_getId(),
+			_3w_3wInstanceId: () => Template.instance()._3w_get3wInstanceId(),
 			_3w_haveData: () => Template.instance()[THREE_WAY_NAMESPACE].haveData.get(),
 			_3w_get: (propName) => Template.instance()._3w_get(propName),
 			_3w_getAll: () => Template.instance()._3w_getAll(),
