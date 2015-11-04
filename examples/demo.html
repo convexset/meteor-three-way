@@ -8,6 +8,11 @@
 </body>
 
 <template name="DemoThreeWay">
+
+	<div class="column">
+		&nbsp;
+	</div>
+
 	<h1>ThreeWay Demo</h1>
 	
 	<div class="column" style="text-align: justify;">
@@ -78,7 +83,7 @@
 			</thead>
 			<tbody>
 				{{#each data}}
-					<tr>
+					<tr style="{{#if _3w_id}}{{#if equalTo _3w_id _id}}background-color: #DDD;{{/if}}{{/if}}">
 						<td>{{name}}</td>
 						<td>{{emailPrefsToCSL emailPrefs}}</td>
 						<td>{{getProperty personal.particulars.age ageRanges}}</td>
@@ -141,7 +146,7 @@
 					</td>
 				</tr>
 				<tr>
-					<td><strong>Age</strong></td>
+					<td><strong>Age (<code>personal.particulars.age</code>)</strong></td>
 					<td>
 						<div class="inline fields">
 							{{#each repackageDictionaryAsArray ageRanges}}
@@ -181,7 +186,7 @@
 				</tr>
 				<tr>
 					<td>
-						<strong>personal.someArr</strong>
+						<strong><code>personal.someArr</code></strong>
 						<br>
 						(#0 takes only numbers; #2 forbids "!" and "@")
 					</td>
@@ -199,20 +204,29 @@
 								>
 							{{/each}}
 						</div>
-						<div style="color: blue; font-size: 0.7em;">
-							Note that on selecting an item #1 and #2 appear later (via <code>setTimeout</code>) and are soon data bound.
+						<div style="color: blue; font-size: 0.8em; max-width: 95%;">
+							Note that on selecting an item #1 and #2 are created later (via <code>setTimeout</code>) and are soon data bound via dynamic data binding.
+						</div>
+						<div style="color: brown; font-size: 0.8em; max-width: 95%;">
+							Note also that sub-objects can be challenging. Because, <a href="http://docs.meteor.com/#/full/observe_changes" target="_blank"><code>cursor.observeChanges</code></a> sends entire sub-objects even if there was a small change to a primitive deeply nested within.
+						</div>
+						<div style="color: brown; font-size: 0.8em; max-width: 95%;">
+							<strong>As such, large sub-documents and data-binding are not an ideal implementation pattern.</strong>
+						</div>
+						<div style="color: brown; font-size: 0.8em; max-width: 95%;">
+							There are some little tricks in <code>ThreeWay</code> such as "expecting data sent out to come back eventually". But still, don't do "large sub-documents" if it can be helped.
 						</div>
 					</td>
 				</tr>
 				<tr>
-					<td><strong>personal.otherArr[0]</strong></td>
+					<td><strong><code>personal.otherArr[0]</code></strong></td>
 					<td>
 						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.a">
 						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.b">
 					</td>
 				</tr>
 				<tr>
-					<td><strong>personal.otherArr[1]</strong></td>
+					<td><strong><code>personal.otherArr[1]</code></strong></td>
 					<td>
 						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.a">
 						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.b">
@@ -328,12 +342,16 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 				<label>[value binding] hide (VM Only) | value in view model: <span style="color: blue;" data-bind="html: hide"></span></label>
 				<input data-bind="value: hide">
 
-				<div style="background-color: red; width: 100%;" data-bind="visible: hide|sayHideToHide">
-					<strong>Set <code>hide</code> to "hide" to Make this Disappear </strong>
+				<div style="min-height: 20px;"></div>
+
+				<div style="background-color: red; width: 100%; line-height: 60px; text-align: center; border-radius: 15px;" data-bind="visible: hide|sayHideToHide">
+					<span style="vertical-align: middle; display: inline-block; line-height: 14px; "><strong>Set the value of <code>hide</code> to "hide" (via the above text input) to make this disappear </strong></span>
 				</div>
 
+				<div style="min-height: 20px;" data-bind="visible: hide|sayHideToHide"></div>
+
 				<div>
-					<strong>The above is actually a <code>style.display</code> binding... Anything other than "hide" will show the annoying <span style="color: red;">red</span> <code>div</code>.</strong>
+					<strong>The {{#if (equalTo (toLowerCase (_3w_get 'hide')) 'hide')}}now hidden thing{{else}}above{{/if}} has a <code>style.display</code> binding... Anything other than "hide" will show the annoying <span style="color: red;">red</span> <code>div</code>.</strong>
 				</div>
 
 				<div>
@@ -383,14 +401,6 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 				Initialized via:
 				<pre>&lt;twdata field=&quot;semanticUIStyling&quot; initial-value=&quot;yes&quot;&gt;&lt;/twdata&gt;</pre>
 			</div>
-			<div class="field">
-				<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze: <code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code></label>
-				<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=1000 min=0>
-				<twdata field="sliderValue" initial-value="50"></twdata>
-
-				Initialized via:
-				<pre>&lt;twdata field=&quot;sliderValue&quot; initial-value=&quot;50&quot;&gt;&lt;/twdata&gt;</pre>
-			</div>
 		</div>
 		
 	</div>
@@ -406,16 +416,39 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 	<div class="column">
 		<h1>Parent-Child-Sibling Data Access</h1>
 
-		The following may look somewhat confused.
-		But to summarize things, <code>ThreeWay</code>-linked template instances connected in parent-child relationships are able to access data from each other and the instances that are connected in the following way:
-		<ul>
-			<li>ancestor (any number of levels up)</li>
-			<li>descendant (any number of levels down; requires knowledge of the relevant template instance identifiers of successive descendants passed into each template as <code>_3w_name</code> in data context)</li>
-			<li>sibling (requires knowledge of the relevant template instance identifier passed into template as <code>_3w_name</code> in data context)</li>
-		</ul>
-		The order of "all data" display is out of order, with illustrations of instances accessing data from each other.
+		<div>
+			The following may look somewhat confused.
+			But to summarize things, <code>ThreeWay</code>-linked template instances connected in parent-child relationships are able to access data from each other and the instances that are connected in the following way:
+			<ul>
+				<li>ancestor (any number of levels up)</li>
+				<li>descendant (any number of levels down; requires knowledge of the relevant template instance identifiers of successive descendants passed into each template as <code>_3w_name</code> in data context)</li>
+				<li>sibling (requires knowledge of the relevant template instance identifier passed into template as <code>_3w_name</code> in data context)</li>
+			</ul>
+			The order of "all data" display is out of order, with illustrations of instances accessing data from each other.
+		</div>
 
-		<button id="randomize-child-ids">Randomize Child (Data) Ids</button>
+		<div style="min-height: 10px;"></div>
+
+		<table style="width: 100%;">
+			<tr>
+				<td>The descendant nodes are linked to the same collection. The linked <code>_id</code>'s can be controlled from the parent.</td>
+				<td style="text-align: right;"><button id="randomize-child-ids">Randomize Child (Data) Ids</button></td>
+			</tr>
+		</table>
+			
+		<div style="min-height: 30px;"></div>
+
+		<div class="ui form">
+			<div>Here is something to play with on the parent template that may be accessed from descendant instances.</div>
+			<div class="field">
+				<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze: <code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code></label>
+				<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=1000 min=0>
+				<twdata field="sliderValue" initial-value="50"></twdata>
+
+				Initialized via:
+				<pre>&lt;twdata field=&quot;sliderValue&quot; initial-value=&quot;50&quot;&gt;&lt;/twdata&gt;</pre>
+			</div>
+		</div>		
 		
 		<h3>Descendant Data</h3>
 		<ul>
@@ -426,42 +459,24 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 			<li><strong>Grand Child Two Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'other_grandkiddy')}}</li>
 		</ul>
 		
-		<table class="ui table celled">
-			<thead>
-				<tr><th>Field ('grandkiddy')</th>
-				<th>Value</th></tr>
-			</thead>
-			<tbody>
-				{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'grandkiddy'))}}
-					<tr>
-						<td>{{key}}</td>
-						<td>{{value}}</td>
-					</tr>
-				{{/each}}
-			</tbody>
-		</table>
 	</div>
 	
 	{{> DemoThreeWayChild _3w_name='kiddy'}}
 	
-	<div class="column" style="height: 100px">
+	<div class="column">
 		&nbsp;
 	</div>
-	
-</template>
+	<hr/>
+	<div class="column">
+		&nbsp;
+	</div>
 
+	<div class="column">
+		<h1>Data Dump</h1>
 
-<template name="DemoThreeWayChild">
-	<div class="DemoThreeWayChild">
-		<h3>Child Template (Data Id: {{_3w_id}})</h3>
-		<ul>
-			<li><strong>Parent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 1}}</li>
-			<li><strong>My Data <code>childData</code></strong>: <input data-bind="value: childData">&nbsp;&nbsp; {{_3w_get 'childData'}}</li>
-		</ul>
-		
 		<table class="ui table celled">
 			<thead>
-				<tr><th>Field ('kiddy')</th>
+				<tr><th>Field (this instance, autonamed: <code>{{_3w_3wInstanceId}}</code>)</th>
 				<th>Value</th></tr>
 			</thead>
 			<tbody>
@@ -476,11 +491,11 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 		
 		<table class="ui table celled">
 			<thead>
-				<tr><th>Field ('grandkiddy')</th>
+				<tr><th>Field (in <code>kiddy</code>)</th>
 				<th>Value</th></tr>
 			</thead>
 			<tbody>
-				{{#each repackageDictionaryAsArray (_3w_childDataGetAll 'grandkiddy')}}
+				{{#each repackageDictionaryAsArray (_3w_childDataGetAll 'kiddy')}}
 					<tr>
 						<td>{{key}}</td>
 						<td>{{value}}</td>
@@ -488,6 +503,53 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 				{{/each}}
 			</tbody>
 		</table>
+		
+		<table class="ui table celled">
+			<thead>
+				<tr><th>Field (in <code>grandkiddy</code>)</th>
+				<th>Value</th></tr>
+			</thead>
+			<tbody>
+				{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'grandkiddy'))}}
+					<tr>
+						<td>{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
+		
+		<table class="ui table celled">
+			<thead>
+				<tr><th>Field (in <code>other_grandkiddy</code>)</th>
+				<th>Value</th></tr>
+			</thead>
+			<tbody>
+				{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'other_grandkiddy'))}}
+					<tr>
+						<td>{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
+	</div>
+
+	<div class="column">
+		&nbsp;
+	</div>
+	
+</template>
+
+
+<template name="DemoThreeWayChild">
+	<div class="DemoThreeWayChild">
+		<h3>Child Template (Data Id: {{_3w_id}})</h3>
+		<ul>
+			<li><strong>Parent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 1}}</li>
+			<li><strong>My Data <code>childData</code></strong>: <input data-bind="value: childData">&nbsp;&nbsp; {{_3w_get 'childData'}}</li>
+			<li><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
+		</ul>
 		
 		{{> DemoThreeWayGrandChild _3w_name='grandkiddy' initData="grandkiddy one" siblingName="other_grandkiddy"}}
 		{{> DemoThreeWayGrandChild _3w_name='other_grandkiddy' initData="grandkiddy two" siblingName="grandkiddy"}}
@@ -504,36 +566,7 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 			<li><strong>Grandparent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 2}}</li>
 			<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>
 			<li><strong>Sibling Data <code>{{siblingName}}.grandchildData</code></strong>: {{_3w_siblingDataGet 'grandchildData' siblingName}}</li>
+			<li><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
 		</ul>
-
-		<table class="ui table celled">
-			<thead>
-				<tr><th>Field (Grandparent)</th>
-				<th>Value</th></tr>
-			</thead>
-			<tbody>
-				{{#each repackageDictionaryAsArray (_3w_parentDataGetAll 2)}}
-					<tr>
-						<td>{{key}}</td>
-						<td>{{value}}</td>
-					</tr>
-				{{/each}}
-			</tbody>
-		</table>
-		
-		<table class="ui table celled">
-			<thead>
-				<tr><th>Field (Sibling: {{siblingName}})</th>
-				<th>Value</th></tr>
-			</thead>
-			<tbody>
-				{{#each repackageDictionaryAsArray (_3w_siblingDataGetAll siblingName)}}
-					<tr>
-						<td>{{key}}</td>
-						<td>{{value}}</td>
-					</tr>
-				{{/each}}
-			</tbody>
-		</table>
 	</div>
 </template>

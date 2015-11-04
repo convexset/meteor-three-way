@@ -60,6 +60,13 @@ var ageRanges = _.object(ageRangeValues, ['0 to 12', '13 to 20', '21 to 35', '36
 var emailPrefsValues = ['opt1', 'opt2', 'opt3'];
 var emailPrefsAll = _.object(emailPrefsValues, ['Spam Away', 'Only My Orders', 'XYZ']);
 
+function randomId() {
+	var data = DataCollection.find({}, {
+		reactive: false
+	}).fetch();
+	return data[Math.floor(data.length * Math.random())]._id;
+}
+
 if (Meteor.isServer) {
 	// The publication
 	Meteor.publish('demo-pub', function() {
@@ -189,7 +196,7 @@ if (Meteor.isClient) {
 	// 	}
 	// }, 60000);
 
-	Meteor.subscribe('demo-pub');
+	var sub = Meteor.subscribe('demo-pub');
 
 	ThreeWay.prepare(Template.DemoThreeWay, {
 		// The relevant Mongo.Collection
@@ -260,7 +267,6 @@ if (Meteor.isClient) {
 		// Arguments: (value, wildCardParams)
 		validatorsServer: {
 			tags: function(value) {
-				console.log('tags-validation', value)
 				return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
 			},
 			'personal.someArr.*': function(value, wildCardParams) {
@@ -301,7 +307,7 @@ if (Meteor.isClient) {
 			},
 			'personal.someArr.*': function(template, value, vmData, field, params) {
 				console.warn('[Validation Failed] personal.someArr.*', value, field, params);
-				template._3w_set('someArrValidationErrorText.' + params[0], 'error');
+				template._3w_set('someArrValidationErrorText.' + params[0], 'Invalid Value: ' + value);
 			},
 		},
 
@@ -425,7 +431,6 @@ if (Meteor.isClient) {
 	Template.DemoThreeWay.onCreated(function() {
 		parentTemplate = this;
 
-		this.id = new ReactiveVar(null);
 		this.num = new ReactiveVar(1);
 	});
 
@@ -453,12 +458,9 @@ if (Meteor.isClient) {
 		emailPrefsToCSL: function(arr) {
 			return arr.map(x => emailPrefsAll[x]).join(", ");
 		},
-		selectId: () => Template.instance().id.get(),
-		entry: () => DataCollection.findOne(Template.instance().id.get(), {
-			reactive: true
-		}),
 		num: () => Template.instance().num.get(),
 		allDebugMessages: () => ThreeWay.DEBUG_MESSAGES,
+		toLowerCase: x => x.toLowerCase && x.toLowerCase()
 	});
 
 	var selectCreated = false;
@@ -492,10 +494,9 @@ if (Meteor.isClient) {
 		},
 		"click button#randomize-child-ids": function() {
 			/* global alert: true */
-			var random_id_base = 'randomId_' + Math.floor(Math.random() * 10000) + '_';
-			Template.instance()._3w_childDataSetId(random_id_base + 'x', 'kiddy');
-			Template.instance()._3w_childDataSetId(random_id_base + 'x-1', ['kiddy', 'grandkiddy']);
-			Template.instance()._3w_childDataSetId(random_id_base + 'x-2', ['kiddy', 'other_grandkiddy']);
+			Template.instance()._3w_childDataSetId(randomId(), 'kiddy');
+			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'grandkiddy']);
+			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'other_grandkiddy']);
 		},
 		"change input[name=debug-messages]": function(event, template) {
 			setTimeout(() => setUpDebugMessages(template), 50);
@@ -504,44 +505,47 @@ if (Meteor.isClient) {
 
 
 	ThreeWay.prepare(Template.DemoThreeWayChild, {
-		// The relevant fields/field selectors in the database
-		fields: [],
-		// The relevant Mongo.Collection
 		collection: DataCollection,
-		// Meteor methods for updating the database
+		updatersForServer: {
+			'name': 'update-name'
+		},
 		viewModelToViewOnly: {
 			"childData": "1234"
 		},
 	});
 	Template.DemoThreeWayChild.onCreated(function() {
 		childTemplate = this;
-		setTimeout(function() {
-			childTemplate._3w_setId("child-template-id");
-		}, 200);
 	});
 	Template.DemoThreeWayChild.onRendered(function() {
-		this._3w_setRoot(".DemoThreeWayChild");
+		var instance = this;
+		instance._3w_setRoot(".DemoThreeWayChild");
+		Tracker.autorun(function() {
+			// sub.ready changes once... supposedly...
+			if (sub.ready()) {
+				instance._3w_setId(randomId());
+			}
+		});
 	});
 
 
-	var gcIdx = 1;
 	ThreeWay.prepare(Template.DemoThreeWayGrandChild, {
-		// The relevant fields/field selectors in the database
-		fields: [],
-		// The relevant Mongo.Collection
 		collection: DataCollection,
-		// Meteor methods for updating the database
+		updatersForServer: {
+			'name': 'update-name'
+		},
 	});
 	Template.DemoThreeWayGrandChild.onCreated(function() {
-		var instance = this;
 		grandchildTemplate = this;
-		setTimeout(function() {
-			instance._3w_setId("grandchild-" + gcIdx + "-template-id");
-			gcIdx += 1;
-		}, 200);
 	});
 	Template.DemoThreeWayGrandChild.onRendered(function() {
-		this._3w_setRoot(".DemoThreeWayGrandChild");
+		var instance = this;
+		instance._3w_setRoot(".DemoThreeWayGrandChild");
+		Tracker.autorun(function() {
+			// sub.ready changes once... supposedly...
+			if (sub.ready()) {
+				instance._3w_setId(randomId());
+			}
+		});
 	});
 
 }
