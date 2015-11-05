@@ -211,8 +211,6 @@ if (Meteor.isClient) {
 			dataTransformFromServer: {},
 			validatorsVM: {},
 			validatorsServer: {},
-			validateSuccessCallback: {},
-			validateFailureCallback: {},
 			preProcessors: {},
 			viewModelToViewOnly: {},
 			debounceInterval: DEFAULT_DEBOUNCE_INTERVAL,
@@ -914,6 +912,10 @@ if (Meteor.isClient) {
 				}
 			});
 
+			threeWay.fieldMatchParamsForValidationVM = {};
+			threeWay.fieldMatchParamsForValidationServer = {};
+			var validatorFieldsVM = _.map(options.validatorsVM, (v, k) => k);
+			var validatorFieldsServer = _.map(options.validatorsServer, (v, k) => k);
 			threeWay.validateInput = function vmValidate(field, value, validateForServer) {
 				if (typeof validateForServer === "undefined") {
 					validateForServer = true;
@@ -923,42 +925,79 @@ if (Meteor.isClient) {
 					validateForServer = false;
 				}
 
-				if (IN_DEBUG_MODE_FOR('validation')) {
-					console.log('[validation] Doing validation... Field: ' + field + '; Value:', value);
+
+				if (typeof threeWay.fieldMatchParams[field] === "undefined") {
+					// might be overwritten once... but that's ok
+					threeWay.fieldMatchParams[field] = null;
+					var matches = matchParamStrings(options.fields, field);
+					if (matches.length > 0) {
+						threeWay.fieldMatchParams[field] = matches[0];
+					}
 				}
 
-				var matchFamily = threeWay.fieldMatchParams[field] && threeWay.fieldMatchParams[field].match || null;
-				var matchParams = threeWay.fieldMatchParams[field] && threeWay.fieldMatchParams[field].params || null;
+				if (typeof threeWay.fieldMatchParamsForValidationVM[field] === "undefined") {
+					threeWay.fieldMatchParamsForValidationVM[field] = null;
+					var vmMatches = matchParamStrings(validatorFieldsVM, field);
+					if (vmMatches.length > 0) {
+						threeWay.fieldMatchParamsForValidationVM[field] = vmMatches[0];
+					}
+				}
+				if (typeof threeWay.fieldMatchParamsForValidationServer[field] === "undefined") {
+					threeWay.fieldMatchParamsForValidationServer[field] = null;
+					var serverMatches = matchParamStrings(validatorFieldsServer, field);
+					if (serverMatches.length > 0) {
+						threeWay.fieldMatchParamsForValidationServer[field] = serverMatches[0];
+					}
+				}
+
+				if (IN_DEBUG_MODE_FOR('validation')) {
+					console.log('[validation] Doing validation... Field: ' + field + '; Value:', value, '; Validation Info (VM):', threeWay.fieldMatchParamsForValidationVM[field], '; Validation Info (Server):', threeWay.fieldMatchParamsForValidationServer[field]);
+				}
+
 				var vmData;
 
-				var useValidatorForVM = !!matchFamily && !!options.validatorsVM[matchFamily];
-				var useValidatorForServer = validateForServer && !!matchFamily && !!options.validatorsServer[matchFamily];
+				var matchFamily = threeWay.fieldMatchParams[field] && threeWay.fieldMatchParams[field].match || null;
+
+				var matchFamilyVM = threeWay.fieldMatchParamsForValidationVM[field] && threeWay.fieldMatchParamsForValidationVM[field].match;
+				var matchParamsVM = threeWay.fieldMatchParamsForValidationVM[field] && threeWay.fieldMatchParamsForValidationVM[field].params;
+				var matchFamilyServer = threeWay.fieldMatchParamsForValidationServer[field] && threeWay.fieldMatchParamsForValidationServer[field].match;
+				var matchParamsServer = threeWay.fieldMatchParamsForValidationServer[field] && threeWay.fieldMatchParamsForValidationServer[field].params;
+
+				var useValidatorForVM = !!threeWay.fieldMatchParamsForValidationVM[field] && !!options.validatorsVM[matchFamilyVM];
+				var useValidatorForServer = validateForServer && !!threeWay.fieldMatchParamsForValidationServer[field] && !!options.validatorsServer[matchFamilyServer];
 
 				var valueToUse = value;
 				var passed = true;
+				var validator, successCB, failureCB;
 				if (useValidatorForVM) {
 					vmData = _.extend({}, threeWay.dataMirror);
-					passed = options.validatorsVM[matchFamily](valueToUse, vmData, matchParams);
+					validator = !!options.validatorsVM[matchFamilyVM].validator ? options.validatorsVM[matchFamilyVM].validator : () => true;
+					successCB = !!options.validatorsVM[matchFamilyVM].success ? options.validatorsVM[matchFamilyVM].success : function() {};
+					failureCB = !!options.validatorsVM[matchFamilyVM].failure ? options.validatorsVM[matchFamilyVM].failure : function() {};
+					passed = validator(valueToUse, vmData, matchParamsVM);
+
+					if (passed) {
+						successCB(instance, valueToUse, vmData, matchFamilyVM, matchParamsVM);
+					} else {
+						failureCB(instance, valueToUse, vmData, matchFamilyVM, matchParamsVM);
+					}
 				}
 				if (passed && useValidatorForServer) {
 					valueToUse = options.dataTransformToServer[matchFamily](value, vmData);
-					passed = options.validatorsServer[matchFamily](valueToUse, matchParams);
+					validator = !!options.validatorsServer[matchFamilyServer].validator ? options.validatorsServer[matchFamilyServer].validator : () => true;
+					successCB = !!options.validatorsServer[matchFamilyServer].success ? options.validatorsServer[matchFamilyServer].success : function() {};
+					failureCB = !!options.validatorsServer[matchFamilyServer].failure ? options.validatorsServer[matchFamilyServer].failure : function() {};
+					passed = validator(valueToUse, matchParamsServer);
+
+					if (passed) {
+						successCB(instance, valueToUse, vmData, matchFamilyServer, matchParamsServer);
+					} else {
+						failureCB(instance, valueToUse, vmData, matchFamilyServer, matchParamsServer);
+					}
 				}
 
 				if (IN_DEBUG_MODE_FOR('validation')) {
 					console.log('[validation] Validation result. Field: ' + field + '; Value:', value, '; Passed: ' + passed);
-				}
-
-				if (passed) {
-					// Valid
-					if (!!options.validateSuccessCallback[matchFamily]) {
-						options.validateSuccessCallback[matchFamily](instance, valueToUse, vmData, matchFamily, matchParams);
-					}
-				} else {
-					// Invalid
-					if (!!options.validateFailureCallback[matchFamily]) {
-						options.validateFailureCallback[matchFamily](instance, valueToUse, vmData, matchFamily, matchParams);
-					}
 				}
 
 				return passed;

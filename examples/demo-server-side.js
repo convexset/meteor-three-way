@@ -27,6 +27,21 @@ if (Meteor.isServer) {
 		}
 	});
 	Meteor.methods({
+		'update-personal.someArr.1': function(id, value) {
+			// different, more specific updater
+			// for no reason at all
+			// but validation for this is done "via update-personal.someArr.*"
+			var updater = {};
+			updater['personal.someArr.1'] = value;
+			var myFieldName = '[specific] update-personal.someArr.1';
+			while (myFieldName.length < 40) {
+				myFieldName += " ";
+			}
+			console.log(myFieldName, id, '\t', value);
+			Demo.collection.update(id, {
+				$set: updater
+			});
+		},
 		'update-personal.someArr.*': function(id, value, k) {
 			var updater = {};
 			updater['personal.someArr.' + k] = value;

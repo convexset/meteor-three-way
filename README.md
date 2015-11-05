@@ -45,8 +45,15 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
         - [Sibling Data](#sibling-data)
     - [Additional Template Helpers](#additional-template-helpers)
     - [Pre-processor Pipelines](#pre-processor-pipelines)
+    - [Data Validation](#data-validation)
     - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
     - [Debug](#debug)
+- [Extras](#extras)
+    - [Default Pre-processors](#default-pre-processors)
+    - [Extra Pre-Processors](#extra-pre-processors)
+    - [Extra Pre-Processor Generators](#extra-pre-processor-generators)
+    - [Extra Transformations](#extra-transformations)
+    - [Extra Transformation Generators](#extra-transformation-generators)
 - [Notes](#notes)
     - [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
     - [Dynamic Data Binding](#dynamic-data-binding)
@@ -243,33 +250,34 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // Validators under validatorsVM consider view-model data
     // Useful for making sure that transformations to server values do not fail
     // Arguments: (value, vmData, wildCardParams)
+    // validators have method signature:
+    //   function(value, wildCardParams)
+    // success/failure call backs have signature: 
+    //   function(template, value, vmData, field, wildCardParams)
     validatorsVM: {
         // tags seems to be a decent candidate for one here
+        // but see below
     },
 
     // Validators under validatorsServer consider transformed values
+    // and are called only if the VM validation check does not fail
     // (no additional view-model data, work with that somewhere else)
-    // Arguments: (value, wildCardParams)
+    // validators have method signature:
+    //   function(value, wildCardParams)
+    // success/failure call backs have signature: 
+    //   function(template, value, vmData, field, wildCardParams)
     validatorsServer: {
-        tags: function(value) {
-            // tags must begin with "tag"
-            return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
-        },
-    },
-
-    // Success callbacks for validators
-    validateSuccessCallback: {
-        'tags': function(template, value, vmData, field, params) {
-            console.info('[Validated!] tags:', value, field, params);
-            template._3w_set('tagsValidationErrorText', '');
-        },
-    },
-
-    // Failure callbacks for validators
-    validateFailureCallback: {
-        'tags': function(template, value, vmData, field, params) {
-            console.warn('[Validation Failed] tags:', value, field, params);
-            template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+        tags: {
+            validator: function(x, vmData, wildCardParams) {
+                // tags must begin with "tag"
+                return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
+            },
+            success: function(template, value, vmData, field, wildCardParams) {
+                template._3w_set('tagsValidationErrorText', '');
+            },
+            failure: function(template, value, vmData, field, wildCardParams) {
+                template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+            },
         },
     },
 
@@ -801,6 +809,62 @@ Pre-processors have method signature `function(value, elem, vmData)` where `valu
 
 Pre-processors are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
 
+#### Data Validation
+
+Data validators are defined as follows:
+
+```javascript
+// Validators under validatorsVM consider view-model data
+// Useful for making sure that transformations to server values do not fail
+// Arguments: (value, vmData, wildCardParams)
+// validators have method signature:
+//   function(value, wildCardParams)
+// success/failure call backs have signature: 
+//   function(template, value, vmData, field, wildCardParams)
+validatorsVM: {
+    // tags seems to be a decent candidate for one here
+    // but see below
+},
+
+// Validators under validatorsServer consider transformed values
+// and are called only if the VM validation check does not fail
+// (no additional view-model data, work with that somewhere else)
+// validators have method signature:
+//   function(value, wildCardParams)
+// success/failure call backs have signature: 
+//   function(template, value, vmData, field, wildCardParams)
+validatorsServer: {
+    tags: {
+        validator: function(x, vmData, wildCardParams) {
+            // tags must begin with "tag"
+            return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
+        },
+        success: function(template, value, vmData, field, wildCardParams) {
+            template._3w_set('tagsValidationErrorText', '');
+        },
+        failure: function(template, value, vmData, field, wildCardParams) {
+            template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+        },
+    },
+},
+```
+
+Recall that in the previous section, the following example was described:
+
+```html
+<div data-bind="html: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+```
+
+They validation flow is as follows:
+    1. a change is made in the view which propagates to the view model
+    2. validation starts
+    3. view-model level validation using data in the view model and success/failure call-backs fire
+    4. if the view-model level check does not fail, server validation is run and success/failure call-backs fire
+    5. the overall result is returned
+
+If the change is a candidate for a database update (e.g.: the value is not the same as the previous known value in the database), then validity is used as a requirement for an update. (As is common sense.)
+
+The reasons for having two separate checks is to deal with include the possibility that a user may want to guard against a transformation being done on invalid data, and that checks may be more convenient in one form or another. (Not to mention silly stuff relating to wild card matching shenanigans.)
 
 #### "Family Access": Ancestor and Descendant Data
 
@@ -904,7 +968,3 @@ Pre-v0.1.9, dynamic rebinding was incomplete and carried out by polling the DOM.
 
 The mixing of dynamic data-binding and the possibility of multiple `ThreeWay` instances poses some challenges with regards to the question of which `ThreeWay` instance a new DOM element should be data bound with.
 See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information.
-
-#### To Dos
-
-Validation matches fall through if more specific match does not provide validator or ....

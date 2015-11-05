@@ -6,6 +6,7 @@
 // Preamble
 ////////////////////////////////////////////////////////////
 var updatersForServer = _.object(Demo.fields, Demo.fields.map(x => "update-" + x));
+updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
 
 var selectedDebugMessages = [
 	// 'parse',
@@ -76,71 +77,51 @@ if (Meteor.isClient) {
 		// Useful for making sure that transformations to server values do not fail
 		// Arguments: (value, vmData, wildCardParams)
 		validatorsVM: {
-			'personal.someArr.*': function(value, vmData, wildCardParams) {
-				var result;
-				if (Number(wildCardParams[0]) === 2) {
-					// No exclamation marks
-					result = value.indexOf('!') === -1;
-					if (!result) {
-						console.warn('[validatorsVM] personal.someArr.2 should have no \"!\"s', value, wildCardParams);
+			'personal.someArr.*': {
+				validator: function(value, vmData, wildCardParams) {
+					var result;
+					if (Number(wildCardParams[0]) === 2) {
+						// No exclamation marks
+						result = value.indexOf('!') === -1;
+						if (!result) {
+							console.warn('[validatorsVM] personal.someArr.2 should have no \"!\"s', value, wildCardParams);
+						}
+					} else {
+						result = !Number.isNaN(Number(value));
+						if (!result) {
+							console.warn('[validatorsVM] personal.someArr.* (less 2) should be a number', value, wildCardParams);
+						}
 					}
-				} else {
-					result = !Number.isNaN(Number(value));
-					if (!result) {
-						console.warn('[validatorsVM] personal.someArr.* (less 2) should be a number', value, wildCardParams);
-					}
-				}
-				return result;
-			},
+					return result;
+				},
+				success: function(template, value, vmData, field, params) {
+					console.info('[Validated!] personal.someArr.*', value, field, params);
+					template._3w_set('someArrValidationErrorText.' + params[0], '');
+				},
+				failure: function(template, value, vmData, field, params) {
+					console.warn('[Validation Failed] personal.someArr.*', value, field, params);
+					template._3w_set('someArrValidationErrorText.' + params[0], 'Invalid Value: ' + value);
+				},
+			}
 		},
 
 		// Validators under validatorsServer consider transformed values
 		// (no additional view-model data, work with that somewhere else)
 		// Arguments: (value, wildCardParams)
 		validatorsServer: {
-			tags: function(value) {
-				return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
-			},
-			'personal.someArr.*': function(value, wildCardParams) {
-				var result;
-				if (Number(wildCardParams[0]) === 2) {
-					// no '@'s
-					result = value.indexOf('@') === -1;
-					if (!result) {
-						console.warn('[validatorsServer] personal.someArr.2 should have no \"@\"s', value, wildCardParams);
-					}
-				} else {
-					result = !Number.isNaN(Number(value));
-					if (!result) {
-						console.warn('[validatorsServer] personal.someArr.* (less 2) should be a number', value, wildCardParams);
-					}
-				}
-				return result;
-			},
-		},
-
-		// Success callbacks for validators
-		validateSuccessCallback: {
-			'tags': function(template) { // function(template, value, vmData, field, params) {
-				//console.info('[Validated!] tags:', value, field, params);
-				template._3w_set('tagsValidationErrorText', '');
-			},
-			'personal.someArr.*': function(template, value, vmData, field, params) {
-				//console.info('[Validated!] personal.someArr.*', value, field, params);
-				template._3w_set('someArrValidationErrorText.' + params[0], '');
-			},
-		},
-
-		// Failure callbacks for validators
-		validateFailureCallback: {
-			'tags': function(template, value, vmData, field, params) {
-				console.warn('[Validation Failed] tags:', value, field, params);
-				template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
-			},
-			'personal.someArr.*': function(template, value, vmData, field, params) {
-				console.warn('[Validation Failed] personal.someArr.*', value, field, params);
-				template._3w_set('someArrValidationErrorText.' + params[0], 'Invalid Value: ' + value);
-			},
+			tags: {
+				validator: function(value) {
+					return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
+				},
+				success: function(template, value, vmData, field, params) {
+					console.info('[Validated!] tags:', value, field, params);
+					template._3w_set('tagsValidationErrorText', '');
+				},
+				failure: function(template, value, vmData, field, params) {
+					console.warn('[Validation Failed] tags:', value, field, params);
+					template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+				},
+			}
 		},
 
 		// Helper functions that may be used as input for display-type bindings
