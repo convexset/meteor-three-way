@@ -12,10 +12,9 @@ const THREE_WAY_DATA_BINDING_INSTANCE = "three-way-instance";
 const RESTRICT_TEMPLATE_TYPE_ATTRIBUTE = 'restrict-template-type';
 const DEFAULT_DEBOUNCE_INTERVAL = 500;
 const DEFAULT_THROTTLE_INTERVAL = 500;
-const DEFAULT_DOM_POLL_INTERVAL = 500;
-const DEFAULT_METHOD_INTERVAL = 100;
+const DEFAULT_METHOD_INTERVAL = 10;
 
-const AGE_THREHOLD_OLD_ITEM = 10000;
+const AGE_THRESHOLD_OLD_ITEM = 10000;
 
 var DEBUG_MODE = false;
 var DEBUG_MODE_ALL = false;
@@ -219,7 +218,6 @@ if (Meteor.isClient) {
 			debounceInterval: DEFAULT_DEBOUNCE_INTERVAL,
 			throttleInterval: DEFAULT_THROTTLE_INTERVAL,
 			throttledUpdaters: [],
-			rebindPollInterval: DEFAULT_DOM_POLL_INTERVAL,
 			methodInterval: DEFAULT_METHOD_INTERVAL,
 			eventHandlers: {},
 			helpers: {},
@@ -264,6 +262,11 @@ if (Meteor.isClient) {
 		}
 		if (typeof options.preProcessors['toLowerCase'] === "undefined") {
 			options.preProcessors['toLowerCase'] = x => (typeof x === "undefined") ? "" : x.toString().toLowerCase();
+		}
+
+		// "" as field forbidden
+		if (typeof options.updatersForServer[''] !== "undefined") {
+			throw new Meteor.Error("empty-field-forbidden", "\"\" is not a valid field name");
 		}
 
 
@@ -759,13 +762,13 @@ if (Meteor.isClient) {
 									var newValue = options.dataTransformFromServer[match.match](v, doc);
 									if (_.isEqual(mostRecentValue, newValue)) {
 										if (IN_DEBUG_MODE_FOR('db')) {
-											console.log('[db|recieve] Most recent value matches. No change to view model.');
+											console.log('[db|receive] Most recent value matches. No change to view model.');
 										}
 									} else {
-										removeOldItems(recentDBUpdates[curr_f], AGE_THREHOLD_OLD_ITEM);
-										if (popItemWithValue(recentDBUpdates[curr_f], newValue, 'value', true) > 0) {
+										removeOldItems(recentDBUpdates[curr_f], AGE_THRESHOLD_OLD_ITEM);
+										if (popItemWithValue(recentDBUpdates[curr_f], newValue, 'valueOnClient', true) > 0) {
 											if (IN_DEBUG_MODE_FOR('db')) {
-												console.log('[db|recieve] Matches value from recent update. No change to view model.');
+												console.log('[db|receive] Matches value from recent update. No change to view model.');
 											}
 										} else {
 											threeWay.data.set(curr_f, newValue);
@@ -794,6 +797,10 @@ if (Meteor.isClient) {
 												var matchFamily = threeWay.fieldMatchParams[curr_f].match;
 												if (typeof debouncedOrThrottledUpdaters[curr_f] === "undefined") {
 													var updater = function updater(v) {
+														if (IN_DEBUG_MODE_FOR('db')) {
+															console.log('[db|update] Performing update... ' + curr_f + ' -> ', v);
+														}
+														mostRecentDatabaseEntry[curr_f] = v;
 														baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
 													};
 													if (options.throttledUpdaters.indexOf(matchFamily) !== -1) {
@@ -811,17 +818,35 @@ if (Meteor.isClient) {
 													var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
 
 													if (IN_DEBUG_MODE_FOR('db')) {
-														console.log('[db|update] Updating... ' + curr_f + ' -> ', value);
+														console.log('[db|update] Initiating update... ' + curr_f + ' -> ', value);
 													}
-													if (typeof recentDBUpdates[curr_f] === "undefined") {
-														recentDBUpdates[curr_f] = [];
-													}
-													removeOldItems(recentDBUpdates[curr_f], AGE_THREHOLD_OLD_ITEM);
-													mostRecentDatabaseEntry[curr_f] = value;
-													recentDBUpdates[curr_f].push({
-														value: value,
-														sentValue: valueToSend,
-														ts: (new Date()).getTime(),
+
+													// Store recent states to avoid the "reversion" problem
+													// Due to cursor.observeChanges sending the entire sub-document,
+													// what has to be stored is the sub-document
+													//
+													// This is here instead of within the updater to ensure that state 
+													// at the point of the change is stored instead of at the point
+													// where debouncing/throttling releases the update.
+													// This means no "state" is missed out
+													var fieldPrefix = curr_f.split('.')[0];
+													_.forEach(threeWay.fieldMatchParams, function(m, f) {
+														if (f.substr(0, fieldPrefix.length) === fieldPrefix) {
+															if (typeof vmData[f] !== "undefined") {
+																if (typeof recentDBUpdates[f] === "undefined") {
+																	recentDBUpdates[f] = [];
+																}
+																var thisClientSideValue = (f === curr_f) ? v : vmData[f];
+																removeOldItems(recentDBUpdates[f], AGE_THRESHOLD_OLD_ITEM);
+																recentDBUpdates[f].push({
+																	valueOnClient: thisClientSideValue,
+																	ts: (new Date()).getTime(),
+																});
+																if (IN_DEBUG_MODE_FOR('db')) {
+																	console.log('[db|update-recents] Storing recent (client-side) value for ' + f + ':', thisClientSideValue);
+																}
+															}
+														}
 													});
 
 													debouncedOrThrottledUpdaters[curr_f](valueToSend);

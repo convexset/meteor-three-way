@@ -6,7 +6,6 @@
 // Preamble
 ////////////////////////////////////////////////////////////
 var updatersForServer = _.object(Demo.fields, Demo.fields.map(x => "update-" + x));
-updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
 
 var selectedDebugMessages = [
 	// 'parse',
@@ -51,12 +50,12 @@ if (Meteor.isClient) {
 		// separated list in a string, while it is stored in the server as
 		// an array
 		dataTransformToServer: {
-			// tags: x => (x.trim().length > 0) ? x.split(',').map(y => y.trim()) : [];
-			tags: function(x, vmData) {
-				var outcome = ThreeWay.transformations.arrayFromCommaDelimitedString(x);
-				console.log('dataTransformToServer[\'tags\']:', x, vmData, '-->', outcome);
-				return outcome;
-			}
+			tags: ThreeWay.transformations.arrayFromCommaDelimitedString,
+			// tags: function(x, vmData) {
+			// 	var outcome = ThreeWay.transformations.arrayFromCommaDelimitedString(x);
+			// 	console.log('dataTransformToServer[\'tags\']:', x, vmData, '-->', outcome);
+			// 	return outcome;
+			// }
 		},
 
 		// Transformations from the view model to the server
@@ -65,12 +64,12 @@ if (Meteor.isClient) {
 		// separated list in a string, while it is stored in the server as
 		// an array
 		dataTransformFromServer: {
-			// tags: arr => arr.join && arr.join(',') || ""
-			tags: function(arr, doc) {
-				var outcome = ThreeWay.transformations.arrayToCommaDelimitedString(arr);
-				console.log('dataTransformFromServer[\'tags\']:', arr, doc, '-->', outcome);
-				return outcome;
-			}
+			tags: ThreeWay.transformations.arrayToCommaDelimitedString,
+			// tags: function(arr, doc) {
+			// 	var outcome = ThreeWay.transformations.arrayToCommaDelimitedString(arr);
+			// 	console.log('dataTransformFromServer[\'tags\']:', arr, doc, '-->', outcome);
+			// 	return outcome;
+			// }
 		},
 
 		// Validators under validatorsVM consider view-model data

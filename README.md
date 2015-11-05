@@ -91,7 +91,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // (Global) initial values for fields that feature only in the local view model
     // and are not used to update the database
     viewModelToViewOnly: {
-        "vmOnlyValue": "",
+        'vmOnlyValue': '',
     },
 });
 ```
@@ -154,14 +154,14 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // separated list in a string, while it is stored in the server as
     // an array
     dataTransformFromServer: {
-        tags: arr => arr.join && arr.join(',') || ""
+        tags: arr => arr.join && arr.join(',') || ''
     },
 
     // Pre-processors for data pre-render (view model to view)
     preProcessors: {
         // this takes a string of comma separated tags, splits, trims then
         // joins them to make the result "more presentable"
-        tagsTextDisplay: x => (!x) ? "" : x.split(',').map(x => x.trim()).join(', '),
+        tagsTextDisplay: x => (!x) ? '' : x.split(',').map(x => x.trim()).join(', '),
 
         // this maps a key to the corresponding long form description
         mapToAgeDisplay: x => ageRanges[x],
@@ -180,8 +180,8 @@ ThreeWay.prepare(Template.DemoThreeWay, {
         // e.g.: the red "Invalid e-mail address" text that appears when
         // an invalid e-mail address has been entered
         trueIfNonEmpty: x => x.length > 0,
-        grayIfTrue: x => (!!x) ? "#ccc" : "",
-        redIfTrue: x => (!!x) ? "red" : "",
+        grayIfTrue: x => (!!x) ? "#ccc" : '',
+        redIfTrue: x => (!!x) ? "red" : '',
     },
 
     // (Global) initial values for fields that feature only in the local view
@@ -190,7 +190,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // <data field="sliderValue" initial-value="50"></data>
     viewModelToViewOnly: {
         sliderValue: "0",
-        "tagsValidationErrorText": "",
+        "tagsValidationErrorText": '',
     },
 });
 ```
@@ -237,7 +237,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // separated list in a string, while it is stored in the server as
     // an array
     dataTransformFromServer: {
-        tags: arr => arr.join && arr.join(',') || ""
+        tags: arr => arr.join && arr.join(',') || ''
     },
 
     // Validators under validatorsVM consider view-model data
@@ -287,7 +287,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     preProcessors: {
         // this takes a string of comma separated tags, splits, trims then
         // joins them to make the result "more presentable"
-        tagsTextDisplay: x => (!x) ? "" : x.split(',').map(x => x.trim()).join(', '),
+        tagsTextDisplay: x => (!x) ? '' : x.split(',').map(x => x.trim()).join(', '),
 
         // this maps a key to the corresponding long form description
         mapToAgeDisplay: x => ageRanges[x],
@@ -306,8 +306,8 @@ ThreeWay.prepare(Template.DemoThreeWay, {
         // e.g.: the red "Invalid e-mail address" text that appears when
         // an invalid e-mail address has been entered
         trueIfNonEmpty: x => x.length > 0,
-        grayIfTrue: x => (!!x) ? "#ccc" : "",
-        redIfTrue: x => (!!x) ? "red" : "",
+        grayIfTrue: x => (!!x) ? "#ccc" : '',
+        redIfTrue: x => (!!x) ? "red" : '',
     },
 
     // (Global) initial values for fields that feature only in the local view
@@ -316,7 +316,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // <data field="sliderValue" initial-value="50"></data>
     viewModelToViewOnly: {
         sliderValue: "0",
-        "tagsValidationErrorText": "",
+        "tagsValidationErrorText": '',
     },
 
     // Event Handlers bound like
@@ -341,7 +341,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // Fields for which updaters are throttle'd instead of debounce'ed
     throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
     // Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
-    methodInterval: 50,
+    methodInterval: 10, // default: 10
 });
 ```
 
@@ -375,6 +375,8 @@ Here is an example of binding to one of them: `<span data-bind="value: topLevelO
 However, it would be clunky to have to specify each of `"topLevelObject.nestedArray.0"` thru `"topLevelObject.nestedArray.2"` (or more) in the set-up options. Therefore, `options.updatersForServer` accepts wildcards (in key names) such as `topLevelObject.nestedArray.*` where `*` matches numbers (for arrays) and "names" (for objects; but of course, it's all objects anyway).
 
 Note that in the case of multiple matches, the most specific match will be used, enabling "catch-all" updaters (which can be somewhat dangerous if not managed properly).
+
+**Note that having a more specific match is a signal to distinguish a field (or family of fields) from the more generic matches. This means that the more generic validators will not be used. There is no "fall through"... at the moment...**
 
 #### Dynamic Data-Binding
 
@@ -472,7 +474,7 @@ Consider the following example:
 
 ```javascript
 dataTransformFromServer: {
-    tags: arr => arr.join && arr.join(',') || ""
+    tags: arr => arr.join && arr.join(',') || ''
 },
 dataTransformToServer: {
     tags: x => x.split(',').map(y => y.trim())
@@ -852,8 +854,8 @@ Default pre-processors may be used directly without need for definition. They ar
  - `not`: returns a boolean which reflects the "falsiness" of the value
  - `isNonEmptyString`: returns the described true/false value
  - `isNonEmptyArray`: returns the described true/false value
- - `toUpperCase`: transforms the value to a string (`undefined` to `""`) and returns it in upper case
- - `toLowerCase`: transforms the value to a string (`undefined` to `""`) and returns it in lower case
+ - `toUpperCase`: transforms the value to a string (`undefined` to `''`) and returns it in upper case
+ - `toLowerCase`: transforms the value to a string (`undefined` to `''`) and returns it in lower case
 
 #### Extra Pre-Processors
 
@@ -890,7 +892,11 @@ Similar to the above, but these are generators for transformations that take one
 
 #### Database Updates and Observer Callbacks
 
-Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart. The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-objects even if a single primitive value deep within was updated. It was addressed with (i) queueing implemented via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
+Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart.
+The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-documents even if a single primitive value deep within was updated.
+It was addressed with (i) queueing implemented via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
+
+Pre-v0.1.14, the above race condition was still not fully solved. The "comprehensive solution" was to store snapshots of entire sub-documents with the expectation that stuff would get sent back and data sent back from the server matching existing values (that were not too old) could be "ignored".
 
 #### Dynamic Data Binding
 
@@ -898,3 +904,7 @@ Pre-v0.1.9, dynamic rebinding was incomplete and carried out by polling the DOM.
 
 The mixing of dynamic data-binding and the possibility of multiple `ThreeWay` instances poses some challenges with regards to the question of which `ThreeWay` instance a new DOM element should be data bound with.
 See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information.
+
+#### To Dos
+
+Validation matches fall through if more specific match does not provide validator or ....
