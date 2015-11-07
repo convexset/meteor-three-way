@@ -1784,19 +1784,21 @@ if (Meteor.isClient) {
 
 					mutations.forEach(function(mutation) {
 						if (!!mutation.addedNodes) {
-							Array.prototype.forEach.call(mutation.addedNodes, function(node) {
-								if ((!!node.getAttribute) && !!node.getAttribute(DATA_BIND_ATTRIBUTE)) {
-									if (!node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID)) {
-										//THREE_WAY_DATA_BINDING_INSTANCE
-										if (IN_DEBUG_MODE_FOR('bind')) {
-											console.log("[bind] Node added on " + instanceId, node);
+							Array.prototype.forEach.call(mutation.addedNodes, function(_node) {
+								if (!!_node.getAttribute) {
+									// For each node, look for sub nodes
+									Array.prototype.forEach.call($(_node).find('[' + DATA_BIND_ATTRIBUTE + ']'), function(node) {
+										if (!node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID)) {
+											if (IN_DEBUG_MODE_FOR('bind')) {
+												console.log("[bind] Node added on " + instanceId, node);
+											}
+											var templateRestrictionsAttr = node.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE);
+											var templateRestrictions = templateRestrictionsAttr && templateRestrictionsAttr.split(',').map(x => x.trim()) || [];
+											if (templateRestrictions.indexOf(thisTemplateName) === -1) {
+												threeWay.__bindElem(node);
+											}
 										}
-										var templateRestrictionsAttr = node.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE);
-										var templateRestrictions = templateRestrictionsAttr && templateRestrictionsAttr.split(',').map(x => x.trim()) || [];
-										if (templateRestrictions.indexOf(thisTemplateName) === -1) {
-											threeWay.__bindElem(node);
-										}
-									}
+									});
 								}
 							});
 						}
