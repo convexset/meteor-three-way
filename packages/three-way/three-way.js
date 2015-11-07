@@ -1942,7 +1942,7 @@ if (Meteor.isClient) {
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'processors', {
 		updateSemanticUIDropdown: function updateSemanticUIDropdown(x, elem) {
-			if (typeof x !== "string") {
+			if (typeof x === "string") {
 				if (x.trim() === "") {
 					$(elem.parentElement)
 						.dropdown('set exactly', []);
