@@ -1787,7 +1787,9 @@ if (Meteor.isClient) {
 							Array.prototype.forEach.call(mutation.addedNodes, function(_node) {
 								if (!!_node.getAttribute) {
 									// For each node, look for sub nodes
-									Array.prototype.forEach.call($(_node).find('[' + DATA_BIND_ATTRIBUTE + ']'), function(node) {
+									// Make sure to check both node and children
+									var node_arr = Array.prototype.concat.apply((!!_node.getAttribute(DATA_BIND_ATTRIBUTE)) ? [_node] : [], $(_node).find('[' + DATA_BIND_ATTRIBUTE + ']'));
+									node_arr.forEach(function(node) {
 										if (!node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID)) {
 											if (IN_DEBUG_MODE_FOR('bind')) {
 												console.log("[bind] Node added on " + instanceId, node);
