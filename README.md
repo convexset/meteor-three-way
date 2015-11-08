@@ -692,6 +692,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_allSyncedToServer`: returns `true` if `ThreeWay` can be sure that all data has been received and written by the server.
 
+ - `_3w_isNotInvalid(prop)`: returns `true` if data is not invalid (i.e.: available validators return `true`).
+
  - `_3w_expandParams(fieldSpec, params)`: takes a wild card field specification (like `'friends.*.name'`) and parameters (like `[3]`) to generate a field specifier (like `friends.3.name`).
 
 
@@ -778,7 +780,17 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_isSyncedToServer`: See [previous section](#instance-methods).
 
+ - `_3w_notSyncedToServer`: The negation of `_3w_isSyncedToServer`. See [previous section](#instance-methods).
+
  - `_3w_allSyncedToServer`: See [previous section](#instance-methods).
+
+ - `_3w_isNotInvalid`: See [previous section](#instance-methods).
+
+ - `_3w_isInvalid`: The negation of `_3w_isNotInvalid`. See [previous section](#instance-methods).
+
+ - `_3w_validValuesSynced(prop)`: `true` if synced or data is not valid. (See [previous section](#instance-methods).)
+
+- `_3w_validValuesNotSynced(prop)`: `true` if data is not invalid (ok, valid) and not synced. (See [previous section](#instance-methods).)
 
  - `_3w_expandParams`: See [previous section](#instance-methods).
 

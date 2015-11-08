@@ -327,6 +327,7 @@ if (Meteor.isClient) {
 				__hasChild: new ReactiveDict(),
 				data: new ReactiveDict(),
 				__serverIsUpdated: new ReactiveDict(),
+				__dataIsNotInvalid: new ReactiveDict(),
 				viewModelOnlyData: {},
 				dataMirror: {},
 				fieldMatchParams: {}, // No need to re-create
@@ -371,10 +372,11 @@ if (Meteor.isClient) {
 			instance._3w_getAll = () => threeWay.data.all();
 			instance._3w_getAll_NR = () => _.extend({}, threeWay.dataMirror);
 
-			instance._3w_isSyncedToServer = p => threeWay.__serverIsUpdated.get(p);
+			instance._3w_isSyncedToServer = p => !!threeWay.__serverIsUpdated.get(p);
 			instance._3w_allSyncedToServer = function() {
 				return _.reduce(threeWay.__serverIsUpdated.all(), (m, v) => !!m && !!v, true);
 			};
+			instance._3w_isNotInvalid =  p => !!threeWay.__dataIsNotInvalid.get(p);
 
 			instance._3w_parentDataGet = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.get(p);
 			instance._3w_parentDataGetAll = (levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.all();
@@ -693,8 +695,10 @@ if (Meteor.isClient) {
 
 				mostRecentDatabaseEntry = {};
 				recentDBUpdates = {};
-				threeWay.__serverIsUpdated.clear();
-				threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
+				// TODO: Figure out a sound way of reasoning when .clear() is ok
+				// threeWay.__serverIsUpdated.clear();
+				// threeWay.__dataIsNotInvalid.clear();
+				threeWay.__idReadyFor = {};
 
 				// Setting Up Debounced/Throttled Updaters
 				// Old ones will trigger even if id changes since
@@ -803,6 +807,7 @@ if (Meteor.isClient) {
 									if (addedRun) {
 										// First rcv
 										threeWay.__serverIsUpdated.set(curr_f, true);
+										threeWay.__dataIsNotInvalid.set(curr_f, true);
 									} else {
 										threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, threeWay.dataMirror[curr_f]));
 									}
@@ -820,7 +825,7 @@ if (Meteor.isClient) {
 												console.log("[db|update] Value:", value);
 												console.log("[db|update] Most Recent DB entry: ", mostRecentDatabaseEntry[curr_f]);
 											}
-											if ((!!__id) && threeWay.__idReadyFor[curr_f] && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
+											if ((!!__id) && (!!threeWay.__idReadyFor[curr_f]) && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
 												// Create specific updater for field if not already done.
 												// Presents updates being lost if "fast" updates are being done
 												// for a bunch of fields matching a spec. like "someArray.*"
@@ -844,6 +849,7 @@ if (Meteor.isClient) {
 
 												// Validate before send
 												if (threeWay.validateInput(curr_f, value)) {
+													threeWay.__dataIsNotInvalid.set(curr_f, true);
 													var vmData = _.extend({}, threeWay.dataMirror);
 													var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
 
@@ -883,6 +889,7 @@ if (Meteor.isClient) {
 												} else {
 													if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('validation')) {
 														console.log('[db/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
+														threeWay.__dataIsNotInvalid.set(curr_f, false);
 													}
 												}
 
@@ -937,7 +944,7 @@ if (Meteor.isClient) {
 							}
 							threeWay.haveData.set(false);
 							threeWay.id.set(null);
-							threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
+							threeWay.__idReadyFor = {};
 						}
 					});
 
@@ -1307,7 +1314,8 @@ if (Meteor.isClient) {
 						// (..., false, false): helpers not used and pipelines do not manipulate value
 
 						// Validate here
-						threeWay.validateInput(source, value);
+						var isValid = threeWay.validateInput(source, value);
+						threeWay.__dataIsNotInvalid.set(source, isValid);
 
 						if (elem.value !== value) {
 							elem.value = value;
@@ -1416,7 +1424,8 @@ if (Meteor.isClient) {
 						// (..., false, false): helpers not used and pipelines do not manipulate value
 
 						// Validate here
-						threeWay.validateInput(source, value);
+						var isValid = threeWay.validateInput(source, value);
+						threeWay.__dataIsNotInvalid.set(source, isValid);
 
 						if (elem.getAttribute('type').toLowerCase() === "radio") {
 							// Radio Button
@@ -1993,7 +2002,12 @@ if (Meteor.isClient) {
 			_3w_getAll: () => Template.instance()._3w_getAll(),
 
 			_3w_isSyncedToServer: (propName) => Template.instance()._3w_isSyncedToServer(propName),
+			_3w_notSyncedToServer: (propName) => !Template.instance()._3w_isSyncedToServer(propName),
 			_3w_allSyncedToServer: () => Template.instance()._3w_allSyncedToServer(),
+			_3w_isNotInvalid: (propName) => Template.instance()._3w_isNotInvalid(propName),
+			_3w_isInvalid: (propName) => !Template.instance()._3w_isNotInvalid(propName),
+			_3w_validValuesSynced: (propName) => Template.instance()._3w_isSyncedToServer(propName) || (!Template.instance()._3w_isNotInvalid(propName)),
+			_3w_validValuesNotSynced: (propName) => (!Template.instance()._3w_isSyncedToServer(propName)) && Template.instance()._3w_isNotInvalid(propName),
 			_3w_expandParams: ThreeWay.expandParams,
 
 			_3w_parentDataGet: (p, levelsUp) => Template.instance()._3w_parentDataGet(p, levelsUp),
