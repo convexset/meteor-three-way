@@ -688,6 +688,13 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_getAll_NR`: gets all the data "non-reactively"
 
+ - `_3w_isSyncedToServer(prop)`: returns `true` if `ThreeWay` can be sure that data for the field with name `prop` has been received and written by the server.
+
+ - `_3w_allSyncedToServer`: returns `true` if `ThreeWay` can be sure that all data has been received and written by the server.
+
+ - `_3w_expandParams(fieldSpec, params)`: takes a wild card field specification (like `'friends.*.name'`) and parameters (like `[3]`) to generate a field specifier (like `friends.3.name`).
+
+
 ###### Ancestor Data
 
  - `_3w_parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
@@ -769,6 +776,11 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_siblingDataGetAll`: See [previous section](#instance-methods).
 
+ - `_3w_isSyncedToServer`: See [previous section](#instance-methods).
+
+ - `_3w_allSyncedToServer`: See [previous section](#instance-methods).
+
+ - `_3w_expandParams`: See [previous section](#instance-methods).
 
 
 #### Pre-processor Pipelines

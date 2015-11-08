@@ -56,7 +56,7 @@ if (Meteor.isClient) {
 		},
 		num: () => Template.instance().num.get(),
 		allDebugMessages: () => ThreeWay.DEBUG_MESSAGES,
-		toLowerCase: x => x.toLowerCase && x.toLowerCase()
+		toLowerCase: x => x.toLowerCase && x.toLowerCase(),
 	});
 
 	var selectCreated = false;

@@ -172,8 +172,22 @@ if (Meteor.isClient) {
 		}
 	});
 
-	var idIndices = [0];
+	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'expandParams', function expandParams(fieldSpec, params) {
+		if (!(params instanceof Array)) {
+			params = [params];
+		}
+		var fldSplit = fieldSpec.split('.');
+		var idx = 0;
+		_.forEach(fldSplit, function (v, i) {
+			if (v === "*") {
+				fldSplit[i] = params[idx];
+				idx += 1;
+			}
+		});
+		return fldSplit.join('.');
+	});
 
+	var idIndices = [0];
 	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'getNewId', function getNewId() {
 		function padLeft(s, num, char) {
 			var res = s.toString();
@@ -182,7 +196,6 @@ if (Meteor.isClient) {
 			}
 			return res;
 		}
-
 		idIndices[0] += 1;
 		var idx = 0;
 		while ((idx < idIndices.length) && (idIndices[idx] >= 10000)) {
@@ -313,6 +326,7 @@ if (Meteor.isClient) {
 				children: {},
 				__hasChild: new ReactiveDict(),
 				data: new ReactiveDict(),
+				__serverIsUpdated: new ReactiveDict(),
 				viewModelOnlyData: {},
 				dataMirror: {},
 				fieldMatchParams: {}, // No need to re-create
@@ -323,7 +337,6 @@ if (Meteor.isClient) {
 				observer: null,
 				computations: [],
 				_dataUpdateComputations: {},
-				doRebindOperations: true,
 				boundElemComputations: {},
 				boundElemEventHandlers: {},
 				mutationObserver: null,
@@ -357,6 +370,11 @@ if (Meteor.isClient) {
 			instance._3w_get_NR = p => threeWay.dataMirror[p];
 			instance._3w_getAll = () => threeWay.data.all();
 			instance._3w_getAll_NR = () => _.extend({}, threeWay.dataMirror);
+
+			instance._3w_isSyncedToServer = p => threeWay.__serverIsUpdated.get(p);
+			instance._3w_allSyncedToServer = function() {
+				return _.reduce(threeWay.__serverIsUpdated.all(), (m, v) => !!m && !!v, true);
+			};
 
 			instance._3w_parentDataGet = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.get(p);
 			instance._3w_parentDataGetAll = (levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.all();
@@ -488,12 +506,15 @@ if (Meteor.isClient) {
 				return value;
 			};
 
-			instance._3w_getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth) {
+			instance._3w_getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth, path) {
 				if (typeof levels === "undefined") {
 					levels = Number.MAX_SAFE_INTEGER;
 				}
 				if (typeof currDepth === "undefined") {
 					currDepth = 1;
+				}
+				if (typeof path === "undefined") {
+					path = [];
 				}
 				if (levels === 0) {
 					return [];
@@ -505,13 +526,15 @@ if (Meteor.isClient) {
 				var descendants = [];
 				_.forEach(__hasChild, function(hasChild, id) {
 					if (hasChild) {
+						var thisPath = path.concat([id]);
 						descendants.push({
 							id: id,
 							level: currDepth,
+							path: thisPath,
 							instance: threeWay.children[id],
 							templateType: threeWay.children[id].view.name
 						});
-						Array.prototype.push.apply(descendants, threeWay.children[id]._3w_getAllDescendants_NR(levels - 1, currDepth + 1));
+						Array.prototype.push.apply(descendants, threeWay.children[id]._3w_getAllDescendants_NR(levels - 1, currDepth + 1, thisPath));
 					}
 				});
 				return descendants;
@@ -670,6 +693,7 @@ if (Meteor.isClient) {
 
 				mostRecentDatabaseEntry = {};
 				recentDBUpdates = {};
+				threeWay.__serverIsUpdated.clear();
 				threeWay.__idReadyFor = _.object(options.fields, options.fields.map(() => false));
 
 				// Setting Up Debounced/Throttled Updaters
@@ -772,6 +796,21 @@ if (Meteor.isClient) {
 											threeWay.data.set(curr_f, newValue);
 											mostRecentDatabaseEntry[curr_f] = newValue;
 											threeWay.__idReadyFor[curr_f] = true;
+										}
+									}
+
+									// Figure out if server has been updated
+									if (addedRun) {
+										// First rcv
+										threeWay.__serverIsUpdated.set(curr_f, true);
+									} else {
+										var staleValue_serverIsUpdated;
+										Tracker.nonreactive(function() {
+											staleValue_serverIsUpdated = threeWay.__serverIsUpdated.get(curr_f);
+										});
+										var currValue_serverIsUpdated = _.isEqual(newValue, threeWay.dataMirror[curr_f]);
+										if (currValue_serverIsUpdated !== staleValue_serverIsUpdated) {
+											threeWay.__serverIsUpdated.set(curr_f, currValue_serverIsUpdated);
 										}
 									}
 
@@ -1227,6 +1266,10 @@ if (Meteor.isClient) {
 									console.log('[.value] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
 								}
 								threeWay.data.set(fieldName, value);
+								if (!!threeWay.fieldMatchParams[fieldName]) {
+									// invalidate only if linked to server
+									threeWay.__serverIsUpdated.set(fieldName, false);
+								}
 								Tracker.flush();
 							} else {
 								if (IN_DEBUG_MODE_FOR('value')) {
@@ -1320,6 +1363,10 @@ if (Meteor.isClient) {
 									console.log('[.checked] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 								}
 								threeWay.data.set(fieldName, new_value);
+								if (!!threeWay.fieldMatchParams[fieldName]) {
+									// invalidate only if linked to server
+									threeWay.__serverIsUpdated.set(fieldName, false);
+								}
 								Tracker.flush();
 							} else {
 								if (IN_DEBUG_MODE_FOR('checked')) {
@@ -1923,6 +1970,10 @@ if (Meteor.isClient) {
 			_3w_haveData: () => Template.instance()[THREE_WAY_NAMESPACE].haveData.get(),
 			_3w_get: (propName) => Template.instance()._3w_get(propName),
 			_3w_getAll: () => Template.instance()._3w_getAll(),
+
+			_3w_isSyncedToServer: (propName) => Template.instance()._3w_isSyncedToServer(propName),
+			_3w_allSyncedToServer: () => Template.instance()._3w_allSyncedToServer(),
+			_3w_expandParams: ThreeWay.expandParams,
 
 			_3w_parentDataGet: (p, levelsUp) => Template.instance()._3w_parentDataGet(p, levelsUp),
 			_3w_parentDataGetAll: (levelsUp) => Template.instance()._3w_parentDataGetAll(levelsUp),

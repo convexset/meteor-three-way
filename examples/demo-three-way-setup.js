@@ -236,7 +236,7 @@ if (Meteor.isClient) {
 		// "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
 		throttleInterval: 500, // default: 500
 		// Fields for which updaters are throttle'd instead of debounce'ed
-		throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
+		throttledUpdaters: ['emailPrefs'],
 		// Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
 		methodInterval: 100, // default: 100
 	});

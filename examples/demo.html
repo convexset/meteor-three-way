@@ -132,7 +132,10 @@
 			<table class="ui celled table">
 				<tr>
 					<td><strong>Name</strong></td>
-					<td><input name="name" style="border: 0; width: 100%;" data-bind="value: name"></td>
+					<td>
+						<input name="name" style="border: 0; width: 90%;" data-bind="value: name">
+						{{#if not (_3w_isSyncedToServer 'name')}}<i class="notched circle loading icon"></i>{{/if}}
+					</td>
 				</tr>
 				<tr>
 					<td><strong>e-mail Preferences</strong></td>
@@ -143,6 +146,7 @@
 								<label>{{value}}</label>
 							</div>
 						{{/each}}
+						{{#if not (_3w_isSyncedToServer 'emailPrefs')}}&nbsp;&nbsp;&nbsp;<i class="notched circle loading icon"></i>{{/if}}
 					</td>
 				</tr>
 				<tr>
@@ -155,13 +159,15 @@
 									<label>{{value}}</label>
 								</div>
 							{{/each}}
+							{{#if not (_3w_isSyncedToServer 'personal.particulars.age')}}&nbsp;&nbsp;&nbsp;<i class="notched circle loading icon"></i>{{/if}}
 						</div>
 					</td>
 				</tr>
 				<tr>
 					<td><strong>Notes</strong></td>
 					<td>
-						<textarea data-bind="value: notes" style="border: 0; width: 100%;"></textarea>
+						<textarea data-bind="value: notes" style="border: 0; width: 90%;"></textarea>
+						{{#if not (_3w_isSyncedToServer 'notes')}}<i class="notched circle loading icon"></i>{{/if}}
 					</td>
 				</tr>
 				<tr>
@@ -182,6 +188,7 @@
 							</div>
 						</div>
 						<div data-bind="html: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+						{{#if not (_3w_isSyncedToServer 'tags')}}<i class="notched circle loading icon"></i>{{/if}}
 					</td>
 				</tr>
 				<tr>
@@ -200,8 +207,10 @@
 								</strong>
 								<input
 								name="personal.someArr.{{this}}"
-								style="width: 25%;" data-bind="value: personal.someArr.{{this}}; style: {color: someArrValidationErrorText.{{this}}|trueIfNonEmpty|redIfTrue}"
+								style="width: 20%;" data-bind="value: personal.someArr.{{this}}; style: {color: someArrValidationErrorText.{{this}}|trueIfNonEmpty|redIfTrue}"
 								>
+								{{#if not (_3w_isSyncedToServer (_3w_expandParams "personal.someArr.*" this))}}<i class="notched circle loading icon"></i>{{/if}}
+								&nbsp;&nbsp;&nbsp;
 							{{/each}}
 						</div>
 						<div style="color: blue; font-size: 0.8em; max-width: 95%;">
@@ -222,14 +231,20 @@
 					<td><strong><code>personal.otherArr[0]</code></strong></td>
 					<td>
 						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.a">
+						{{#if not (_3w_isSyncedToServer 'personal.otherArr.0.a')}}<i class="notched circle loading icon"></i>&nbsp;&nbsp;&nbsp;{{/if}}
+
 						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.b">
+						{{#if not (_3w_isSyncedToServer 'personal.otherArr.0.b')}}<i class="notched circle loading icon"></i>&nbsp;&nbsp;&nbsp;{{/if}}
 					</td>
 				</tr>
 				<tr>
 					<td><strong><code>personal.otherArr[1]</code></strong></td>
 					<td>
 						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.a">
+						{{#if not (_3w_isSyncedToServer 'personal.otherArr.1.a')}}<i class="notched circle loading icon"></i>&nbsp;&nbsp;&nbsp;{{/if}}
+
 						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.b">
+						{{#if not (_3w_isSyncedToServer 'personal.otherArr.1.b')}}<i class="notched circle loading icon"></i>&nbsp;&nbsp;&nbsp;{{/if}}
 					</td>
 				</tr>
 			</table>
