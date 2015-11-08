@@ -178,7 +178,7 @@ if (Meteor.isClient) {
 		}
 		var fldSplit = fieldSpec.split('.');
 		var idx = 0;
-		_.forEach(fldSplit, function (v, i) {
+		_.forEach(fldSplit, function(v, i) {
 			if (v === "*") {
 				fldSplit[i] = params[idx];
 				idx += 1;
@@ -804,14 +804,7 @@ if (Meteor.isClient) {
 										// First rcv
 										threeWay.__serverIsUpdated.set(curr_f, true);
 									} else {
-										var staleValue_serverIsUpdated;
-										Tracker.nonreactive(function() {
-											staleValue_serverIsUpdated = threeWay.__serverIsUpdated.get(curr_f);
-										});
-										var currValue_serverIsUpdated = _.isEqual(newValue, threeWay.dataMirror[curr_f]);
-										if (currValue_serverIsUpdated !== staleValue_serverIsUpdated) {
-											threeWay.__serverIsUpdated.set(curr_f, currValue_serverIsUpdated);
-										}
+										threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, threeWay.dataMirror[curr_f]));
 									}
 
 									if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
@@ -1266,11 +1259,25 @@ if (Meteor.isClient) {
 									console.log('[.value] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
 								}
 								threeWay.data.set(fieldName, value);
+								Tracker.flush();
+
 								if (!!threeWay.fieldMatchParams[fieldName]) {
 									// invalidate only if linked to server
-									threeWay.__serverIsUpdated.set(fieldName, false);
+									// ... and different
+									var isUpdated;
+									Tracker.nonreactive(function() {
+										// get current value by digging into document
+										var doc = options.collection.findOne(threeWay.id.get());
+										var currValue = doc;
+										var fieldNameSplit = fieldName.split('.');
+										while (fieldNameSplit.length > 0) {
+											currValue = currValue[fieldNameSplit.shift()];
+										}
+										currValue = options.dataTransformFromServer[threeWay.fieldMatchParams[fieldName].match](currValue, doc);
+										isUpdated = _.isEqual(currValue, threeWay.dataMirror[fieldName]);
+									});
+									threeWay.__serverIsUpdated.set(fieldName, isUpdated);
 								}
-								Tracker.flush();
 							} else {
 								if (IN_DEBUG_MODE_FOR('value')) {
 									console.log('[.value] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
@@ -1363,11 +1370,25 @@ if (Meteor.isClient) {
 									console.log('[.checked] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 								}
 								threeWay.data.set(fieldName, new_value);
+								Tracker.flush();
+
 								if (!!threeWay.fieldMatchParams[fieldName]) {
 									// invalidate only if linked to server
-									threeWay.__serverIsUpdated.set(fieldName, false);
+									// ... and different
+									var isUpdated;
+									Tracker.nonreactive(function() {
+										// get current value by digging into document
+										var doc = options.collection.findOne(threeWay.id.get());
+										var currValue = doc;
+										var fieldNameSplit = fieldName.split('.');
+										while (fieldNameSplit.length > 0) {
+											currValue = currValue[fieldNameSplit.shift()];
+										}
+										currValue = options.dataTransformFromServer[threeWay.fieldMatchParams[fieldName].match](currValue, doc);
+										isUpdated = _.isEqual(currValue, threeWay.dataMirror[fieldName]);
+									});
+									threeWay.__serverIsUpdated.set(fieldName, isUpdated);
 								}
-								Tracker.flush();
 							} else {
 								if (IN_DEBUG_MODE_FOR('checked')) {
 									console.log('[.checked] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
