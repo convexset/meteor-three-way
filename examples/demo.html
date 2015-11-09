@@ -40,6 +40,26 @@
 	</div>
 	
 	<div class="column">
+		&nbsp;
+	</div>
+	
+	<div class="column">
+		<h3>The Architecture of <code>ThreeWay</code> in Bad Drawings</h3>
+
+		<p>
+			<img style="width: 100%;" src="https://s3-ap-southeast-1.amazonaws.com/convexset/development/three-way/overview_3.jpg">
+		</p>
+
+		<p>
+			Without further ado (and details on setting up; see the <a href="https://github.com/convexset/meteor-three-way" target="_blank">documentation</a> for that), let's get to the demo.
+		</p>
+	</div>
+
+	<div class="column">
+		&nbsp;
+	</div>
+	
+	<div class="column">
 		<h3>Debug Messages (Look in the console!)</h3>
 		<div class="ui form">
 			{{#each clump allDebugMessages 4}}
@@ -57,13 +77,15 @@
 			{{/each}}
 		</div>
 	</div>
-	
+
 	<div class="column">
 		&nbsp;
 	</div>
 	
 	<div class="column">
 		<h3>Show Me the Data (via a <code>#each</code> block iterating over a cursor)</h3>
+
+		<p>Naturally, changes will be propagated to client-side elements before stuff on the "server-side" (or "server's side"). When your changes appear here, it means that data has made its way to the database, has been saved to the database, and has been sent back and stored in the MiniMongo local cache.</p>
 		
 		<p>If you do not like what you see, simply enter the following into the console:</p>
 		<pre>Meteor.call('regenerate-data');</pre>
