@@ -87,6 +87,9 @@ if (Meteor.isClient) {
 					var result;
 					if (Number(wildCardParams[0]) === 2) {
 						// No exclamation marks
+						if (typeof value === "undefined") {
+							value = "";
+						}
 						result = value.indexOf('!') === -1;
 						if (!result) {
 							console.warn('[validatorsVM] personal.someArr.2 should have no \"!\"s', value, wildCardParams);
