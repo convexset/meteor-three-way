@@ -280,29 +280,24 @@ if (Meteor.isClient) {
 			throw new Meteor.Error("empty-field-forbidden", "\"\" is not a valid field name");
 		}
 
-
-		var extendedFields = (function genObjSubFields(fields) {
+		// Generate list of all possible parent fields
+		var extendedFields = (function(fields) {
 			var ret = [];
 			fields.forEach(function(f) {
-				var currResults = [f];
 				var split = f.split('.');
-				split.pop();
-				if (split.length > 0) {
-					genObjSubFields([split.join('.')]).forEach(function(f) {
-						if (currResults.indexOf(f) === -1) {
-							currResults.push(f);
-						}
-					});
-				}
-
-				currResults.forEach(function(f) {
-					if (ret.indexOf(f) === -1) {
-						ret.push(f);
+				var this_f;
+				while (split.length > 0) {
+					this_f = split.join('.');
+					if (ret.indexOf(this_f) === -1) {
+						ret.push(this_f);
 					}
-				});
+					split.pop();
+				}
 			});
 			return ret;
 		})(options.fields);
+
+		// Extract those that aren't proper fields
 		var pseudoFields = (function() {
 			var efo = [];
 			extendedFields.forEach(function(item) {
