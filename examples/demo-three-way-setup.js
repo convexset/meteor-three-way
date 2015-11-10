@@ -46,6 +46,11 @@ if (Meteor.isClient) {
 		// function(_id, value, ...wildCardParams)
 		updatersForServer: updatersForServer,
 
+		// Inject default values if not in database record
+		injectDefaultValues: {
+			name: 'Unnamed Person'
+		},
+
 		// Transformations from the server to the view model
 		// In this example, "tags" are stored in the view model as a comma
 		// separated list in a string, while it is stored in the server as
@@ -155,9 +160,6 @@ if (Meteor.isClient) {
 			sayHideToHide: function(v) {
 				return (v && v.trim().toUpperCase() || "") !== "HIDE";
 			},
-			toUpperCase: function(v) {
-				return v && v.toUpperCase() || "";
-			},
 			colorCodeAge: function(v) {
 				if (v === '0_12') {
 					return "#8F8";
@@ -192,15 +194,10 @@ if (Meteor.isClient) {
 					.map(x => x.length < 2 ? '0' + x : x);
 				return "#" + col.join('');
 			},
-			not: x => !x,
 			noIsFalse: x => (!!x) && (x.trim().toLowerCase() === 'no' ? false : true),
 			trueIfNonEmpty: x => (!!x) && x.length > 0,
 			grayIfTrue: x => (!!x) ? "#ccc" : "",
 			redIfTrue: x => (!!x) ? "red" : "",
-			// This is something "special" to make the Semantic UI Dropdown work
-			// (There's some DOM manipulation in the method)
-			// More helpers will be written soon...
-			updateSemanticUIDropdown: ThreeWay.processors.updateSemanticUIDropdown
 		},
 
 		// (Global) initial values for fields that feature only in the local view

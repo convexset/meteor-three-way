@@ -240,11 +240,6 @@ if (Meteor.isClient) {
 		}
 		options.fields = _.map(options.updatersForServer, (v, k) => k);
 		options.fields.forEach(function(f) {
-			// check
-			if (!options.updatersForServer.hasOwnProperty(f)) {
-				// Check for updaters
-				throw new Meteor.Error('missing-updater', 'Meteor call to update server missing: ' + f);
-			}
 			if (!options.dataTransformToServer.hasOwnProperty(f)) {
 				// Set default transforms (local data to server)
 				options.dataTransformToServer[f] = x => x;
@@ -268,24 +263,11 @@ if (Meteor.isClient) {
 		});
 
 		// Adding Pre-Processors
-		if (typeof options.preProcessors['not'] === "undefined") {
-			options.preProcessors['not'] = x => !x;
-		}
-		if (typeof options.preProcessors['truthy'] === "undefined") {
-			options.preProcessors['truthy'] = x => !!x;
-		}
-		if (typeof options.preProcessors['isNonEmptyString'] === "undefined") {
-			options.preProcessors['isNonEmptyString'] = x => (typeof x === "string") && x.length > 0;
-		}
-		if (typeof options.preProcessors['isNonEmptyArray'] === "undefined") {
-			options.preProcessors['isNonEmptyArray'] = x => (x instanceof Array) && x.length > 0;
-		}
-		if (typeof options.preProcessors['toUpperCase'] === "undefined") {
-			options.preProcessors['toUpperCase'] = x => (typeof x === "undefined") ? "" : x.toString().toUpperCase();
-		}
-		if (typeof options.preProcessors['toLowerCase'] === "undefined") {
-			options.preProcessors['toLowerCase'] = x => (typeof x === "undefined") ? "" : x.toString().toLowerCase();
-		}
+		_.forEach(ThreeWay.preProcessors, function(fn, p) {
+			if (typeof options.preProcessors[p] === "undefined") {
+				options.preProcessors[p] = fn;
+			}
+		});
 
 		// "" as field forbidden
 		if (typeof options.updatersForServer[''] !== "undefined") {
@@ -2074,13 +2056,22 @@ if (Meteor.isClient) {
 		});
 	});
 
-	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'processorGenerators', {
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'preProcessorGenerators', {
 		undefinedFilterGenerator: function undefinedFilter(defaultValue) {
 			return x => (typeof x === "undefined") ? defaultValue : x;
 		},
+		makeMap: function makeMap(map, defaultValue) {
+			return k => map.hasOwnProperty(k) ? map[k] : defaultValue;
+		},
 	});
 
-	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'processors', {
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'preProcessors', {
+		not: x => !x,
+		truthy: x => !!x,
+		isNonEmptyString: x => (typeof x === "string") && x.length > 0,
+		isNonEmptyArray: x => (x instanceof Array) && x.length > 0,
+		toUpperCase: x => ((typeof x === "undefined") || (x === null)) ? "" : x.toString().toUpperCase(),
+		toLowerCase: x => ((typeof x === "undefined") || (x === null)) ? "" : x.toString().toLowerCase(),
 		updateSemanticUIDropdown: function updateSemanticUIDropdown(x, elem) {
 			if (typeof x === "string") {
 				if (x.trim() === "") {
@@ -2093,7 +2084,7 @@ if (Meteor.isClient) {
 			}
 			return x;
 		},
-		undefinedToEmptyStringFilter: ThreeWay.processorGenerators.undefinedFilterGenerator(""),
+		undefinedToEmptyStringFilter: ThreeWay.preProcessorGenerators.undefinedFilterGenerator(""),
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'transformationGenerators', {

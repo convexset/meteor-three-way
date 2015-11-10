@@ -50,8 +50,7 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
     - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
     - [Debug](#debug)
 - [Extras](#extras)
-    - [Default Pre-processors](#default-pre-processors)
-    - [Extra Pre-Processors](#extra-pre-processors)
+    - [Extra/Default Pre-processors](#extradefault-pre-processors)
     - [Extra Pre-Processor Generators](#extra-pre-processor-generators)
     - [Extra Transformations](#extra-transformations)
     - [Extra Transformation Generators](#extra-transformation-generators)
@@ -59,7 +58,7 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
     - [View Model to Database Binding](#view-model-to-database-binding)
     - [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
     - [Dynamic Data Binding](#dynamic-data-binding)
-- [Questions/Issues](#questionsissues)
+- [Questions/Issues/To Dos](#questionsissuesto-dos)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -180,11 +179,6 @@ ThreeWay.prepare(Template.DemoThreeWay, {
         // descriptions and then joins them
         // emailPrefsAll is of the form {"1_12": "1 to 12", ...})
         mapToEmailPrefs: prefs => prefs.map(x => emailPrefsAll[x]).join(", "),
-
-        // This is something "special" to make the Semantic UI Dropdown work
-        // (There's some DOM manipulation in the method)
-        // More helpers will be written soon...
-        updateSemanticUIDropdown: ThreeWay.processors.updateSemanticUIDropdown,
 
         // These processors support visual feedback for validation
         // e.g.: the red "Invalid e-mail address" text that appears when
@@ -313,11 +307,6 @@ ThreeWay.prepare(Template.DemoThreeWay, {
         // descriptions and then joins them
         // emailPrefsAll is of the form {"1_12": "1 to 12", ...})
         mapToEmailPrefs: prefs => prefs.map(x => emailPrefsAll[x]).join(", "),
-
-        // This is something "special" to make the Semantic UI Dropdown work
-        // (There's some DOM manipulation in the method)
-        // More helpers will be written soon...
-        updateSemanticUIDropdown: ThreeWay.processors.updateSemanticUIDropdown,
 
         // These processors support visual feedback for validation
         // e.g.: the red "Invalid e-mail address" text that appears when
@@ -954,9 +943,9 @@ See [Instance Methods](#instance-methods) for more information.
 ## Extras
 
 
-#### Default Pre-processors
+#### Extra/Default Pre-processors
 
-Default pre-processors may be used directly without need for definition. They are added to the list of pre-processors and may be overwritten if the user so chooses.
+Extra processors may be accessed via the `ThreeWay.preProcessors` namespace (e.g.: `ThreeWay.preProcessors.updateSemanticUIDropdown`). All "extra" pre-processors will be included by default if no pre-processor with the same name is defined.
 
  - `truthy`: returns a boolean which reflects the "truthiness" of the value
  - `not`: returns a boolean which reflects the "falsiness" of the value
@@ -964,20 +953,15 @@ Default pre-processors may be used directly without need for definition. They ar
  - `isNonEmptyArray`: returns the described true/false value
  - `toUpperCase`: transforms the value to a string (`undefined` to `''`) and returns it in upper case
  - `toLowerCase`: transforms the value to a string (`undefined` to `''`) and returns it in lower case
-
-#### Extra Pre-Processors
-
-Extra processors may be accessed via the `ThreeWay.processors` namespace. (e.g.: `ThreeWay.processors.updateSemanticUIDropdown` or `ThreeWay.processors.undefinedToEmptyStringFilter`)
-
-- `updateSemanticUIDropdown`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)
-
-- `undefinedToEmptyStringFilter`: maps `undefined`'s to empty strings and passes other values
+ - `updateSemanticUIDropdown`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)
+ - `undefinedToEmptyStringFilter`: maps `undefined`'s to empty strings and passes other values
 
 #### Extra Pre-Processor Generators
 
-Similar to the above, but these are generators for pre-processor take one or more parameters and return a pre-processor.
+Similar to the above, but these are generators for pre-processor take one or more parameters and return a pre-processor. They may be accessed via the `ThreeWay.preProcessorGenerators` namespace (e.g.: `ThreeWay.preProcessorGenerators.undefinedFilterGenerator`).
 
 - `undefinedFilterGenerator(defaultValue)`: a function that returns a function that maps `undefined`'s to `defaultValue` and passes other values
+- `makeMap(map, defaultValue)`: a function that maps `k` to `map[k]` (and returns `defaultValue` if `map` does not have property `k`)
 
 
 #### Extra Transformations
@@ -1002,7 +986,9 @@ Similar to the above, but these are generators for transformations that take one
 
 #### View Model to Database Binding
 
-Currently, binding to database fields only occurs if the required field is already in the database. So fields bound on in the DOM do not drive the binding.
+Currently, binding to database fields only occurs if the required field is already in the database. So fields bound on in the DOM do not drive the binding. However, sometimes records in the database have missing values that should be filled in.
+
+As of v0.1.17, a compromise solution was included in the form of the `injectDefaultValues` option, where missing fields are filled in with default values.
 
 #### Database Updates and Observer Callbacks
 
