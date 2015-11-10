@@ -187,8 +187,16 @@
 				<tr>
 					<td><strong>Notes</strong></td>
 					<td>
-						<textarea data-bind="value: notes" style="border: 0; width: 90%;"></textarea>
-						{{#if _3w_validValuesNotSynced 'notes'}}<i class="notched circle loading icon"></i>{{/if}}
+						<table border=0 style="width: 100%;">
+							<tr>
+								<td style="width: 90%; border: none;">
+									<textarea data-bind="value: notes" style="border: 0; width: 100%;"></textarea>
+								</td>
+								<td style="border: none;">
+									{{#if _3w_validValuesNotSynced 'notes'}}<i class="notched circle loading icon"></i>{{/if}}
+								</td>
+							</tr>
+						</table>
 					</td>
 				</tr>
 				<tr>
