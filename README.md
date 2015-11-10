@@ -55,8 +55,10 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
     - [Extra Transformations](#extra-transformations)
     - [Extra Transformation Generators](#extra-transformation-generators)
 - [Notes](#notes)
+    - [View Model to Database Binding](#view-model-to-database-binding)
     - [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
     - [Dynamic Data Binding](#dynamic-data-binding)
+- [Questions/Issues](#questionsissues)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -980,6 +982,10 @@ Similar to the above, but these are generators for transformations that take one
 
 ## Notes
 
+#### View Model to Database Binding
+
+Currently, binding to database fields only occurs if the required field is already in the database. So fields bound on in the DOM do not drive the binding.
+
 #### Database Updates and Observer Callbacks
 
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart.
@@ -994,3 +1000,9 @@ Pre-v0.1.9, dynamic rebinding was incomplete and carried out by polling the DOM.
 
 The mixing of dynamic data-binding and the possibility of multiple `ThreeWay` instances poses some challenges with regards to the question of which `ThreeWay` instance a new DOM element should be data bound with.
 See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information.
+
+## Questions/Issues/To Dos
+
+Should VM-db data binding be created when fields are described in the UI or when they are sent down from the server? (See: [View Model to Database Binding](#view-model-to-database-binding))
+
+Update sub-object grouped updaters to combine updates into single calls

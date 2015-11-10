@@ -561,10 +561,131 @@ if (Meteor.isClient) {
 				return value;
 			};
 
+			////////////////////////////////////////////////////////////////
+			// For VM-DB binding set-up
+			//
+
 			var mostRecentDatabaseEntry;
 			var recentDBUpdates;
-			var baseUpdaters;
-			var debouncedOrThrottledUpdaters;
+
+			// Setting Up Debounced/Throttled Updaters
+			// Old ones will trigger even if id changes since
+			// new functions are created when id changes
+			var debouncedOrThrottledUpdaters = {};
+			var baseUpdaters = _.object(
+				options.fields,
+				options.fields.map(function(f) {
+					return function updateServer(v, match) {
+						var _id;
+						Tracker.nonreactive(function() {
+							_id = threeWay.id.get();
+						});
+						var params = [_id, v];
+						match.params.forEach(function(p) {
+							params.push(p);
+						});
+						// Meteor.apply(options.updatersForServer[f], params);
+						meteorApply_usePromiseBins(match.fieldPath, options.updatersForServer[f], params);
+					};
+				})
+			);
+
+			// Set up binding
+			function setUpBinding(curr_f) {
+				if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
+					threeWay._dataUpdateComputations[curr_f] = Tracker.autorun(function() {
+						var value = threeWay.data.get(curr_f);
+
+						var __id;
+						Tracker.nonreactive(function() {
+							__id = threeWay.id.get();
+						});
+						if (IN_DEBUG_MODE_FOR('bindings')) {
+							console.log('[bindings] Field: ' + curr_f + "; id: " + __id + "; Value:", value);
+						}
+						
+						if ((!!__id) && (!!threeWay.__idReady) && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
+							// Create specific updater for field if not already done.
+							// Presents updates being lost if "fast" updates are being done
+							// for a bunch of fields matching a spec. like "someArray.*"
+							var matchFamily = threeWay.fieldMatchParams[curr_f].match;
+
+							// Set up updater if not already set up
+							if (typeof debouncedOrThrottledUpdaters[curr_f] === "undefined") {
+								var updater = function updater(v) {
+									if (IN_DEBUG_MODE_FOR('db')) {
+										console.log('[db|update] Performing update... ' + curr_f + ' -> ', v);
+									}
+									mostRecentDatabaseEntry[curr_f] = v;
+									baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
+								};
+								if (options.throttledUpdaters.indexOf(matchFamily) !== -1) {
+									// Throttled updater
+									debouncedOrThrottledUpdaters[curr_f] = _.throttle(updater, options.throttleInterval);
+								} else {
+									// Debounced updater
+									debouncedOrThrottledUpdaters[curr_f] = _.debounce(updater, options.debounceInterval);
+								}
+							}
+
+							// Validate before send
+							if (threeWay.validateInput(curr_f, value)) {
+								threeWay.__dataIsNotInvalid.set(curr_f, true);
+								var vmData = _.extend({}, threeWay.dataMirror);
+								var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
+
+								if (IN_DEBUG_MODE_FOR('db')) {
+									console.log('[db|update] Initiating update... ' + curr_f + ' -> ', value, ' (Value for server:', valueToSend, ')');
+								}
+
+								// Store recent states to avoid the "reversion" problem
+								// Due to cursor.observeChanges sending the entire sub-document,
+								// what has to be stored is the sub-document
+								//
+								// This is here instead of within the updater to ensure that state 
+								// at the point of the change is stored instead of at the point
+								// where debouncing/throttling releases the update.
+								// This means no "state" is missed out
+								var fieldPrefix = curr_f.split('.')[0];
+								_.forEach(threeWay.fieldMatchParams, function(m, f) {
+									if (f.substr(0, fieldPrefix.length) === fieldPrefix) {
+										if (typeof vmData[f] !== "undefined") {
+											if (typeof recentDBUpdates[f] === "undefined") {
+												recentDBUpdates[f] = [];
+											}
+											var thisClientSideValue = (f === curr_f) ? value : vmData[f];
+											removeOldItems(recentDBUpdates[f], AGE_THRESHOLD_OLD_ITEM);
+											recentDBUpdates[f].push({
+												valueOnClient: thisClientSideValue,
+												ts: (new Date()).getTime(),
+											});
+											if (IN_DEBUG_MODE_FOR('db')) {
+												console.log('[db|update-recents] Storing recent (client-side) value for ' + f + ':', thisClientSideValue, ' (Value for server:', valueToSend, ')');
+											}
+										}
+									}
+								});
+
+								debouncedOrThrottledUpdaters[curr_f](valueToSend);
+							} else {
+								if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('validation')) {
+									console.log('[db/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
+									threeWay.__dataIsNotInvalid.set(curr_f, false);
+								}
+							}
+
+						} else {
+							if (IN_DEBUG_MODE_FOR('db')) {
+								console.log('[db|update] No update.');
+							}
+						}
+					});
+				}
+			}
+			//
+			// End VM-DB binding set-up
+			////////////////////////////////////////////////////////////////
+
 
 			////////////////////////////////////////////////////////////////
 			// For batching Meteor calls
@@ -714,24 +835,6 @@ if (Meteor.isClient) {
 				// threeWay.__serverIsUpdated.clear();
 				// threeWay.__dataIsNotInvalid.clear();
 
-				// Setting Up Debounced/Throttled Updaters
-				// Old ones will trigger even if id changes since
-				// new functions are created when id changes
-				debouncedOrThrottledUpdaters = {};
-				baseUpdaters = _.object(
-					options.fields,
-					options.fields.map(function(f) {
-						return function updateServer(v, match) {
-							var params = [_id, v];
-							match.params.forEach(function(p) {
-								params.push(p);
-							});
-							// Meteor.apply(options.updatersForServer[f], params);
-							meteorApply_usePromiseBins(match.fieldPath, options.updatersForServer[f], params);
-						};
-					})
-				);
-
 				if (!!_id) {
 					if (IN_DEBUG_MODE_FOR('new-id')) {
 						console.log('Current id: ' + _id);
@@ -814,94 +917,7 @@ if (Meteor.isClient) {
 									threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, threeWay.dataMirror[curr_f]));
 								}
 
-								if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
-									threeWay._dataUpdateComputations[curr_f] = Tracker.autorun(function() {
-										var value = threeWay.data.get(curr_f);
-
-										var __id;
-										Tracker.nonreactive(function() {
-											__id = threeWay.id.get();
-										});
-										if (IN_DEBUG_MODE_FOR('db')) {
-											console.log('[db|update] Field: ' + curr_f + "; id: " + __id + "; isReady: " + threeWay.__idReady);
-											console.log("[db|update] Value:", value);
-											console.log("[db|update] Most Recent DB entry: ", mostRecentDatabaseEntry[curr_f]);
-										}
-										if ((!!__id) && (!!threeWay.__idReady) && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
-											// Create specific updater for field if not already done.
-											// Presents updates being lost if "fast" updates are being done
-											// for a bunch of fields matching a spec. like "someArray.*"
-											var matchFamily = threeWay.fieldMatchParams[curr_f].match;
-											if (typeof debouncedOrThrottledUpdaters[curr_f] === "undefined") {
-												var updater = function updater(v) {
-													if (IN_DEBUG_MODE_FOR('db')) {
-														console.log('[db|update] Performing update... ' + curr_f + ' -> ', v);
-													}
-													mostRecentDatabaseEntry[curr_f] = v;
-													baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
-												};
-												if (options.throttledUpdaters.indexOf(matchFamily) !== -1) {
-													// Throttled updater
-													debouncedOrThrottledUpdaters[curr_f] = _.throttle(updater, options.throttleInterval);
-												} else {
-													// Debounced updater
-													debouncedOrThrottledUpdaters[curr_f] = _.debounce(updater, options.debounceInterval);
-												}
-											}
-
-											// Validate before send
-											if (threeWay.validateInput(curr_f, value)) {
-												threeWay.__dataIsNotInvalid.set(curr_f, true);
-												var vmData = _.extend({}, threeWay.dataMirror);
-												var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
-
-												if (IN_DEBUG_MODE_FOR('db')) {
-													console.log('[db|update] Initiating update... ' + curr_f + ' -> ', value);
-												}
-
-												// Store recent states to avoid the "reversion" problem
-												// Due to cursor.observeChanges sending the entire sub-document,
-												// what has to be stored is the sub-document
-												//
-												// This is here instead of within the updater to ensure that state 
-												// at the point of the change is stored instead of at the point
-												// where debouncing/throttling releases the update.
-												// This means no "state" is missed out
-												var fieldPrefix = curr_f.split('.')[0];
-												_.forEach(threeWay.fieldMatchParams, function(m, f) {
-													if (f.substr(0, fieldPrefix.length) === fieldPrefix) {
-														if (typeof vmData[f] !== "undefined") {
-															if (typeof recentDBUpdates[f] === "undefined") {
-																recentDBUpdates[f] = [];
-															}
-															var thisClientSideValue = (f === curr_f) ? v : vmData[f];
-															removeOldItems(recentDBUpdates[f], AGE_THRESHOLD_OLD_ITEM);
-															recentDBUpdates[f].push({
-																valueOnClient: thisClientSideValue,
-																ts: (new Date()).getTime(),
-															});
-															if (IN_DEBUG_MODE_FOR('db')) {
-																console.log('[db|update-recents] Storing recent (client-side) value for ' + f + ':', thisClientSideValue);
-															}
-														}
-													}
-												});
-
-												debouncedOrThrottledUpdaters[curr_f](valueToSend);
-											} else {
-												if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('validation')) {
-													console.log('[db/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
-													threeWay.__dataIsNotInvalid.set(curr_f, false);
-												}
-											}
-
-										} else {
-											if (IN_DEBUG_MODE_FOR('db')) {
-												console.log('[db|update] No update.');
-											}
-										}
-									});
-								}
+								setUpBinding(curr_f);
 							}
 
 							if (typeof v === "object") {
