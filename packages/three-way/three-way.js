@@ -371,7 +371,7 @@ if (Meteor.isClient) {
 			instance._3w_allSyncedToServer = function() {
 				return _.reduce(threeWay.__serverIsUpdated.all(), (m, v) => !!m && !!v, true);
 			};
-			instance._3w_isNotInvalid =  p => !!threeWay.__dataIsNotInvalid.get(p);
+			instance._3w_isNotInvalid = p => !!threeWay.__dataIsNotInvalid.get(p);
 
 			instance._3w_parentDataGet = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.get(p);
 			instance._3w_parentDataGetAll = (levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.all();
@@ -666,9 +666,10 @@ if (Meteor.isClient) {
 					threeWay._fieldPseudoMatched[curr_f] = (!!threeWay.fieldMatchParams[curr_f]) ? true : ((extendedFields.indexOf(curr_f) === -1) || (matchParamStrings(pseudoFields, curr_f, true).length > 0));
 					threeWay._fieldsTested.push(curr_f);
 				}
-			};
+			}
 
 			// The big set-up
+			threeWay.__idReady = false;
 			Tracker.autorun(function() {
 				var _id = threeWay.id.get();
 
@@ -712,7 +713,6 @@ if (Meteor.isClient) {
 				// TODO: Figure out a sound way of reasoning when .clear() is ok
 				// threeWay.__serverIsUpdated.clear();
 				// threeWay.__dataIsNotInvalid.clear();
-				threeWay.__idReadyFor = {};
 
 				// Setting Up Debounced/Throttled Updaters
 				// Old ones will trigger even if id changes since
@@ -748,175 +748,172 @@ if (Meteor.isClient) {
 					//////////////////////////////////////////////////// 
 					// Descend into objects and arrays
 					//
-					var descendInto = (function() {
-						return function descendInto(fields, doc, addedRun, fieldPrefix) {
-							if (typeof fieldPrefix === "undefined") {
-								fieldPrefix = '';
+					var descendInto = function descendInto(fields, doc, addedRun, fieldPrefix) {
+						if (typeof fieldPrefix === "undefined") {
+							fieldPrefix = '';
+						}
+
+						_.forEach(fields, function(v, f) {
+							var curr_f = fieldPrefix + f;
+
+							// Get matching items to data-bind
+							// item.subitem --> (item.subitem, [])
+							// item.subitem --> (item.*, ['subitem'])
+							doFieldMatch(curr_f);
+							var match = threeWay.fieldMatchParams[curr_f] || null;
+							var psuedoMatched = threeWay._fieldPseudoMatched[curr_f] || null;
+
+							if ((!match) && (!psuedoMatched)) {
+								// Skip if unnecessary branch
+								if (IN_DEBUG_MODE_FOR('observer')) {
+									console.log('[Observer] Skipping ' + curr_f + ' and children.');
+								}
+								return;
 							}
 
-							_.forEach(fields, function(v, f) {
-								var curr_f = fieldPrefix + f;
+							if (!!match) {
+								// This is field we might be binding to...
+								// ... (based on options.fields)...do something
 
-								// Get matching items to data-bind
-								// item.subitem --> (item.subitem, [])
-								// item.subitem --> (item.*, ['subitem'])
-								doFieldMatch(curr_f);
-								var match = threeWay.fieldMatchParams[curr_f] || null;
-								var psuedoMatched = threeWay._fieldPseudoMatched[curr_f] || null;
-
-								if ((!match) && (!psuedoMatched)) {
-									// Skip if unnecessary branch
-									if (IN_DEBUG_MODE_FOR('observer')) {
-										console.log('[Observer] Skipping ' + curr_f + ' and children.');
-									}
-									return;
+								// Indicate field is touched and update matches
+								threeWay.fieldMatchParams[curr_f] = match;
+								if (IN_DEBUG_MODE_FOR('db')) {
+									console.log('[db|match] Field match:', curr_f, match);
+									console.log('[db|match] All matches:', threeWay.fieldMatchParams);
 								}
 
-								if (!!match) {
-									// This is field we might be binding to...
-									// ... (based on options.fields)...do something
+								if (IN_DEBUG_MODE_FOR('observer')) {
+									console.log('[Observer] Field match -- ' + curr_f, ':', v);
+								}
 
-									// Indicate field is touched and update matches
-									threeWay.fieldMatchParams[curr_f] = match;
+								// Update data if changed
+								var mostRecentValue = mostRecentDatabaseEntry[curr_f];
+								var newValue = options.dataTransformFromServer[match.match](v, doc);
+								if (_.isEqual(mostRecentValue, newValue)) {
 									if (IN_DEBUG_MODE_FOR('db')) {
-										console.log('[db|match] Field match:', curr_f, match);
-										console.log('[db|match] All matches:', threeWay.fieldMatchParams);
+										console.log('[db|receive] Most recent value matches. No change to view model.');
 									}
-
-									if (IN_DEBUG_MODE_FOR('observer')) {
-										console.log('[Observer] Field match -- ' + curr_f, ':', v);
-									}
-
-									// Update data if changed
-									var mostRecentValue = mostRecentDatabaseEntry[curr_f];
-									var newValue = options.dataTransformFromServer[match.match](v, doc);
-									if (_.isEqual(mostRecentValue, newValue)) {
+								} else {
+									removeOldItems(recentDBUpdates[curr_f], AGE_THRESHOLD_OLD_ITEM);
+									if (popItemWithValue(recentDBUpdates[curr_f], newValue, 'valueOnClient', true) > 0) {
 										if (IN_DEBUG_MODE_FOR('db')) {
-											console.log('[db|receive] Most recent value matches. No change to view model.');
+											console.log('[db|receive] Matches value from recent update. No change to view model.');
 										}
 									} else {
-										removeOldItems(recentDBUpdates[curr_f], AGE_THRESHOLD_OLD_ITEM);
-										if (popItemWithValue(recentDBUpdates[curr_f], newValue, 'valueOnClient', true) > 0) {
-											if (IN_DEBUG_MODE_FOR('db')) {
-												console.log('[db|receive] Matches value from recent update. No change to view model.');
-											}
-										} else {
-											threeWay.data.set(curr_f, newValue);
-											mostRecentDatabaseEntry[curr_f] = newValue;
-											threeWay.__idReadyFor[curr_f] = true;
+										threeWay.data.set(curr_f, newValue);
+										mostRecentDatabaseEntry[curr_f] = newValue;
+									}
+								}
+
+								// Figure out if server has been updated
+								if (addedRun) {
+									// First rcv
+									threeWay.__serverIsUpdated.set(curr_f, true);
+									threeWay.__dataIsNotInvalid.set(curr_f, true);
+								} else {
+									threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, threeWay.dataMirror[curr_f]));
+								}
+
+								if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
+									threeWay._dataUpdateComputations[curr_f] = Tracker.autorun(function() {
+										var value = threeWay.data.get(curr_f);
+
+										var __id;
+										Tracker.nonreactive(function() {
+											__id = threeWay.id.get();
+										});
+										if (IN_DEBUG_MODE_FOR('db')) {
+											console.log('[db|update] Field: ' + curr_f + "; id: " + __id + "; isReady: " + threeWay.__idReady);
+											console.log("[db|update] Value:", value);
+											console.log("[db|update] Most Recent DB entry: ", mostRecentDatabaseEntry[curr_f]);
 										}
-									}
-
-									// Figure out if server has been updated
-									if (addedRun) {
-										// First rcv
-										threeWay.__serverIsUpdated.set(curr_f, true);
-										threeWay.__dataIsNotInvalid.set(curr_f, true);
-									} else {
-										threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, threeWay.dataMirror[curr_f]));
-									}
-
-									if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
-										threeWay._dataUpdateComputations[curr_f] = Tracker.autorun(function() {
-											var value = threeWay.data.get(curr_f);
-
-											var __id;
-											Tracker.nonreactive(function() {
-												__id = threeWay.id.get();
-											});
-											if (IN_DEBUG_MODE_FOR('db')) {
-												console.log('[db|update] Field: ' + curr_f + "; id: " + __id + "; isReady[f]: " + threeWay.__idReadyFor[curr_f]);
-												console.log("[db|update] Value:", value);
-												console.log("[db|update] Most Recent DB entry: ", mostRecentDatabaseEntry[curr_f]);
-											}
-											if ((!!__id) && (!!threeWay.__idReadyFor[curr_f]) && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
-												// Create specific updater for field if not already done.
-												// Presents updates being lost if "fast" updates are being done
-												// for a bunch of fields matching a spec. like "someArray.*"
-												var matchFamily = threeWay.fieldMatchParams[curr_f].match;
-												if (typeof debouncedOrThrottledUpdaters[curr_f] === "undefined") {
-													var updater = function updater(v) {
-														if (IN_DEBUG_MODE_FOR('db')) {
-															console.log('[db|update] Performing update... ' + curr_f + ' -> ', v);
-														}
-														mostRecentDatabaseEntry[curr_f] = v;
-														baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
-													};
-													if (options.throttledUpdaters.indexOf(matchFamily) !== -1) {
-														// Throttled updater
-														debouncedOrThrottledUpdaters[curr_f] = _.throttle(updater, options.throttleInterval);
-													} else {
-														// Debounced updater
-														debouncedOrThrottledUpdaters[curr_f] = _.debounce(updater, options.debounceInterval);
+										if ((!!__id) && (!!threeWay.__idReady) && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
+											// Create specific updater for field if not already done.
+											// Presents updates being lost if "fast" updates are being done
+											// for a bunch of fields matching a spec. like "someArray.*"
+											var matchFamily = threeWay.fieldMatchParams[curr_f].match;
+											if (typeof debouncedOrThrottledUpdaters[curr_f] === "undefined") {
+												var updater = function updater(v) {
+													if (IN_DEBUG_MODE_FOR('db')) {
+														console.log('[db|update] Performing update... ' + curr_f + ' -> ', v);
 													}
+													mostRecentDatabaseEntry[curr_f] = v;
+													baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
+												};
+												if (options.throttledUpdaters.indexOf(matchFamily) !== -1) {
+													// Throttled updater
+													debouncedOrThrottledUpdaters[curr_f] = _.throttle(updater, options.throttleInterval);
+												} else {
+													// Debounced updater
+													debouncedOrThrottledUpdaters[curr_f] = _.debounce(updater, options.debounceInterval);
+												}
+											}
+
+											// Validate before send
+											if (threeWay.validateInput(curr_f, value)) {
+												threeWay.__dataIsNotInvalid.set(curr_f, true);
+												var vmData = _.extend({}, threeWay.dataMirror);
+												var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
+
+												if (IN_DEBUG_MODE_FOR('db')) {
+													console.log('[db|update] Initiating update... ' + curr_f + ' -> ', value);
 												}
 
-												// Validate before send
-												if (threeWay.validateInput(curr_f, value)) {
-													threeWay.__dataIsNotInvalid.set(curr_f, true);
-													var vmData = _.extend({}, threeWay.dataMirror);
-													var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
-
-													if (IN_DEBUG_MODE_FOR('db')) {
-														console.log('[db|update] Initiating update... ' + curr_f + ' -> ', value);
-													}
-
-													// Store recent states to avoid the "reversion" problem
-													// Due to cursor.observeChanges sending the entire sub-document,
-													// what has to be stored is the sub-document
-													//
-													// This is here instead of within the updater to ensure that state 
-													// at the point of the change is stored instead of at the point
-													// where debouncing/throttling releases the update.
-													// This means no "state" is missed out
-													var fieldPrefix = curr_f.split('.')[0];
-													_.forEach(threeWay.fieldMatchParams, function(m, f) {
-														if (f.substr(0, fieldPrefix.length) === fieldPrefix) {
-															if (typeof vmData[f] !== "undefined") {
-																if (typeof recentDBUpdates[f] === "undefined") {
-																	recentDBUpdates[f] = [];
-																}
-																var thisClientSideValue = (f === curr_f) ? v : vmData[f];
-																removeOldItems(recentDBUpdates[f], AGE_THRESHOLD_OLD_ITEM);
-																recentDBUpdates[f].push({
-																	valueOnClient: thisClientSideValue,
-																	ts: (new Date()).getTime(),
-																});
-																if (IN_DEBUG_MODE_FOR('db')) {
-																	console.log('[db|update-recents] Storing recent (client-side) value for ' + f + ':', thisClientSideValue);
-																}
+												// Store recent states to avoid the "reversion" problem
+												// Due to cursor.observeChanges sending the entire sub-document,
+												// what has to be stored is the sub-document
+												//
+												// This is here instead of within the updater to ensure that state 
+												// at the point of the change is stored instead of at the point
+												// where debouncing/throttling releases the update.
+												// This means no "state" is missed out
+												var fieldPrefix = curr_f.split('.')[0];
+												_.forEach(threeWay.fieldMatchParams, function(m, f) {
+													if (f.substr(0, fieldPrefix.length) === fieldPrefix) {
+														if (typeof vmData[f] !== "undefined") {
+															if (typeof recentDBUpdates[f] === "undefined") {
+																recentDBUpdates[f] = [];
+															}
+															var thisClientSideValue = (f === curr_f) ? v : vmData[f];
+															removeOldItems(recentDBUpdates[f], AGE_THRESHOLD_OLD_ITEM);
+															recentDBUpdates[f].push({
+																valueOnClient: thisClientSideValue,
+																ts: (new Date()).getTime(),
+															});
+															if (IN_DEBUG_MODE_FOR('db')) {
+																console.log('[db|update-recents] Storing recent (client-side) value for ' + f + ':', thisClientSideValue);
 															}
 														}
-													});
-
-													debouncedOrThrottledUpdaters[curr_f](valueToSend);
-												} else {
-													if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('validation')) {
-														console.log('[db/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
-														threeWay.__dataIsNotInvalid.set(curr_f, false);
 													}
-												}
+												});
 
+												debouncedOrThrottledUpdaters[curr_f](valueToSend);
 											} else {
-												if (IN_DEBUG_MODE_FOR('db')) {
-													console.log('[db|update] No update.');
+												if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('validation')) {
+													console.log('[db/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
+													threeWay.__dataIsNotInvalid.set(curr_f, false);
 												}
 											}
-										});
-									}
-								}
 
-								if (typeof v === "object") {
-									// Parent of field we are binding to
-									// Object or array
-									if (IN_DEBUG_MODE_FOR('observer')) {
-										console.log('[Observer] Descending -- ' + curr_f + (fieldPrefix === '' ? '' : ' (' + fieldPrefix + ' + ' + f + ')') + ' :', v);
-									}
-									descendInto(v, doc, addedRun, curr_f + '.');
+										} else {
+											if (IN_DEBUG_MODE_FOR('db')) {
+												console.log('[db|update] No update.');
+											}
+										}
+									});
 								}
-							});
-						};
-					})();
+							}
+
+							if (typeof v === "object") {
+								// Parent of field we are binding to
+								// Object or array
+								if (IN_DEBUG_MODE_FOR('observer')) {
+									console.log('[Observer] Descending -- ' + curr_f + (fieldPrefix === '' ? '' : ' (' + fieldPrefix + ' + ' + f + ')') + ' :', v);
+								}
+								descendInto(v, doc, addedRun, curr_f + '.');
+							}
+						});
+					};
 					//
 					// End Descend Into
 					//////////////////////////////////////////////////// 
@@ -931,6 +928,7 @@ if (Meteor.isClient) {
 								console.log('[Observer] Added:', id, doc);
 							}
 							threeWay.haveData.set(true);
+							threeWay.__idReady = true;
 							descendInto(fields, doc, true);
 						},
 						changed: function(id, fields) {
@@ -948,7 +946,7 @@ if (Meteor.isClient) {
 							}
 							threeWay.haveData.set(false);
 							threeWay.id.set(null);
-							threeWay.__idReadyFor = {};
+							threeWay.__idReady = false;
 						}
 					});
 
@@ -2076,7 +2074,7 @@ if (Meteor.isClient) {
 		},
 		booleanFromArray: function booleanFromArray(trueIndicator) {
 			return function booleanFromArray(arr) {
-				return (!arr) ? false : (arr.toString() === trueIndicator ? true : false);
+				return (arr instanceof Array) ? false : (((arr.length === 1) && (arr[0] === trueIndicator)) ? true : false);
 			};
 		},
 		booleanToArray: function booleanToArray(trueIndicator) {

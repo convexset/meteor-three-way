@@ -975,6 +975,8 @@ Similar to the above, but these are generators for transformations that take one
 
  - `arrayFromDelimitedString(delimiter)`: generates transformations like `arrayFromCommaDelimitedString` above
  - `arrayToDelimitedString(delimiter)`: generates transformations like `arrayToCommaDelimitedString` above
+ - `booleanFromArray(trueIndicator)`: generates a transform function that returns `true` if the input is an array with a single element taking value `trueIndicator`) and `false` otherwise.
+ - `booleanToArray(trueIndicator)`: generates a transform function that evaluates the "truthiness" of the input and returns `[trueIndicator]` if true and `[]` otherwise.
 
 ## Notes
 
