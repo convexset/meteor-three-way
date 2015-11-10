@@ -648,6 +648,25 @@ if (Meteor.isClient) {
 				});
 			});
 
+			// For matching fields
+			// item.subitem --> (item.subitem, [])
+			// item.subitem --> (item.*, ['subitem'])
+			function doFieldMatch(curr_f, isObserver) {
+				if (typeof isObserver === "undefined") {
+					isObserver = true;
+				}
+				if (threeWay._fieldsTested.indexOf(curr_f) === -1) {
+					var matches = matchParamStrings(options.fields, curr_f); // Match all (single run)
+					if (matches.length > 1) {
+						if (isObserver && IN_DEBUG_MODE_FOR('observer')) {
+							console.warn('[Observer] Ambiguous matches for ' + curr_f, ' (will use most specific):', matches);
+						}
+					}
+					threeWay.fieldMatchParams[curr_f] = (matches.length > 0) ? matches[0] : null;
+					threeWay._fieldPseudoMatched[curr_f] = (!!threeWay.fieldMatchParams[curr_f]) ? true : ((extendedFields.indexOf(curr_f) === -1) || (matchParamStrings(pseudoFields, curr_f, true).length > 0));
+					threeWay._fieldsTested.push(curr_f);
+				}
+			};
 
 			// The big set-up
 			Tracker.autorun(function() {
@@ -741,17 +760,7 @@ if (Meteor.isClient) {
 								// Get matching items to data-bind
 								// item.subitem --> (item.subitem, [])
 								// item.subitem --> (item.*, ['subitem'])
-								if (threeWay._fieldsTested.indexOf(curr_f) === -1) {
-									var matches = matchParamStrings(options.fields, curr_f); // Match all (single run)
-									if (matches.length > 1) {
-										if (IN_DEBUG_MODE_FOR('observer')) {
-											console.warn('[Observer] Ambiguous matches for ' + curr_f, ' (will use most specific):', matches);
-										}
-									}
-									threeWay.fieldMatchParams[curr_f] = (matches.length > 0) ? matches[0] : null;
-									threeWay._fieldPseudoMatched[curr_f] = (!!threeWay.fieldMatchParams[curr_f]) ? true : ((extendedFields.indexOf(curr_f) === -1) || (matchParamStrings(pseudoFields, curr_f, true).length > 0));
-									threeWay._fieldsTested.push(curr_f);
-								}
+								doFieldMatch(curr_f);
 								var match = threeWay.fieldMatchParams[curr_f] || null;
 								var psuedoMatched = threeWay._fieldPseudoMatched[curr_f] || null;
 
@@ -1062,7 +1071,7 @@ if (Meteor.isClient) {
 				var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
 				Template._currentTemplateInstanceFunc = () => instance;
 				var getFailed = false;
-				var sourceElems = source.split("#").map(x => x.trim());
+				var sourceElems = source.split("#").map(x => x.trim()).filter(x => x !== "");
 				var value = sourceElems.map(function(src) {
 					var _value;
 					if (useHelpers && !!options.helpers[src]) {
@@ -1153,7 +1162,7 @@ if (Meteor.isClient) {
 				};
 				var parseErrors = {};
 				var haveParseErrors = false;
-				dataBind.split(";").map(x => x.trim()).forEach(function(x) {
+				dataBind.split(";").map(x => x.trim()).filter(x => x !== "").forEach(function(x) {
 					var idxColon = x.indexOf(":");
 					var itemName = x.substr(0, idxColon).trim().toLowerCase();
 					var rawItemData = x.substr(idxColon + 1).trim();
@@ -1170,7 +1179,7 @@ if (Meteor.isClient) {
 						var objData = rawItemData
 							.substr(1, rawItemData.length - 2)
 							.split(",")
-							.map(x => x.trim())
+							.map(x => x.trim()).filter(x => x !== "")
 							.map(x => x.split(":").map(y => y.trim()));
 						var problematicItems = objData.filter(x => (x.length !== 2) || (x[0].length === 0) || (x[1].length === 0));
 						if (problematicItems.length > 0) {
@@ -1180,12 +1189,21 @@ if (Meteor.isClient) {
 							return;
 						}
 						itemData = _.object(objData);
+
+						_.forEach(itemData, function(v, f) {
+							f.split("|")[0].split("#").forEach(function(_f) {
+								doFieldMatch(_f);
+							});
+						});
 					} else {
 						itemData = rawItemData;
 						if (itemData.length === 0) {
 							console.error('[ThreeWay] Binding parse error: ' + itemName, itemData, elem);
 							return;
 						}
+						itemData.split("|")[0].split("#").forEach(function(_f) {
+							doFieldMatch(_f);
+						});
 					}
 
 					elemBindings.bindings[itemName] = {
@@ -1196,7 +1214,7 @@ if (Meteor.isClient) {
 					// Check value and checked for multivariate binding
 					['value', 'checked'].forEach(function(bindingType) {
 						if (!!elemBindings.bindings[bindingType]) {
-							var pipelineSplit = elemBindings.bindings[bindingType].source.split('|').map(x => x.trim());
+							var pipelineSplit = elemBindings.bindings[bindingType].source.split('|').map(x => x.trim()).filter(x => x !== "");
 							var source = pipelineSplit[0];
 							if (source.split("#").length > 1) {
 								console.error('[ThreeWay] Binding parse error: Multivariate bindings not allowed for ' + bindingType + ' binding. Using first element.', elem);
@@ -1242,7 +1260,7 @@ if (Meteor.isClient) {
 
 					var valueChangeHandler = function valueChangeHandler() { // function(event)
 						var value = elem.value;
-						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim());
+						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim()).filter(x => x !== "");
 						var fieldName = pipelineSplit[0];
 						var curr_value = threeWay.dataMirror[fieldName];
 
@@ -1294,7 +1312,7 @@ if (Meteor.isClient) {
 					});
 
 					threeWay.computations.push(Tracker.autorun(function(c) {
-						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim());
+						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim()).filter(x => x !== "");
 						var source = pipelineSplit[0];
 						var pipeline = pipelineSplit.splice(1);
 
@@ -1403,7 +1421,7 @@ if (Meteor.isClient) {
 					bindEventToThisElem('change', checkedChangeHandler);
 
 					threeWay.computations.push(Tracker.autorun(function(c) {
-						var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim());
+						var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim()).filter(x => x !== "");
 						var source = pipelineSplit[0];
 						var pipeline = pipelineSplit.splice(1);
 
@@ -1497,7 +1515,7 @@ if (Meteor.isClient) {
 				//////////////////////////////////////////////////////
 				if (!!elemBindings.bindings.html) {
 					threeWay.computations.push(Tracker.autorun(function(c) {
-						var pipelineSplit = elemBindings.bindings.html.source.split('|').map(x => x.trim());
+						var pipelineSplit = elemBindings.bindings.html.source.split('|').map(x => x.trim()).filter(x => x !== "");
 						var source = pipelineSplit[0];
 						var mappings = pipelineSplit.splice(1);
 
@@ -1525,7 +1543,7 @@ if (Meteor.isClient) {
 				//////////////////////////////////////////////////////
 				if (!!elemBindings.bindings.visible) {
 					threeWay.computations.push(Tracker.autorun(function(c) {
-						var pipelineSplit = elemBindings.bindings.visible.source.split('|').map(x => x.trim());
+						var pipelineSplit = elemBindings.bindings.visible.source.split('|').map(x => x.trim()).filter(x => x !== "");
 						var source = pipelineSplit[0];
 						var mappings = pipelineSplit.splice(1);
 
@@ -1553,7 +1571,7 @@ if (Meteor.isClient) {
 				//////////////////////////////////////////////////////
 				if (!!elemBindings.bindings.disabled) {
 					threeWay.computations.push(Tracker.autorun(function(c) {
-						var pipelineSplit = elemBindings.bindings.disabled.source.split('|').map(x => x.trim());
+						var pipelineSplit = elemBindings.bindings.disabled.source.split('|').map(x => x.trim()).filter(x => x !== "");
 						var source = pipelineSplit[0];
 						var mappings = pipelineSplit.splice(1);
 
@@ -1582,7 +1600,7 @@ if (Meteor.isClient) {
 				if (!!elemBindings.bindings.style) {
 					_.forEach(elemBindings.bindings.style.source, function(pipelineString, key) {
 						threeWay.computations.push(Tracker.autorun(function(c) {
-							var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+							var pipelineSplit = pipelineString.split('|').map(x => x.trim()).filter(x => x !== "");
 							var source = pipelineSplit[0];
 							var mappings = pipelineSplit.splice(1);
 
@@ -1613,7 +1631,7 @@ if (Meteor.isClient) {
 				if (!!elemBindings.bindings.attr) {
 					_.forEach(elemBindings.bindings.attr.source, function(pipelineString, key) {
 						threeWay.computations.push(Tracker.autorun(function(c) {
-							var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+							var pipelineSplit = pipelineString.split('|').map(x => x.trim()).filter(x => x !== "");
 							var source = pipelineSplit[0];
 							var mappings = pipelineSplit.splice(1);
 
@@ -1644,7 +1662,7 @@ if (Meteor.isClient) {
 				if (!!elemBindings.bindings.class) {
 					_.forEach(elemBindings.bindings.class.source, function(pipelineString, key) {
 						threeWay.computations.push(Tracker.autorun(function(c) {
-							var pipelineSplit = pipelineString.split('|').map(x => x.trim());
+							var pipelineSplit = pipelineString.split('|').map(x => x.trim()).filter(x => x !== "");
 							var source = pipelineSplit[0];
 							var mappings = pipelineSplit.splice(1);
 
@@ -1680,7 +1698,7 @@ if (Meteor.isClient) {
 				if (!!elemBindings.bindings.event) {
 					_.forEach(elemBindings.bindings.event.source, function(handlerString, eventName) {
 						threeWay.computations.push(Tracker.autorun(function(c) {
-							var handlerNames = handlerString.split('|').map(x => x.trim());
+							var handlerNames = handlerString.split('|').map(x => x.trim()).filter(x => x !== "");
 
 							if (c.firstRun) {
 								if (IN_DEBUG_MODE_FOR('event')) {
@@ -1745,7 +1763,7 @@ if (Meteor.isClient) {
 				var initValue = elem.getAttribute('initial-value') || null;
 				var processorString = elem.getAttribute('processors') || "";
 				var templateRestrictionString = elem.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE) || "";
-				var templateRestrictions = (templateRestrictionString === "") ? [] : templateRestrictionString.split(',').map(x => x.trim());
+				var templateRestrictions = (templateRestrictionString === "") ? [] : templateRestrictionString.split(',').map(x => x.trim()).filter(x => x !== "");
 
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
 					console.log("[vm-only] Initialization for " + field + " with", elem);
@@ -1759,7 +1777,7 @@ if (Meteor.isClient) {
 					return;
 				}
 
-				var processors = (processorString === "") ? [] : processorString.split('|').map(x => x.trim());
+				var processors = (processorString === "") ? [] : processorString.split('|').map(x => x.trim()).filter(x => x !== "");
 				var value = initValue;
 
 				var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
@@ -1867,7 +1885,7 @@ if (Meteor.isClient) {
 												console.log("[bind] Node added on " + instanceId, node);
 											}
 											var templateRestrictionsAttr = node.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE);
-											var templateRestrictions = templateRestrictionsAttr && templateRestrictionsAttr.split(',').map(x => x.trim()) || [];
+											var templateRestrictions = templateRestrictionsAttr && templateRestrictionsAttr.split(',').map(x => x.trim()).filter(x => x !== "") || [];
 											if (templateRestrictions.indexOf(thisTemplateName) === -1) {
 												threeWay.__bindElem(node);
 											}
@@ -2054,6 +2072,16 @@ if (Meteor.isClient) {
 		arrayToDelimitedString: function arrayToDelimitedString(delimiter) {
 			return function arrayToDelimitedString(arr) {
 				return arr.join && arr.join(delimiter) || "";
+			};
+		},
+		booleanFromArray: function booleanFromArray(trueIndicator) {
+			return function booleanFromArray(arr) {
+				return (!arr) ? false : (arr.toString() === trueIndicator ? true : false);
+			};
+		},
+		booleanToArray: function booleanToArray(trueIndicator) {
+			return function booleanToArray(x) {
+				return !!x ? [trueIndicator] : [];
 			};
 		},
 	});
