@@ -2074,7 +2074,7 @@ if (Meteor.isClient) {
 		},
 		booleanFromArray: function booleanFromArray(trueIndicator) {
 			return function booleanFromArray(arr) {
-				return (arr instanceof Array) ? false : (((arr.length === 1) && (arr[0] === trueIndicator)) ? true : false);
+				return !(arr instanceof Array) ? false : (((arr.length === 1) && (arr[0] === trueIndicator)) ? true : false);
 			};
 		},
 		booleanToArray: function booleanToArray(trueIndicator) {
