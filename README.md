@@ -23,6 +23,7 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
     - [Set Up: The Full Parameter Set](#set-up-the-full-parameter-set)
 - [Documentation](#documentation)
     - [Referring to Fields in Documents](#referring-to-fields-in-documents)
+    - [Default Values](#default-values)
     - [Dynamic Data-Binding](#dynamic-data-binding)
         - [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances)
     - [Updaters to the Server](#updaters-to-the-server)
@@ -207,6 +208,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 #### Set Up: The Full Parameter Set
 
 At this point, one might have a look at the full parameter set. Which will include:
+ - injection of default values for selected fields
  - data validation
  - event bindings
  - database update settings
@@ -230,6 +232,11 @@ ThreeWay.prepare(Template.DemoThreeWay, {
         'personal.someArr.*': 'update-some-arr',
         'personal.someArr.1': 'update-some-arr-1',  // More specific than the previous, will be selected
         'personal.otherArr.*.*': 'update-other-arr',
+    },
+
+    // Inject default values if not in database record
+    injectDefaultValues: {
+        name: 'Unnamed Person'
     },
 
     // Transformations from the server to the view model
@@ -387,6 +394,17 @@ However, it would be clunky to have to specify each of `"topLevelObject.nestedAr
 Note that in the case of multiple matches, the most specific match will be used, enabling "catch-all" updaters (which can be somewhat dangerous if not managed properly).
 
 **Note that having a more specific match is a signal to distinguish a field (or family of fields) from the more generic matches. This means that the more generic validators will not be used. There is no "fall through"... at the moment...**
+
+#### Default Values
+
+If certain fields require a value but it is possible that database entries have such missing fields, they can be "injected" with defaults. These may be specified in the set up as follows:
+
+```javascript
+// Inject default values if not in database record
+injectDefaultValues: {
+    name: 'Unnamed Person'
+},
+```
 
 #### Dynamic Data-Binding
 
@@ -1003,6 +1021,4 @@ See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` inst
 
 ## Questions/Issues/To Dos
 
-Should VM-db data binding be created when fields are described in the UI or when they are sent down from the server? (See: [View Model to Database Binding](#view-model-to-database-binding))
-
-Update sub-object grouped updaters to combine updates into single calls
+To update sub-object "grouped updaters" to combine updates into single calls.

@@ -220,6 +220,7 @@ if (Meteor.isClient) {
 		options = PackageUtilities.updateDefaultOptionsWithInput({
 			collection: null,
 			updatersForServer: {},
+			injectDefaultValues: {},
 			dataTransformToServer: {},
 			dataTransformFromServer: {},
 			validatorsVM: {},
@@ -254,6 +255,17 @@ if (Meteor.isClient) {
 			}
 		});
 
+		_.forEach(options.injectDefaultValues, function(v, f) {
+			// Check that default values are valid fields
+			if (options.fields.indexOf(f) === -1) {
+				throw new Meteor.Error('no-such-field', '[Inject Default Values] No such field: ' + f);
+			}
+
+			// Wildcard fields rejected
+			if (f.indexOf("*") !== -1) {
+				throw new Meteor.Error('invalid-field', '[Inject Default Values] Wild card fields not allowed: ' + f);
+			}
+		});
 
 		// Adding Pre-Processors
 		if (typeof options.preProcessors['not'] === "undefined") {
@@ -946,6 +958,19 @@ if (Meteor.isClient) {
 							threeWay.haveData.set(true);
 							threeWay.__idReady = true;
 							descendInto(fields, doc, true);
+
+							// Inject default fields
+							var _dataMirror; // In case threeWay.dataMirror is not updated.
+							// A flush is required for that, but can't be done now
+							Tracker.nonreactive(function() {
+								_dataMirror = threeWay.data.all();
+							});
+							_.forEach(options.injectDefaultValues, function(v, f) {
+								if (!_dataMirror.hasOwnProperty(f)) {
+									setUpBinding(f);
+									threeWay.data.set(f, v);
+								}
+							});
 						},
 						changed: function(id, fields) {
 							var doc = options.collection.findOne(id, {
