@@ -230,7 +230,9 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 
     // Inject default values if not in database record
     injectDefaultValues: {
-        name: 'Unnamed Person'
+        'name': 'Unnamed Person',
+        // for wildcard fields, the last part of the field name cannot be a wildcard
+        'personal.otherArr.*.a': '100',
     },
 
     // Transformations from the server to the view model
@@ -391,9 +393,13 @@ If certain fields require a value but it is possible that database entries have 
 ```javascript
 // Inject default values if not in database record
 injectDefaultValues: {
-    name: 'Unnamed Person'
+    'name': 'Unnamed Person',
+    // for wildcard fields, the last part of the field name cannot be a wildcard
+    'personal.otherArr.*.a': '100',
 },
 ```
+
+As indicated, for wildcard fields, the last part of the field name cannot be a wildcard. Otherwise, it would be impossible to determine exactly what field to add. The "non-tail" part of existing fields are used to figure out if there is missing data.
 
 #### Dynamic Data-Binding
 
@@ -1005,6 +1011,13 @@ Pre-v0.1.9, dynamic rebinding was incomplete and carried out by polling the DOM.
 The mixing of dynamic data-binding and the possibility of multiple `ThreeWay` instances poses some challenges with regards to the question of which `ThreeWay` instance a new DOM element should be data bound with.
 See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information.
 
-## Questions/Issues/To Dos
+#### Why Not Group Debounced Updates?
 
-To update sub-object "grouped updaters" to combine updates into single calls.
+(Debouncing)[http://underscorejs.org/#debounce] Meteor methods for updates ensures that updates are sent after a "pause in editing", such as with a text field. Due to the fact that cursors send entire sub-documents when changes are made, and to reduce the number of Meteor calls made, There is a sense in which one might combine updates into single debounced calls (e.g.: `{$set: {field1: value1, field2: value2}}` instead of `{$set: {field1: value1}}` and `{$set: {field2: value2}}`).
+
+However, this is when `check` and authentication causes a bit of a problem. The user should not be expected to write a general method that does schema and authentication checks. In principle, given a schema, appropriate methods can be generated, but `ThreeWay` is not the place for automatic method generation (based on schemas).
+
+## To Do
+
+- Include data binding options of the form `data-bind="value|option1: field1|p1|p2"` to facilitate customization of things like when the change method is triggered (any change or after loss of focus or in a debounced manner)
+- Reconsider group debounced updates (given that autogeneration of a general updater in `convexset:collection-tools` is done)

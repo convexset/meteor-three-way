@@ -26,6 +26,7 @@ var DEBUG_MESSAGES = {
 	'tracker': false,
 	'new-id': false,
 	'db': false,
+	'default-values': false,
 	'methods': false,
 	'value': false,
 	'checked': false,
@@ -257,8 +258,12 @@ if (Meteor.isClient) {
 			}
 
 			// Wildcard fields rejected
-			if (f.indexOf("*") !== -1) {
-				throw new Meteor.Error('invalid-field', '[Inject Default Values] Wild card fields not allowed: ' + f);
+			// if (f.indexOf("*") !== -1) {
+			// 	throw new Meteor.Error('invalid-field', '[Inject Default Values] Wild card fields not allowed: ' + f);
+			// }
+			// Wildcards at last item of fields rejected
+			if (f.split('.').pop() === "*") {
+				throw new Meteor.Error('invalid-field', '[Inject Default Values] Field specifier cannot be terminated with a wild card: ' + f);
 			}
 		});
 
@@ -597,7 +602,7 @@ if (Meteor.isClient) {
 						if (IN_DEBUG_MODE_FOR('bindings')) {
 							console.log('[bindings] Field: ' + curr_f + "; id: " + __id + "; Value:", value);
 						}
-						
+
 						if ((!!__id) && (!!threeWay.__idReady) && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
 							// Create specific updater for field if not already done.
 							// Presents updates being lost if "fast" updates are being done
@@ -928,6 +933,48 @@ if (Meteor.isClient) {
 					// End Descend Into
 					//////////////////////////////////////////////////// 
 
+					//////////////////////////////////////////////////// 
+					// getFieldsWhereDefaultRequired: for figuring out if a default field is warranted 
+					var getFieldsWhereDefaultRequired = function getFieldsWhereDefaultRequired(f, dataMirror) {
+						if (f.indexOf("*") === -1) {
+							return !dataMirror.hasOwnProperty(f) ? [f] : [];
+						}
+						var f_split = f.split(".");
+						var f_last = f_split.pop();
+						var matches = [];
+						_.forEach(dataMirror, function(v_dm, f_dm) {
+							var f_dm_split = f_dm.split(".");
+							if (f_split.length + 1 > f_dm_split.length) {
+								// length mismatch => cannot be a match
+								return;
+							}
+
+							// reduce length to parity
+							while (f_dm_split.length > f_split.length + 1) {
+								f_dm_split.pop();
+							}
+							var f_dm_last = f_dm_split.pop();
+							if (f_last === f_dm_last) {
+								// last elem matches => unnecessary
+								return;
+							}
+
+							for (var k = 0; k < f_split.length - 1; k++) {
+								if ((f_split[k] !== f_dm_split[k]) && (f_split[k] !== "*")) {
+									return;
+								}
+							}
+							var new_field = f_dm_split.join('.') + '.' + f_last;
+							if (!dataMirror.hasOwnProperty(new_field) && (matches.indexOf(new_field) === -1)) {
+								matches.push(new_field);
+							}
+						});
+						return matches;
+					};
+					// End getFieldsWhereDefaultRequired 
+					//////////////////////////////////////////////////// 
+
+
 					// Setting Up Observers
 					threeWay.observer = cursor.observeChanges({
 						added: function(id, fields) {
@@ -948,10 +995,14 @@ if (Meteor.isClient) {
 								_dataMirror = threeWay.data.all();
 							});
 							_.forEach(options.injectDefaultValues, function(v, f) {
-								if (!_dataMirror.hasOwnProperty(f)) {
-									setUpBinding(f);
-									threeWay.data.set(f, v);
-								}
+								getFieldsWhereDefaultRequired(f, _dataMirror).forEach(function(new_f) {
+									if (IN_DEBUG_MODE_FOR('default-values')) {
+										console.log("[default-values] Injecting " + new_f + " with value:", v);
+									}
+									doFieldMatch(new_f);
+									setUpBinding(new_f);
+									threeWay.data.set(new_f, v);
+								});
 							});
 						},
 						changed: function(id, fields) {
@@ -962,6 +1013,23 @@ if (Meteor.isClient) {
 								console.log('[Observer] Changed:', id, fields, doc);
 							}
 							descendInto(fields, doc, false);
+
+							// Inject default fields
+							var _dataMirror; // In case threeWay.dataMirror is not updated.
+							// A flush is required for that, but can't be done now
+							Tracker.nonreactive(function() {
+								_dataMirror = threeWay.data.all();
+							});
+							_.forEach(options.injectDefaultValues, function(v, f) {
+								getFieldsWhereDefaultRequired(f, _dataMirror).forEach(function(new_f) {
+									if (IN_DEBUG_MODE_FOR('default-values')) {
+										console.log("[default-values] Injecting " + new_f + " with value:", v);
+									}
+									doFieldMatch(new_f);
+									setUpBinding(new_f);
+									threeWay.data.set(new_f, v);
+								});
+							});
 						},
 						removed: function(id) {
 							if (IN_DEBUG_MODE_FOR('observer')) {

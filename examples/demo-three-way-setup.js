@@ -16,6 +16,7 @@ var selectedDebugMessages = [
 	// 'tracker',
 	// 'new-id',
 	// 'db',
+	// 'default-values',
 	// 'methods',
 	// 'value',
 	// 'checked',
