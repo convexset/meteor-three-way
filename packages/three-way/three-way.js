@@ -907,16 +907,23 @@ if (Meteor.isClient) {
 									}
 								}
 
+								// Set Up binding here and so DOM can get fresh values
+								setUpBinding(curr_f);
+
 								// Figure out if server has been updated
 								if (addedRun) {
 									// First rcv
 									threeWay.__serverIsUpdated.set(curr_f, true);
 									threeWay.__dataIsNotInvalid.set(curr_f, true);
 								} else {
-									threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, threeWay.dataMirror[curr_f]));
+									// get data directly direct and not from data mirror
+									// not flushing yet...
+									var curr_value;
+									Tracker.nonreactive(function () {
+										curr_value = threeWay.data.get(curr_f);
+									});
+									threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, curr_value));
 								}
-
-								setUpBinding(curr_f);
 							}
 
 							if (typeof v === "object") {
