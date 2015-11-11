@@ -22,9 +22,7 @@ function setUpDebugMessages(template) {
 if (Meteor.isClient) {
 	var sub = Meteor.subscribe('demo-pub');
 	setUpDebugMessages();
-}
 
-if (Meteor.isClient) {
 	Template.DemoThreeWay.onCreated(function() {
 		parentTemplate = this;
 		this.num = new ReactiveVar(1);
@@ -47,6 +45,7 @@ if (Meteor.isClient) {
 	});
 
 	Template.DemoThreeWay.helpers({
+		ready: () => sub.ready(),
 		data: () => Demo.collection.find(),
 		allTags: () => Demo.allTags.map(x => x),
 		ageRanges: () => _.extend({}, Demo.ageRanges),

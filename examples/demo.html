@@ -89,7 +89,7 @@
 		<p>If you do not like what you see, simply enter the following into the console:</p>
 		<pre>Meteor.call('regenerate-data');</pre>
 
-		<table class="ui celled table">
+		<table class="ui celled table form" data-bind="class: {loading: ready|not}">
 			<thead>
 				<tr>
 					<th>Name</th>
@@ -104,7 +104,7 @@
 			</thead>
 			<tbody>
 				{{#each data}}
-					<tr style="{{#if _3w_id}}{{#if equalTo _3w_id _id}}background-color: #DDD;{{/if}}{{/if}}">
+					<tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
 						<td>{{name}}</td>
 						<td>{{emailPrefsToCSL emailPrefs}}</td>
 						<td>{{getProperty personal.particulars.age ageRanges}}</td>
@@ -206,18 +206,26 @@
 						(Valid tags begin with "tag")
 					</td>
 					<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
-						<div class="ui fluid multiple search selection dropdown">
-							<input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
-							<i class="dropdown icon"></i>
-							<div class="default text">Select Tags</div>
-							<div class="menu">
-								{{#each allTags}}
-									<div class="item" data-value="{{this}}">{{this}}</div>
-								{{/each}}
-							</div>
-						</div>
-						<div data-bind="html: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
-						{{#if _3w_validValuesNotSynced 'tags'}}<i class="notched circle loading icon"></i>{{/if}}
+						<table border=0 style="width: 100%;">
+							<tr>
+								<td style="width: 90%; border: none;">
+									<div class="ui fluid multiple search selection dropdown">
+										<input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
+										<i class="dropdown icon"></i>
+										<div class="default text">Select Tags</div>
+										<div class="menu">
+											{{#each allTags}}
+												<div class="item" data-value="{{this}}">{{this}}</div>
+											{{/each}}
+										</div>
+									</div>
+									<div data-bind="html: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+								</td>
+								<td style="border: none;">
+									{{#if _3w_validValuesNotSynced 'tags'}}<i class="notched circle loading icon"></i>{{/if}}
+								</td>
+							</tr>
+						</table>
 					</td>
 				</tr>
 				<tr>
