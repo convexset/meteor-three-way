@@ -1008,12 +1008,86 @@ Built-in transformations, for mapping from server to view model and back, may be
 
 #### Extra Transformation Generators
 
-Similar to the above, but these are generators for transformations that take one or more parameters and return a transformation.
+Similar to the above, but these are generators for transformations that take one or more parameters and return a transformation. They may be accessed via the `ThreeWay.transformationGenerators` namespace (e.g.: `ThreeWay.transformationGenerators.booleanFromArray`).
 
  - `arrayFromDelimitedString(delimiter)`: generates transformations like `arrayFromCommaDelimitedString` above
  - `arrayToDelimitedString(delimiter)`: generates transformations like `arrayToCommaDelimitedString` above
  - `booleanFromArray(trueIndicator)`: generates a transform function that returns `true` if the input is an array with a single element taking value `trueIndicator`) and `false` otherwise.
  - `booleanToArray(trueIndicator)`: generates a transform function that evaluates the "truthiness" of the input and returns `[trueIndicator]` if true and `[]` otherwise.
+
+#### Extra Event Generators
+
+Similar to the above, but these are generators for transformations that take one or more parameters and return a transformation. They may be accessed via the `ThreeWay.eventGenerators` namespace (e.g.: `ThreeWay.eventGenerators.returnKeyHandlerGenerator`).
+
+Generally, these generators take, as first argument, an event handler with signature `function(event, template, vmData)` (see [Event Bindings](#event-bindings)).
+
+ - `keypressHandlerGenerator(handler, keyCodes, specialKeys)`: calls event handler if the pressed key is in the array `keyCodes` and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
+
+For example:
+```javascript
+var ctrlReturnKey = ThreeWay.eventGenerators.returnKeyHandlerGenerator(() => console.info('[CTRL-ENTER handler]'), {
+    ctrlKey: true,
+    altKey: false,
+    shiftKey: false,
+});
+```
+
+ - `keypressHandlerGeneratorFromChars(handler, chars, specialKeys)`: calls event handler if the pressed key is in the string `char` and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
+ - `returnKeyHandlerGenerator(handler, specialKeys)`: calls event handler if the pressed key was RETURN and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
+
+
+#### Extra Events
+
+The following trigger when the relevant key is pressed in a `keyup`:
+
+ - `backspaceKey`
+ - `tabKey`
+ - `returnKey`
+ - `escapeKey`
+ - `pageUpKey`
+ - `pageDownKey`
+ - `endKey`
+ - `homeKey`
+ - `leftArrowKey`
+ - `upArrowKey`
+ - `rightArrowKey`
+ - `downArrowKey`
+ - `insertKey`
+ - `deleteKey`
+
+For finer grained control, the following prefixed forms that fire on `keydown` or `keyup` are provided:
+
+ - `keydown_backspaceKey`
+ - `keydown_tabKey`
+ - `keydown_returnKey`
+ - `keydown_escapeKey`
+ - `keydown_pageUpKey`
+ - `keydown_pageDownKey`
+ - `keydown_endKey`
+ - `keydown_homeKey`
+ - `keydown_leftArrowKey`
+ - `keydown_upArrowKey`
+ - `keydown_rightArrowKey`
+ - `keydown_downArrowKey`
+ - `keydown_insertKey`
+ - `keydown_deleteKey`
+
+... and ...
+
+ - `keyup_backspaceKey`
+ - `keyup_tabKey`
+ - `keyup_returnKey`
+ - `keyup_escapeKey`
+ - `keyup_pageUpKey`
+ - `keyup_pageDownKey`
+ - `keyup_endKey`
+ - `keyup_homeKey`
+ - `keyup_leftArrowKey`
+ - `keyup_upArrowKey`
+ - `keyup_rightArrowKey`
+ - `keyup_downArrowKey`
+ - `keyup_insertKey`
+ - `keyup_deleteKey`
 
 ## Notes
 

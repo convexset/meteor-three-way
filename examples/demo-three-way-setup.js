@@ -2,10 +2,10 @@
 /* global Demo: true */
 
 if (Meteor.isClient) {
-	ThreeWay.setDebugModeOn();
+	// ThreeWay.setDebugModeOn();
 	// ThreeWay.debugModeSelect('bindings');
-	ThreeWay.debugModeSelect('value');
-	ThreeWay.debugModeSelect('checked');
+	// ThreeWay.debugModeSelect('event');
+	// ThreeWay.debugModeSelect('checked');
 }
 
 ////////////////////////////////////////////////////////////
@@ -209,9 +209,25 @@ if (Meteor.isClient) {
 			dragEndHandler: function(event, template, vmData) {
 				console.info("Drag End at " + (new Date()), event, template, vmData);
 			},
-			saySomethingHappy: function() {
-				console.info("Let\'s chill. (Second mouseup event to fire.)");
+			saySomethingHappy: function(event, template, vmData) {
+				console.info("Let\'s chill. (Second mouseup event to fire.)", event, template, vmData);
 			},
+			ctrlReturnKey: ThreeWay.eventGenerators.returnKeyHandlerGenerator(() => console.info('[CTRL-ENTER handler]'), {
+				ctrlKey: true,
+				altKey: false,
+				shiftKey: false,
+			}),
+			shiftReturnKey: ThreeWay.eventGenerators.returnKeyHandlerGenerator(() => console.info('[SHIFT-ENTER handler]'), {
+				ctrlKey: false,
+				altKey: false,
+				shiftKey: true,
+			}),
+			backspaceKey: ThreeWay.eventGenerators.keypressHandlerGenerator(() => console.info('[BACKSPACE handler]'), [8]),
+			leftArrowKey: () => console.info('[leftArrowKey handler]'),
+			upArrowKey: () => console.info('[upArrowKey handler]'),
+			rightArrowKey: () => console.info('[rightArrowKey handler]'),
+			downArrowKey: () => console.info('[downArrowKey handler]'),
+			otherUpArrowKey: ThreeWay.eventGenerators.keypressHandlerGenerator(() => console.log('[other up arrow key handler]'), [38]),
 		},
 
 		// Database Update Parameters

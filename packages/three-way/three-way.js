@@ -919,7 +919,7 @@ if (Meteor.isClient) {
 									// get data directly direct and not from data mirror
 									// not flushing yet...
 									var curr_value;
-									Tracker.nonreactive(function () {
+									Tracker.nonreactive(function() {
 										curr_value = threeWay.data.get(curr_f);
 									});
 									threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, curr_value));
@@ -1265,7 +1265,7 @@ if (Meteor.isClient) {
 					var itemOptions = _.object(itemNameSplit.splice(1).map(function(x) {
 						var xs = x.split('-').map(y => y.trim());
 						// Options whose arguments should be numbers
-						if ((xs[0] === "debounce") || (xs[0] === "throttle")){
+						if ((xs[0] === "debounce") || (xs[0] === "throttle")) {
 							xs[1] = Number(xs[1]);
 							if (Number.isNaN(xs[1])) {
 								console.error('[ThreeWay] Binding parse error: ' + itemName, elem);
@@ -1427,7 +1427,7 @@ if (Meteor.isClient) {
 					};
 
 					// Apply options to changeHandler
-					_.forEach(elemBindings.bindings.value.itemOptions, function (v, opt) {
+					_.forEach(elemBindings.bindings.value.itemOptions, function(v, opt) {
 						if (opt === "throttle") {
 							if (IN_DEBUG_MODE_FOR('value')) {
 								console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
@@ -1452,7 +1452,7 @@ if (Meteor.isClient) {
 					}
 
 					// Bind to additional events
-					_.forEach(elemBindings.bindings.value.itemOptions, function (v, opt) {
+					_.forEach(elemBindings.bindings.value.itemOptions, function(v, opt) {
 						if (opt === "updateon") {
 							if (IN_DEBUG_MODE_FOR('value')) {
 								console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
@@ -1461,7 +1461,7 @@ if (Meteor.isClient) {
 								$(this).trigger('change');
 							});
 						}
-					});					
+					});
 
 					threeWay.computations.push(Tracker.autorun(function(c) {
 						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim()).filter(x => x !== "");
@@ -1571,7 +1571,7 @@ if (Meteor.isClient) {
 					};
 
 					// Apply options to changeHandler
-					_.forEach(elemBindings.bindings.checked.itemOptions, function (v, opt) {
+					_.forEach(elemBindings.bindings.checked.itemOptions, function(v, opt) {
 						if (opt === "throttle") {
 							if (IN_DEBUG_MODE_FOR('checked')) {
 								console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
@@ -1590,7 +1590,7 @@ if (Meteor.isClient) {
 					bindEventToThisElem('change', checkedChangeHandler);
 
 					// Bind to additional events
-					_.forEach(elemBindings.bindings.checked.itemOptions, function (v, opt) {
+					_.forEach(elemBindings.bindings.checked.itemOptions, function(v, opt) {
 						if (opt === "updateon") {
 							if (IN_DEBUG_MODE_FOR('checked')) {
 								console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
@@ -1599,7 +1599,7 @@ if (Meteor.isClient) {
 								$(this).trigger('change');
 							});
 						}
-					});					
+					});
 
 					threeWay.computations.push(Tracker.autorun(function(c) {
 						var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim()).filter(x => x !== "");
@@ -2014,6 +2014,53 @@ if (Meteor.isClient) {
 
 							handlerNames.forEach(function(m) {
 								var handler = options.eventHandlers[m];
+								var compositeHandlerUsed = false;
+
+								_.forEach({
+									'backspaceKey': 8,
+									'tabKey': 9,
+									'returnKey': 13,
+									'escapeKey': 27,
+									'pageUpKey': 33,
+									'pageDownKey': 34,
+									'endKey': 35,
+									'homeKey': 36,
+									'leftArrowKey': 37,
+									'upArrowKey': 38,
+									'rightArrowKey': 39,
+									'downArrowKey': 40,
+									'insertKey': 45,
+									'deleteKey': 46,
+								}, function(key, _eventName) {
+									if ((eventName.toLowerCase() === _eventName.toLowerCase()) || (eventName.toLowerCase() === 'keyup_' + _eventName.toLowerCase())) {
+										bindEventToThisElem('keyup', ThreeWay.eventGenerators.keypressHandlerGenerator(function(event) {
+											if (IN_DEBUG_MODE_FOR('event')) {
+												console.log("[.event|keyup=" + _eventName + "] Firing " + m + " for", elem);
+											}
+											var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
+											Template._currentTemplateInstanceFunc = () => instance;
+											handler.call(this, event, instance, _.extend({}, threeWay.dataMirror));
+											Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
+										}, [key]));
+										compositeHandlerUsed = true;
+									} else if (eventName.toLowerCase() === 'keydown_' + _eventName.toLowerCase()) {
+										bindEventToThisElem('keydown', ThreeWay.eventGenerators.keypressHandlerGenerator(function(event) {
+											if (IN_DEBUG_MODE_FOR('event')) {
+												console.log("[.event|keydown=" + _eventName + "] Firing " + m + " for", elem);
+											}
+											var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
+											Template._currentTemplateInstanceFunc = () => instance;
+											handler.call(this, event, instance, _.extend({}, threeWay.dataMirror));
+											Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
+										}, [key]));
+										compositeHandlerUsed = true;
+									}
+								});
+
+								if (compositeHandlerUsed) {
+									return;
+								}
+
 								bindEventToThisElem(eventName, function(event) {
 									if (IN_DEBUG_MODE_FOR('event')) {
 										console.log("[.event|" + eventName + "] Firing " + m + " for", elem);
@@ -2028,6 +2075,8 @@ if (Meteor.isClient) {
 						boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 					});
 				}
+				//////////////////////////////////////////////////////
+
 
 				var thisElemId = ThreeWay.getNewId();
 				elem.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID, thisElemId);
@@ -2429,4 +2478,48 @@ if (Meteor.isClient) {
 		arrayToCommaDelimitedString: ThreeWay.transformationGenerators.arrayToDelimitedString(","),
 	});
 
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'eventGenerators', {
+		keypressHandlerGenerator: function keypressHandlerGenerator(handler, keyCodes, specialKeys) {
+			specialKeys = specialKeys || {};
+			return function keypressHandler(event, template, vmData) {
+				var specialKeysMatch = true;
+				['altKey', 'ctrlKey', 'shiftKey'].forEach(function(k) {
+					if (typeof specialKeys[k] !== "undefined") {
+						specialKeysMatch = specialKeysMatch && (specialKeys[k] === event[k]);
+					}
+				});
+				if (specialKeysMatch && (keyCodes.indexOf(event.keyCode) !== -1)) {
+					return handler(event, template, vmData);
+				}
+			};
+		},
+		keypressHandlerGeneratorFromChars: function keypressHandlerGeneratorFromChars(handler, chars, specialKeys) {
+			specialKeys = specialKeys || {};
+			return function keypressHandler(event, template, vmData) {
+				var specialKeysMatch = true;
+				['altKey', 'ctrlKey', 'shiftKey'].forEach(function(k) {
+					if (typeof specialKeys[k] !== "undefined") {
+						specialKeysMatch = specialKeysMatch && (specialKeys[k] === event[k]);
+					}
+				});
+				if (specialKeysMatch && (Array.prototype.map.call(chars.toUpperCase(), x => x.charCodeAt(0)).indexOf(event.keyCode) !== -1)) {
+					return handler(event, template, vmData);
+				}
+			};
+		},
+		returnKeyHandlerGenerator: function returnKeyHandlerGenerator(handler, specialKeys) {
+			specialKeys = specialKeys || {};
+			return function returnKeypressHandler(event, template, vmData) {
+				var specialKeysMatch = true;
+				['altKey', 'ctrlKey', 'shiftKey'].forEach(function(k) {
+					if (typeof specialKeys[k] !== "undefined") {
+						specialKeysMatch = specialKeysMatch && (specialKeys[k] === event[k]);
+					}
+				});
+				if (specialKeysMatch && (event.keyCode === 13)) {
+					return handler(event, template, vmData);
+				}
+			};
+		},
+	});
 }
