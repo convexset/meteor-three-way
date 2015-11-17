@@ -1100,5 +1100,4 @@ However, this is when `check` and authentication causes a bit of a problem. The 
 
 ## To Do
 
-- Include data binding options of the form `data-bind="value|option1: field1|p1|p2"` to facilitate customization of things like when the change method is triggered (any change or after loss of focus or in a debounced manner)
 - Reconsider group debounced updates (given that autogeneration of a general updater in `convexset:collection-tools` is done)
