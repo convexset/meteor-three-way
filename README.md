@@ -111,7 +111,7 @@ One then proceeds to bind input and display elements like so:
     <li>Name: <input type="text" data-bind="value: name"></li>
     <li>Name in View Model: <span data-bind="html: name"></span></li>
     <li>vmOnlyValue: <input type="text" data-bind="value: vmOnlyValue"></li>
-    <li>vmOnlyValue in View Model: <span data-bind="html: vmOnlyValue"></span></li>
+    <li>vmOnlyValue in View Model: <span data-bind="text: vmOnlyValue"></span></li>
 </ul>
 ```
 
@@ -513,14 +513,15 @@ Note that transformations actually take two parameters, the first being the valu
 
 When the template is rendered, the reactive elements are set up using `data-bind` attributes in the "mark up" part of the template. 
 
-###### Binding: `html`
+###### Binding: `html` and `text`
 
-For example, `<span data-bind="html: name"></span>`, binds the "name" field to the `innerHTML` property of the element.
+For example, `<span data-bind="html: name"></span>`, binds the "name" field to the `innerHTML` property of the element. Also, `<span data-bind="text: something"></span>`, binds the "something" field to the `text` property of the element.
 
 But "pre-processors" can be applied to view model data to process content before it is rendered. For example,
 
 ```html
 <span data-bind="html: emailPrefs|mapToEmailPrefs"></span>
+<span data-bind="text: emailPrefs|mapToEmailPrefs"></span>
 ```
 
 where `mapToAgeDisplay` was described as `x => ageRanges[x]` (or, equivalently, `function(x) {return ageRanges[x];}`) and `ageRanges` is a dictionary (object) mapping keys to descriptions.
@@ -529,13 +530,13 @@ Pre-processors actually take up-to three arguments, `(value, elem, vmData)` and 
 
 ###### Binding: `value`
 
-There's nothing much to say about this simple binding...
+There's usually nothing much to say about this simple binding...
 
 ```html
 <input name="name" data-bind="value: name">
 ```
 
-Works with `input` and `textarea` tags.
+(It works with `input` and `textarea` tags.)
 
 ###### Binding: `checked`
 
@@ -563,6 +564,23 @@ In the case of radio buttons, `checked` is bound to a string.
 </div>
 ```
 
+###### Binding Modifiers for `value` and `checked`
+
+One can apply certain modifiers to `value` and `checked` bindings such as:
+```html
+<input name="name" data-bind="value#donotupdateon-input: name">
+<input name="comment" data-bind="value#throttle-1000: name">
+```
+By default, `value` bindings update the view model on `change` and `input`. But the latter can be suppressed with a `donotchangeon-input` option. In the first example, the view model is only updated on `change` such as a loss of focus after a change is made.
+
+For the `comment` input element, updates can happen as one is typing (due to updates being made on `input`), however, those updates to the view model are [throttled](http://underscorejs.org/#throttle) with a 1 second interval.
+
+The following modifiers are available and are applied in the form `<binding>#<modifier>-<option>#<modifier>-<option>: <view model field>`:
+ - `updateon`: also updates the view model when a given event fires (e.g. `updateon-<event name>`)
+ - `donotupdateon`: do not the view model when a given event fires (e.g. `donotupdateon-<event name>`); the only valid option is `input` and this only applies to `value` bindings.
+ - `throttle`: throttles (e.g. `throttle-<interval in ms>`)
+ - `debounce`: (e.g. `debounce-<interval in ms>`)
+
 ###### Bindings: `visible` and `disabled` (modern necessities)
 
 `visible` and `disabled` can be bound to any boolean (or truthy) variable, and stuff disappears/gets disabled when it is set to `false` (false-ish).
@@ -570,6 +588,15 @@ In the case of radio buttons, `checked` is bound to a string.
 ```html
 <div data-bind="visible: something">...</div>
 <div data-bind="disabled: something">...</div>
+```
+
+###### Bindings: `focus`
+
+`focus` deals with whether an element is focused. (Personally not all too keen on this one.)
+
+```html
+<input type="text" name="name" data-bind="focus: nameHasFocus">
+<div data-bind="visible: nameHasFocus">name has focus</div>
 ```
 
 ###### Style, Attribute and Class Bindings

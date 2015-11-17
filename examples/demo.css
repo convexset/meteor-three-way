@@ -3,3 +3,8 @@ pre {
     border-radius: 5px;
     padding: 5px 10px;
 }
+
+.classy {
+    color: #444444;
+    text-shadow: -1px -1px 1px #000, 1px 1px 1px #ccc;
+}

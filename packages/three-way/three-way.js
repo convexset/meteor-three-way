@@ -30,7 +30,7 @@ var DEBUG_MESSAGES = {
 	'methods': false,
 	'value': false,
 	'checked': false,
-	'html': false,
+	'html-text': false,
 	'visible-and-disabled': false,
 	'style': false,
 	'attr': false,
@@ -1260,7 +1260,22 @@ if (Meteor.isClient) {
 				var haveParseErrors = false;
 				dataBind.split(";").map(x => x.trim()).filter(x => x !== "").forEach(function(x) {
 					var idxColon = x.indexOf(":");
-					var itemName = x.substr(0, idxColon).trim().toLowerCase();
+					var itemNameSplit = x.substr(0, idxColon).split("#").map(x => x.trim().toLowerCase());
+					var itemName = itemNameSplit[0];
+					var itemOptions = _.object(itemNameSplit.splice(1).map(function(x) {
+						var xs = x.split('-').map(y => y.trim());
+						// Options whose arguments should be numbers
+						if ((xs[0] === "debounce") || (xs[0] === "throttle")){
+							xs[1] = Number(xs[1]);
+							if (Number.isNaN(xs[1])) {
+								console.error('[ThreeWay] Binding parse error: ' + itemName, elem);
+							}
+						}
+						if ((xs.length > 2) || (xs[0] === "")) {
+							console.error('[ThreeWay] Binding parse error: ' + itemName, elem);
+						}
+						return [xs[0], (xs.length > 1) ? xs[1] : ""];
+					}));
 					var rawItemData = x.substr(idxColon + 1).trim();
 					var itemData;
 
@@ -1304,7 +1319,8 @@ if (Meteor.isClient) {
 
 					elemBindings.bindings[itemName] = {
 						isDictType: isDictType,
-						source: itemData
+						source: itemData,
+						itemOptions: itemOptions,
 					};
 
 					// Check value and checked for multivariate binding
@@ -1320,6 +1336,14 @@ if (Meteor.isClient) {
 						}
 					});
 
+					_.forEach(elemBindings.bindings, function(v, bindingType) {
+						if ((bindingType !== "value") && (bindingType !== "checked")) {
+							if (_.map(elemBindings.bindings[bindingType].itemOptions, () => 1).length > 0) {
+								console.warn('[ThreeWay] Binding parse warning: Ignoring itemOptions for ' + bindingType + ' binding.', elemBindings.bindings[bindingType]);
+								elemBindings.bindings[bindingType].itemOptions = {};
+							}
+						}
+					});
 
 				});
 
@@ -1402,10 +1426,42 @@ if (Meteor.isClient) {
 						}
 					};
 
-					bindEventToThisElem('change', valueChangeHandler);
-					bindEventToThisElem('input', function() {
-						$(this).trigger('change');
+					// Apply options to changeHandler
+					_.forEach(elemBindings.bindings.value.itemOptions, function (v, opt) {
+						if (opt === "throttle") {
+							if (IN_DEBUG_MODE_FOR('value')) {
+								console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
+							}
+							valueChangeHandler = _.throttle(valueChangeHandler, v);
+						}
+						if (opt === "debounce") {
+							if (IN_DEBUG_MODE_FOR('value')) {
+								console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
+							}
+							valueChangeHandler = _.debounce(valueChangeHandler, v);
+						}
 					});
+
+					// Bind change handler	
+					bindEventToThisElem('change', valueChangeHandler);
+					if (!_.filter(elemBindings.bindings.value.itemOptions, (v, opt) => (opt === 'donotupdateon') && (v === 'input')).length) {
+						// if not prevented from changing on input
+						bindEventToThisElem('input', function() {
+							$(this).trigger('change');
+						});
+					}
+
+					// Bind to additional events
+					_.forEach(elemBindings.bindings.value.itemOptions, function (v, opt) {
+						if (opt === "updateon") {
+							if (IN_DEBUG_MODE_FOR('value')) {
+								console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
+							}
+							bindEventToThisElem(v, function() {
+								$(this).trigger('change');
+							});
+						}
+					});					
 
 					threeWay.computations.push(Tracker.autorun(function(c) {
 						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim()).filter(x => x !== "");
@@ -1514,7 +1570,36 @@ if (Meteor.isClient) {
 						}
 					};
 
+					// Apply options to changeHandler
+					_.forEach(elemBindings.bindings.checked.itemOptions, function (v, opt) {
+						if (opt === "throttle") {
+							if (IN_DEBUG_MODE_FOR('checked')) {
+								console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
+							}
+							checkedChangeHandler = _.throttle(checkedChangeHandler, v);
+						}
+						if (opt === "debounce") {
+							if (IN_DEBUG_MODE_FOR('checked')) {
+								console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
+							}
+							checkedChangeHandler = _.debounce(checkedChangeHandler, v);
+						}
+					});
+
+					// Bind change handler
 					bindEventToThisElem('change', checkedChangeHandler);
+
+					// Bind to additional events
+					_.forEach(elemBindings.bindings.checked.itemOptions, function (v, opt) {
+						if (opt === "updateon") {
+							if (IN_DEBUG_MODE_FOR('checked')) {
+								console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
+							}
+							bindEventToThisElem(v, function() {
+								$(this).trigger('change');
+							});
+						}
+					});					
 
 					threeWay.computations.push(Tracker.autorun(function(c) {
 						var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim()).filter(x => x !== "");
@@ -1607,6 +1692,102 @@ if (Meteor.isClient) {
 
 
 				//////////////////////////////////////////////////////
+				// .focus
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.focus) {
+
+					var focusChangeHandler = function focusChangeHandler() { // function(event)
+						var focus = elem === document.activeElement;
+						var pipelineSplit = elemBindings.bindings.focus.source.split('|').map(x => x.trim()).filter(x => x !== "");
+						var fieldName = pipelineSplit[0];
+						var curr_value = !!threeWay.dataMirror[fieldName];
+
+						if (IN_DEBUG_MODE_FOR('value')) {
+							console.log('[.focus] Focus Change', elem);
+							console.log('[.focus] Field: ' + fieldName + '; data-bind | ' + dataBind);
+						}
+
+						if (elemGlobals.suppressChangesToSSOT) {
+							if (IN_DEBUG_MODE_FOR('focus')) {
+								console.log('[.focus] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
+							}
+						} else {
+							if (focus !== curr_value) {
+								if (IN_DEBUG_MODE_FOR('focus')) {
+									console.log('[.focus] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
+								}
+								threeWay.data.set(fieldName, focus);
+								Tracker.flush();
+
+								if (!!threeWay.fieldMatchParams[fieldName]) {
+									// invalidate only if linked to server
+									// ... and different
+									var isUpdated;
+									Tracker.nonreactive(function() {
+										// get current value by digging into document
+										var doc = options.collection.findOne(threeWay.id.get());
+										var currValue = doc;
+										var fieldNameSplit = fieldName.split('.');
+										while (fieldNameSplit.length > 0) {
+											currValue = currValue[fieldNameSplit.shift()];
+										}
+										currValue = options.dataTransformFromServer[threeWay.fieldMatchParams[fieldName].match](currValue, doc);
+										isUpdated = _.isEqual(currValue, threeWay.dataMirror[fieldName]);
+									});
+									threeWay.__serverIsUpdated.set(fieldName, isUpdated);
+								}
+							} else {
+								if (IN_DEBUG_MODE_FOR('focus')) {
+									console.log('[.focus] Unchanged focus: ' + fieldName + ';', curr_value, '(in mirror)');
+								}
+							}
+						}
+					};
+
+					bindEventToThisElem('focus', focusChangeHandler);
+					bindEventToThisElem('focusout', focusChangeHandler);
+
+					threeWay.computations.push(Tracker.autorun(function(c) {
+						var pipelineSplit = elemBindings.bindings.focus.source.split('|').map(x => x.trim()).filter(x => x !== "");
+						var source = pipelineSplit[0];
+						var pipeline = pipelineSplit.splice(1);
+
+						if (c.firstRun) {
+							if (IN_DEBUG_MODE_FOR('focus')) {
+								console.log("[.focus] Preparing .focus binding (to " + source + ") for", elem);
+							}
+						}
+
+						elemGlobals.suppressChangesToSSOT = true;
+						var focus = !!processInTemplateContext(source, pipeline, elem, c, false, false);
+						// (..., false, false): helpers not used and pipelines do not manipulate value
+
+						// Validate here
+						var isValid = threeWay.validateInput(source, focus);
+						threeWay.__dataIsNotInvalid.set(source, isValid);
+
+						if ((elem === document.activeElement) !== focus) {
+							if (focus) {
+								$(elem).focus();
+							} else {
+								$(elem).blur();
+							}
+							if (IN_DEBUG_MODE_FOR('value')) {
+								console.log('[.focus] Setting .focus to \"' + focus + '\" for', elem);
+							}
+						} else {
+							if (IN_DEBUG_MODE_FOR('focus')) {
+								console.log('[.focus] Not updating .focus of', elem);
+							}
+						}
+						elemGlobals.suppressChangesToSSOT = false;
+					}));
+					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+
+				}
+
+
+				//////////////////////////////////////////////////////
 				// .html
 				//////////////////////////////////////////////////////
 				if (!!elemBindings.bindings.html) {
@@ -1616,7 +1797,7 @@ if (Meteor.isClient) {
 						var mappings = pipelineSplit.splice(1);
 
 						if (c.firstRun) {
-							if (IN_DEBUG_MODE_FOR('html')) {
+							if (IN_DEBUG_MODE_FOR('html-text')) {
 								console.log("[.html] Preparing .html binding for", elem);
 								console.log("[.html] Field: " + source + "; Mappings: ", mappings);
 							}
@@ -1625,10 +1806,38 @@ if (Meteor.isClient) {
 						var html = processInTemplateContext(source, mappings, elem, c);
 
 						if (elem.innerHTML !== html) {
-							if (IN_DEBUG_MODE_FOR('html')) {
+							if (IN_DEBUG_MODE_FOR('html-text')) {
 								console.log('[.html] Setting .innerHTML to \"' + html + '\" for', elem);
 							}
 							elem.innerHTML = html;
+						}
+					}));
+					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+				}
+
+				//////////////////////////////////////////////////////
+				// .text
+				//////////////////////////////////////////////////////
+				if (!!elemBindings.bindings.text) {
+					threeWay.computations.push(Tracker.autorun(function(c) {
+						var pipelineSplit = elemBindings.bindings.text.source.split('|').map(x => x.trim()).filter(x => x !== "");
+						var source = pipelineSplit[0];
+						var mappings = pipelineSplit.splice(1);
+
+						if (c.firstRun) {
+							if (IN_DEBUG_MODE_FOR('html-text')) {
+								console.log("[.text] Preparing .text binding for", elem);
+								console.log("[.text] Field: " + source + "; Mappings: ", mappings);
+							}
+						}
+
+						var text = processInTemplateContext(source, mappings, elem, c);
+
+						if ($(elem).text() !== text) {
+							if (IN_DEBUG_MODE_FOR('html-text')) {
+								console.log('[.text] Setting .text to \"' + text + '\" for', elem);
+							}
+							$(elem).text(text);
 						}
 					}));
 					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);

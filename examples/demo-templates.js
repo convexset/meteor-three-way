@@ -95,6 +95,10 @@ if (Meteor.isClient) {
 		},
 		"change input[name=debug-messages]": function(event, template) {
 			setTimeout(() => setUpDebugMessages(template), 50);
+		},
+		"click a#focus-name": function(event) {
+			event.preventDefault();
+			Template.instance()._3w_set('nameHasFocus', true);
 		}
 	});
 }

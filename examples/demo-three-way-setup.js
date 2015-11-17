@@ -1,36 +1,18 @@
 /* global ThreeWay: true */
 /* global Demo: true */
 
+if (Meteor.isClient) {
+	ThreeWay.setDebugModeOn();
+	// ThreeWay.debugModeSelect('bindings');
+	ThreeWay.debugModeSelect('value');
+	ThreeWay.debugModeSelect('checked');
+}
 
 ////////////////////////////////////////////////////////////
 // Preamble
 ////////////////////////////////////////////////////////////
 var updatersForServer = _.object(Demo.fields, Demo.fields.map(x => "update-" + x));
 updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
-
-var selectedDebugMessages = [
-	// 'parse',
-	// 'bindings',
-	// 'data-mirror',
-	// 'observer',
-	// 'tracker',
-	// 'new-id',
-	// 'db',
-	// 'default-values',
-	// 'methods',
-	// 'value',
-	// 'checked',
-	// 'html',
-	// 'visible-and-disabled',
-	// 'style',
-	// 'attr',
-	// 'class',
-	// 'event',
-	// 'vm-only',
-	// 'validation',
-	// 'bind',
-];
-//selectedDebugMessages = ThreeWay.DEBUG_MESSAGES; // copy
 
 
 ////////////////////////////////////////////////////////////
@@ -210,10 +192,11 @@ if (Meteor.isClient) {
 		// <data field="additional" initial-value="view model to view only"></data>
 		viewModelToViewOnly: {
 			"hide": "Set to \"hide\" to hide",
-			"debugMessages": selectedDebugMessages,
+			"debugMessages": [],
 			"tagsValidationErrorText": "",
 			"someArrValidationErrorText.0": "",
 			"someArrValidationErrorText.2": "",
+			"nameHasFocus": false,
 		},
 
 		// Event Handlers for binding
