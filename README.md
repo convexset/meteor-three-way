@@ -1054,40 +1054,20 @@ The following trigger when the relevant key is pressed in a `keyup`:
  - `downArrowKey`
  - `insertKey`
  - `deleteKey`
+ - `f1Key`
+ - `f2Key`
+ - `f3Key`
+ - `f4Key`
+ - `f5Key`
+ - `f6Key`
+ - `f7Key`
+ - `f8Key`
+ - `f9Key`
+ - `f10Key`
+ - `f11Key`
+ - `f12Key`
 
-For finer grained control, the following prefixed forms that fire on `keydown` or `keyup` are provided:
-
- - `keydown_backspaceKey`
- - `keydown_tabKey`
- - `keydown_returnKey`
- - `keydown_escapeKey`
- - `keydown_pageUpKey`
- - `keydown_pageDownKey`
- - `keydown_endKey`
- - `keydown_homeKey`
- - `keydown_leftArrowKey`
- - `keydown_upArrowKey`
- - `keydown_rightArrowKey`
- - `keydown_downArrowKey`
- - `keydown_insertKey`
- - `keydown_deleteKey`
-
-... and ...
-
- - `keyup_backspaceKey`
- - `keyup_tabKey`
- - `keyup_returnKey`
- - `keyup_escapeKey`
- - `keyup_pageUpKey`
- - `keyup_pageDownKey`
- - `keyup_endKey`
- - `keyup_homeKey`
- - `keyup_leftArrowKey`
- - `keyup_upArrowKey`
- - `keyup_rightArrowKey`
- - `keyup_downArrowKey`
- - `keyup_insertKey`
- - `keyup_deleteKey`
+For finer grained control, the above may be prefixed with `keydown_` or `keyup_` (e.g.: `keydown_backspaceKey` and `keyup_tabKey`).
 
 ## Notes
 

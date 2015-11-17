@@ -228,6 +228,7 @@ if (Meteor.isClient) {
 			rightArrowKey: () => console.info('[rightArrowKey handler]'),
 			downArrowKey: () => console.info('[downArrowKey handler]'),
 			otherUpArrowKey: ThreeWay.eventGenerators.keypressHandlerGenerator(() => console.log('[other up arrow key handler]'), [38]),
+			f1Key: () => console.info('[f1 handler]'),
 		},
 
 		// Database Update Parameters

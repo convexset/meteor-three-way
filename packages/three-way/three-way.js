@@ -2031,6 +2031,18 @@ if (Meteor.isClient) {
 									'downArrowKey': 40,
 									'insertKey': 45,
 									'deleteKey': 46,
+									'f1Key': 112,
+									'f2Key': 113,
+									'f3Key': 114,
+									'f4Key': 115,
+									'f5Key': 116,
+									'f6Key': 117,
+									'f7Key': 118,
+									'f8Key': 119,
+									'f9Key': 120,
+									'f10Key': 121,
+									'f11Key': 122,
+									'f12Key': 123,
 								}, function(key, _eventName) {
 									if ((eventName.toLowerCase() === _eventName.toLowerCase()) || (eventName.toLowerCase() === 'keyup_' + _eventName.toLowerCase())) {
 										bindEventToThisElem('keyup', ThreeWay.eventGenerators.keypressHandlerGenerator(function(event) {
