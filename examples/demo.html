@@ -162,7 +162,7 @@
 						<input name="name" style="border: 0; width: 90%;" data-bind="value: name; focus: nameHasFocus">
 						{{#if _3w_validValuesNotSynced 'name'}}<i class="notched circle loading icon"></i>{{/if}}
 
-						<p style="font-size: 70%">Element updates the view model on <code>input</code> via <code>data-bind="value: name"</code>.</p>
+						<p style="font-size: 80%">Element updates the view model on <code>input</code> via <code>data-bind="value: name"</code>.</p>
 
 					</td>
 				</tr>
@@ -206,7 +206,7 @@
 							</tr>
 							<tr>
 								<td colspan=2>
-									<p style="font-size: 70%">Element updates the view model only at the usual change handler (via <code>data-bind="value#donotupdateon-input: notes"</code>)</p>
+									<p style="font-size: 80%">Element updates the view model only at the usual change handler (via <code>data-bind="value#donotupdateon-input: notes"</code>)</p>
 								</td>
 							</tr>
 						</table>
@@ -406,8 +406,8 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 			<div class="field">
 				<label>[value binding] hide (VM Only) | value in view model: <span style="color: blue;" data-bind="html: hide"></span></label>
 				<input data-bind="value#throttle-2000: hide; event: {keyup: ctrlReturnKey|shiftReturnKey|backspaceKey, keyup_leftArrowKey: leftArrowKey, upArrowKey: upArrowKey, keydown_rightArrowKey: rightArrowKey, downArrowKey: downArrowKey, f1Key: f1Key}">
-				<p style="font-size: 70%">Element updates the view model on <code>input</code> and has a 2 sec throttle modifier via <code>value#throttle-2000: hide</code>.</p>
-				<p style="font-size: 70%">The following key-bindings are also in place: <code>event: {keyup: ctrlReturnKey|shiftReturnKey|backspaceKey, keyup_leftArrowKey: leftArrowKey, upArrowKey: upArrowKey, keydown_rightArrowKey: rightArrowKey, downArrowKey: downArrowKey, f1Key: f1Key}</code> (look in the console).</p>
+				<p style="font-size: 80%">Element updates the view model on <code>input</code> and has a 2 sec throttle modifier via <code>value#throttle-2000: hide</code>.</p>
+				<p style="font-size: 80%">The following key-bindings are also in place: <code>event: {keyup: ctrlReturnKey|shiftReturnKey|backspaceKey, keyup_leftArrowKey: leftArrowKey, upArrowKey: upArrowKey, keydown_rightArrowKey: rightArrowKey, downArrowKey: downArrowKey, f1Key: f1Key}</code> (look in the console).</p>
 
 				<div style="min-height: 20px;"></div>
 
@@ -467,28 +467,6 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 
 				Initialized via:
 				<pre>&lt;twdata field=&quot;semanticUIStyling&quot; initial-value=&quot;yes&quot;&gt;&lt;/twdata&gt;</pre>
-			</div>
-			<div class="field">
-				<label>[File binding] File Binding (VM Only)</label>
-				<input type=file data-bind="file: oneFile" id="file-input">
-				{{#if _3w_validValuesNotSynced 'oneFile'}}&nbsp;&nbsp;&nbsp;<i class="notched circle loading icon"></i>{{/if}}
-				{{#if _3w_get 'oneFile'}}
-					<table class="ui celled padded table">
-						{{#each _3w_get 'oneFile'}}
-							{{> DemoThreeWayFile this}}
-						{{/each}}
-					</table>
-				{{/if}}
-			</div>
-			<div class="field">
-				<label>[Files binding] Files Binding (VM Only)</label>
-				<input type=file multiple data-bind="file: multipleFiles" id="files-input">
-				{{#if _3w_validValuesNotSynced 'multipleFiles'}}&nbsp;&nbsp;&nbsp;<i class="notched circle loading icon"></i>{{/if}}
-				<table class="ui celled padded table">
-					{{#each _3w_get 'multipleFiles'}}
-						{{> DemoThreeWayFile this}}
-					{{/each}}
-				</table>
 			</div>
 		</div>
 		
