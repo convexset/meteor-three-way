@@ -346,7 +346,7 @@ if (Meteor.isClient) {
 				if (nodes.length === 1) {
 					__rootChanges += 1;
 					threeWay.rootNode = nodes[0];
-					threeWay._rootNode.set(__rootChanges + '|' + threeWay.rootNode.toString());
+					threeWay._rootNode.set(threeWay.rootNode.toString() + "|" + __rootChanges);
 				} else {
 					throw new Meteor.Error("expected-single-node-selector", selectorString);
 				}
@@ -748,7 +748,7 @@ if (Meteor.isClient) {
 			////////////////////////////////////////////////////////////////
 
 
-			Tracker.autorun(function() {
+			instance.autorun(function() {
 				threeWay.dataMirror = threeWay.data.all();
 				if (IN_DEBUG_MODE_FOR('data-mirror')) {
 					console.log('Updating data mirror...', threeWay.dataMirror);
@@ -790,7 +790,7 @@ if (Meteor.isClient) {
 
 			// The big set-up
 			threeWay.__idReady = false;
-			Tracker.autorun(function() {
+			instance.autorun(function() {
 				var _id = threeWay.id.get();
 
 				if (!!threeWay.observer) {
@@ -2120,6 +2120,12 @@ if (Meteor.isClient) {
 			var thisTemplateName = instance.view.name.split('.').pop().trim();
 			var threeWay = instance[THREE_WAY_NAMESPACE];
 
+			if (!!instance.data && !!instance.data.rootElementSelector) {
+				if (IN_DEBUG_MODE_FOR('bind')) {
+					console.log("[bind] Setting root node for instance of " + thisTemplateName + " via selector " + instance.data.rootElementSelector + ". (Prev: " + threeWay.rootNode.toString().split('|')[0] + ")");
+				}
+				instance._3w_setRoot(instance.data.rootElementSelector);
+			}
 
 			//////////////////////////////////////////////////////////////////
 			// Set initial values for data (in particular, VM-only fields)
@@ -2219,7 +2225,7 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 
 			var lastGCOfComputations = 0;
-			Tracker.autorun(function() {
+			instance.autorun(function() {
 				threeWay._rootNode.get();
 				var rootNode = threeWay.rootNode;
 

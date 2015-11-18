@@ -113,7 +113,6 @@ if (Meteor.isClient) {
 	});
 	Template.DemoThreeWayChild.onRendered(function() {
 		var instance = this;
-		instance._3w_setRoot(".DemoThreeWayChild");
 		Tracker.autorun(function() {
 			// sub.ready changes once... supposedly...
 			if (sub.ready()) {
@@ -133,7 +132,6 @@ if (Meteor.isClient) {
 	});
 	Template.DemoThreeWayGrandChild.onRendered(function() {
 		var instance = this;
-		instance._3w_setRoot(".DemoThreeWayGrandChild");
 		Tracker.autorun(function() {
 			// sub.ready changes once... supposedly...
 			if (sub.ready()) {

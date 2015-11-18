@@ -528,7 +528,7 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 		
 	</div>
 	
-	{{> DemoThreeWayChild _3w_name='kiddy'}}
+	{{> DemoThreeWayChild _3w_name='kiddy' rootElementSelector='.DemoThreeWayChild'}}
 	
 	<div class="column">
 		&nbsp;
@@ -623,8 +623,8 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 			<li><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
 		</ul>
 		
-		{{> DemoThreeWayGrandChild _3w_name='grandkiddy' initData="grandkiddy one" siblingName="other_grandkiddy"}}
-		{{> DemoThreeWayGrandChild _3w_name='other_grandkiddy' initData="grandkiddy two" siblingName="grandkiddy"}}
+		{{> DemoThreeWayGrandChild _3w_name='grandkiddy' initData="grandkiddy one" siblingName="other_grandkiddy" rootElementSelector=".DemoThreeWayGrandChild"}}
+		{{> DemoThreeWayGrandChild _3w_name='other_grandkiddy' initData="grandkiddy two" siblingName="grandkiddy" rootElementSelector=".DemoThreeWayGrandChild"}}
 	</div>
 </template>
 
