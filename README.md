@@ -121,6 +121,12 @@ Once ready to bind to a document with id `_id` in the database on a template ins
 instance._3w_setId(_id);
 ```
 
+... or instantiate the relevant template like so:
+
+```html
+{{> DemoThreeWay _3w_id="the-relevant-item-id"}}
+```
+
 ... and things will happen.
 
 #### "Intermediate-level" Set Up
@@ -683,7 +689,14 @@ eventHandlers: {
 
 #### View Model to View Only Elements
 
-It is easy to specify fields that are "view model only". They don't even have to be declared in the set up.
+However, since those are "template-level defaults" that are copied to all template instances, it may be useful at times to customize (update) them at instantiation. There are a few ways to do so. The first is through template instance data:
+
+```html
+{{> DemoThreeWay _3w_additionalViewModelOnlyData=helperWithAdditionalData}}
+```
+
+
+Alternatively, it can be done via HTML:
 
 ```html
 <twdata field="additional" initial-value="view model to view only"></twdata>

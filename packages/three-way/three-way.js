@@ -759,7 +759,11 @@ if (Meteor.isClient) {
 				}
 			});
 
-			_.forEach(options.viewModelToViewOnly, function(value, field) {
+			var vmData = _.extend({}, options.viewModelToViewOnly);
+			if (!!instance.data && !!instance.data._3w_additionalViewModelOnlyData) {
+				vmData = _.extend({}, instance.data._3w_additionalViewModelOnlyData);
+			}
+			_.forEach(vmData, function(value, field) {
 				threeWay.data.set(field, value);
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
 					console.log("[vm-only] Setting up initial value for " + field + " to ", value, " using template-level options.");

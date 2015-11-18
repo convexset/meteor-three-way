@@ -56,6 +56,9 @@ if (Meteor.isClient) {
 		num: () => Template.instance().num.get(),
 		allDebugMessages: () => ThreeWay.DEBUG_MESSAGES,
 		toLowerCase: x => x.toLowerCase && x.toLowerCase(),
+		additionalVMOnlyData: function() {
+			return _.object(_.range(5).map(idx => ['idx_' + idx, Math.floor(Math.random() * 10000)]));
+		},
 	});
 
 	var selectCreated = false;
@@ -110,15 +113,6 @@ if (Meteor.isClient) {
 if (Meteor.isClient) {
 	Template.DemoThreeWayChild.onCreated(function() {
 		childTemplate = this;
-	});
-	Template.DemoThreeWayChild.onRendered(function() {
-		var instance = this;
-		Tracker.autorun(function() {
-			// sub.ready changes once... supposedly...
-			if (sub.ready()) {
-				instance._3w_setId(randomId());
-			}
-		});
 	});
 }
 

@@ -2,6 +2,9 @@
 /* global Demo: true */
 
 if (Meteor.isServer) {
+	// num generated items
+	var num_items = 10;
+
 	// The publication
 	Meteor.publish('demo-pub', function() {
 		return Demo.collection.find({});
@@ -80,7 +83,7 @@ if (Meteor.isServer) {
 			} else {
 				lastRegenTimestamp = currTimestamp;
 				Demo.collection.remove({});
-				_.range(10).forEach(function() {
+				_.range(num_items).forEach(function(idx) {
 					var user = Fake.user();
 					var tags = [];
 					Demo.allTags.forEach(function(tag) {
@@ -94,7 +97,7 @@ if (Meteor.isServer) {
 							_emPrefs.push(x);
 						}
 					});
-					Demo.collection.insert({
+					var doc = {
 						name: user.fullname,
 						emailPrefs: _emPrefs,
 						personal: {
@@ -112,7 +115,11 @@ if (Meteor.isServer) {
 						},
 						notes: Fake.sentence(5),
 						tags: tags,
-					});
+					};
+					if (idx === num_items - 1) {
+						doc._id = "__last_id__";
+					}
+					Demo.collection.insert(doc);
 				});
 			}
 		}
