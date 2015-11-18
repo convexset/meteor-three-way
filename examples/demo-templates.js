@@ -95,6 +95,7 @@ if (Meteor.isClient) {
 			Template.instance()._3w_childDataSetId(randomId(), 'kiddy');
 			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'grandkiddy']);
 			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'other_grandkiddy']);
+			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'yet_another_grandkiddy']);
 		},
 		"change input[name=debug-messages]": function(event, template) {
 			setTimeout(() => setUpDebugMessages(template), 50);
