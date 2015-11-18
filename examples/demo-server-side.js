@@ -21,7 +21,7 @@ if (Meteor.isServer) {
 					myFieldName += " ";
 				}
 				console.log(myFieldName, id, '\t', value);
-				Demo.collection.update(id, {
+				return Demo.collection.update(id, {
 					$set: updater
 				});
 			};
@@ -41,9 +41,10 @@ if (Meteor.isServer) {
 				myFieldName += " ";
 			}
 			console.log(myFieldName, id, '\t', value);
-			Demo.collection.update(id, {
+			return Demo.collection.update(id, {
 				$set: updater
 			});
+			return true;
 		},
 		'update-personal.someArr.*': function(id, value, k) {
 			var updater = {};
@@ -53,7 +54,7 @@ if (Meteor.isServer) {
 				myFieldName += " ";
 			}
 			console.log(myFieldName, id, '\t', value);
-			Demo.collection.update(id, {
+			return Demo.collection.update(id, {
 				$set: updater
 			});
 		},
@@ -65,7 +66,7 @@ if (Meteor.isServer) {
 				myFieldName += " ";
 			}
 			console.log(myFieldName, id, '\t', value);
-			Demo.collection.update(id, {
+			return Demo.collection.update(id, {
 				$set: updater
 			});
 		}
@@ -119,7 +120,7 @@ if (Meteor.isServer) {
 					if (idx === num_items - 1) {
 						doc._id = "__last_id__";
 					}
-					Demo.collection.insert(doc);
+					return Demo.collection.insert(doc);
 				});
 			}
 		}

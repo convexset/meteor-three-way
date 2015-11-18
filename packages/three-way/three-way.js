@@ -241,6 +241,27 @@ if (Meteor.isClient) {
 			throw new Meteor.Error('options-error', 'collection should be a Mongo.Collection');
 		}
 		options.fields = _.map(options.updatersForServer, (v, k) => k);
+
+		// Check updaters
+		_.forEach(options.updatersForServer, function(v, k) {
+			var ok = false;
+			if (typeof v === "string") {
+				ok = true;
+			}
+			if (typeof v === "function") {
+				ok = true;
+			}
+			if (typeof v === "object") {
+				if ((typeof v.method === "string") && (typeof v.callback === "function")) {
+					ok = true;
+				}
+			}
+			if (!ok) {
+				throw new Meteor.Error('invalid-updater-specification', k);
+			}
+		});
+
+		// Fill in data transforms
 		options.fields.forEach(function(f) {
 			if (!options.dataTransformToServer.hasOwnProperty(f)) {
 				// Set default transforms (local data to server)
@@ -587,8 +608,27 @@ if (Meteor.isClient) {
 						match.params.forEach(function(p) {
 							params.push(p);
 						});
-						// Meteor.apply(options.updatersForServer[f], params);
-						meteorApply_usePromiseBins(match.fieldPath, options.updatersForServer[f], params);
+
+						// meteorApply_usePromiseBins(match.fieldPath, options.updatersForServer[f], params);
+						if (typeof options.updatersForServer[f] === "string") {
+							Meteor.apply(options.updatersForServer[f], params);
+						} else if (typeof options.updatersForServer[f] === "function") {
+							options.updatersForServer[f].apply(instance, params);
+						} else {
+							var updateTime = new Date();
+							Meteor.apply(options.updatersForServer[f].method, params, {}, function(err, res) {
+								var info = {
+									instance: instance,
+									id: _id,
+									value: v,
+									params: match.params,
+									methodName: options.updatersForServer[f].method,
+									updateTime: updateTime,
+									returnTime: new Date()
+								};
+								options.updatersForServer[f].callback(err, res, info);
+							});
+						}
 					};
 				})
 			);
@@ -913,7 +953,7 @@ if (Meteor.isClient) {
 
 										var focusedField;
 										var currentValue;
-										Tracker.nonreactive(function () {
+										Tracker.nonreactive(function() {
 											focusedField = instance._3w_focusedField();
 											currentValue = instance._3w_get(focusedField);
 										});

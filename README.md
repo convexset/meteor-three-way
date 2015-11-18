@@ -27,12 +27,15 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
     - [Dynamic Data-Binding](#dynamic-data-binding)
         - [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances)
     - [Updaters to the Server](#updaters-to-the-server)
+        - [Extended Notation for Updaters](#extended-notation-for-updaters)
     - [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
     - [Binding to the View](#binding-to-the-view)
-        - [Binding: `html`](#binding-html)
+        - [Binding: `html` and `text`](#binding-html-and-text)
         - [Binding: `value`](#binding-value)
         - [Binding: `checked`](#binding-checked)
+        - [Binding Modifiers for `value` and `checked`](#binding-modifiers-for-value-and-checked)
         - [Bindings: `visible` and `disabled` (modern necessities)](#bindings-visible-and-disabled-modern-necessities)
+        - [Bindings: `focus`](#bindings-focus)
         - [Style, Attribute and Class Bindings](#style-attribute-and-class-bindings)
     - [Helpers, Template Helpers and Binding](#helpers-template-helpers-and-binding)
         - [Multi-variable Display Bindings](#multi-variable-display-bindings)
@@ -54,11 +57,14 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
     - [Extra Pre-Processor Generators](#extra-pre-processor-generators)
     - [Extra Transformations](#extra-transformations)
     - [Extra Transformation Generators](#extra-transformation-generators)
+    - [Extra Event Generators](#extra-event-generators)
+    - [Extra Events](#extra-events)
 - [Notes](#notes)
     - [View Model to Database Binding](#view-model-to-database-binding)
     - [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
     - [Dynamic Data Binding](#dynamic-data-binding)
-- [Questions/Issues/To Dos](#questionsissuesto-dos)
+    - [Why Not Group Debounced Updates?](#why-not-group-debounced-updates)
+- [To Do](#to-do)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -509,6 +515,42 @@ Meteor.methods({
 
 (Also, please don't ask for regular expressions... Do that within your own updaters.)
 
+To use callbacks or otherwise deviate from the use of Meteor methods, use the following [Extended Notation for Updaters](#extended-notation-for-updaters).
+
+###### Extended Notation for Updaters
+
+Aside from plain string names Also allowed are updater descriptions of the following form:
+
+```javascript
+{
+    'name': function(id, value) {
+        console.info('[update-name]', id, "to", value);
+        Meteor.call('update-name', id, value);
+    },
+    'personal.someArr.1': {
+        method: 'update-personal.someArr.1',
+        callback: function(err, res, info) {
+            console.info('[update-personal.someArr.1]', err, res, info);
+        }
+    },
+}
+```
+
+In the latter case, `info` takes the form:
+
+```javascript
+{
+    instance: instance,  // template instance
+    id: _id,   // _id
+    value: v,  // update value
+    params: params,  // wildcard params
+    methodName: methodName,  // method name
+    updateTime: updateTime,  // time update started
+    returnTime: returnTime,  // time update completed
+};
+```
+
+... admittedly, that is a little excessive.
 
 #### Transforms: Translation from/to Database to/from View Model
 
@@ -694,7 +736,6 @@ However, since those are "template-level defaults" that are copied to all templa
 ```html
 {{> DemoThreeWay _3w_additionalViewModelOnlyData=helperWithAdditionalData}}
 ```
-
 
 Alternatively, it can be done via HTML:
 

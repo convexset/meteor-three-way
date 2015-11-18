@@ -12,7 +12,17 @@ if (Meteor.isClient) {
 // Preamble
 ////////////////////////////////////////////////////////////
 var updatersForServer = _.object(Demo.fields, Demo.fields.map(x => "update-" + x));
-updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
+// updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
+updatersForServer['name'] = function(id, value) {
+	console.info('[update-name]', id, "to", value);
+	Meteor.call('update-name', id, value);
+};
+updatersForServer['personal.someArr.1'] = {
+	method: 'update-personal.someArr.1',
+	callback: function(err, res, instance) {
+		console.info('[update-personal.someArr.1]', err, res, info);
+	}
+};
 
 
 ////////////////////////////////////////////////////////////
