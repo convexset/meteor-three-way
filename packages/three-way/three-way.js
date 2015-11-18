@@ -218,7 +218,7 @@ if (Meteor.isClient) {
 		if (typeof options === "undefined") {
 			throw new Meteor.Error('missing-argument', 'options required');
 		}
-		options = PackageUtilities.updateDefaultOptionsWithInput({
+		options = _.extend({
 			collection: null,
 			updatersForServer: {},
 			injectDefaultValues: {},
@@ -234,7 +234,8 @@ if (Meteor.isClient) {
 			methodInterval: DEFAULT_METHOD_INTERVAL,
 			eventHandlers: {},
 			helpers: {},
-		}, options, true);
+			updateOfFocusedFieldCallback: null,
+		}, options);
 
 		if (!(options.collection instanceof Mongo.Collection)) {
 			throw new Meteor.Error('options-error', 'collection should be a Mongo.Collection');
@@ -337,6 +338,7 @@ if (Meteor.isClient) {
 				mutationObserver: null,
 				rootNode: document.body,
 				_rootNode: new ReactiveVar("document.body"),
+				_focusedField: new ReactiveVar(null),
 			};
 
 			instance[THREE_WAY_NAMESPACE] = threeWay;
@@ -365,6 +367,8 @@ if (Meteor.isClient) {
 			instance._3w_get_NR = p => threeWay.dataMirror[p];
 			instance._3w_getAll = () => threeWay.data.all();
 			instance._3w_getAll_NR = () => _.extend({}, threeWay.dataMirror);
+
+			instance._3w_focusedField = () => threeWay._focusedField.get();
 
 			instance._3w_isSyncedToServer = p => !!threeWay.__serverIsUpdated.get(p);
 			instance._3w_allSyncedToServer = function() {
@@ -902,7 +906,18 @@ if (Meteor.isClient) {
 											console.log('[db|receive] Matches value from recent update. No change to view model.');
 										}
 									} else {
-										threeWay.data.set(curr_f, newValue);
+
+										var focusedField;
+										var currentValue;
+										Tracker.nonreactive(function () {
+											focusedField = instance._3w_focusedField();
+											currentValue = instance._3w_get(focusedField);
+										});
+										if ((focusedField === curr_f) && !!options.updateOfFocusedFieldCallback) {
+											options.updateOfFocusedFieldCallback(threeWay.fieldMatchParams[focusedField], newValue, currentValue);
+										} else {
+											threeWay.data.set(curr_f, newValue);
+										}
 										mostRecentDatabaseEntry[curr_f] = newValue;
 									}
 								}
@@ -1379,7 +1394,7 @@ if (Meteor.isClient) {
 				if (!!elemBindings.bindings.value) {
 
 					var valueChangeHandler = function valueChangeHandler() { // function(event)
-						var value = elem.value;
+						var value = $(elem).val();
 						var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim()).filter(x => x !== "");
 						var fieldName = pipelineSplit[0];
 						var curr_value = threeWay.dataMirror[fieldName];
@@ -1482,8 +1497,8 @@ if (Meteor.isClient) {
 						var isValid = threeWay.validateInput(source, value);
 						threeWay.__dataIsNotInvalid.set(source, isValid);
 
-						if (elem.value !== value) {
-							elem.value = value;
+						if (!_.isEqual($(elem).val(), value)) {
+							$(elem).val(value);
 							if (IN_DEBUG_MODE_FOR('value')) {
 								console.log('[.value] Setting .value to \"' + value + '\" for', elem);
 							}
@@ -1496,6 +1511,16 @@ if (Meteor.isClient) {
 					}));
 					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 
+					bindEventToThisElem('focus', function() {
+						setTimeout(function delayedFocusChange() {
+							var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim()).filter(x => x !== "");
+							var source = pipelineSplit[0];
+							threeWay._focusedField.set(source);
+						}, 0);
+					});
+					bindEventToThisElem('focusout', function() {
+						threeWay._focusedField.set(null);
+					});
 				}
 
 
@@ -1687,6 +1712,17 @@ if (Meteor.isClient) {
 						elemGlobals.suppressChangesToSSOT = false;
 					}));
 					boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+
+					bindEventToThisElem('focus', function() {
+						setTimeout(function delayedFocusChange() {
+							var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim()).filter(x => x !== "");
+							var source = pipelineSplit[0];
+							threeWay._focusedField.set(source);
+						}, 0);
+					});
+					bindEventToThisElem('focusout', function() {
+						threeWay._focusedField.set(null);
+					});
 
 				}
 
@@ -2120,11 +2156,11 @@ if (Meteor.isClient) {
 			var thisTemplateName = instance.view.name.split('.').pop().trim();
 			var threeWay = instance[THREE_WAY_NAMESPACE];
 
-			if (!!instance.data && !!instance.data.rootElementSelector) {
+			if (!!instance.data && !!instance.data._3w_rootElementSelector) {
 				if (IN_DEBUG_MODE_FOR('bind')) {
-					console.log("[bind] Setting root node for instance of " + thisTemplateName + " via selector " + instance.data.rootElementSelector + ". (Prev: " + threeWay.rootNode.toString().split('|')[0] + ")");
+					console.log("[bind] Setting root node for instance of " + thisTemplateName + " via selector " + instance.data._3w_rootElementSelector + ". (Prev: " + threeWay.rootNode.toString().split('|')[0] + ")");
 				}
-				instance._3w_setRoot(instance.data.rootElementSelector);
+				instance._3w_setRoot(instance.data._3w_rootElementSelector);
 			}
 
 			//////////////////////////////////////////////////////////////////
@@ -2354,6 +2390,17 @@ if (Meteor.isClient) {
 					characterData: false
 				});
 			});
+
+			//////////////////////////////////////////////////////////////////
+			// Set initial data source
+			//////////////////////////////////////////////////////////////////
+			if (!!instance.data && !!instance.data._3w_id) {
+				if (IN_DEBUG_MODE_FOR('new-id')) {
+					console.log("[new-id] Setting initial id for instance of " + thisTemplateName + " to " + instance.data._3w_id);
+				}
+				instance._3w_setId(instance.data._3w_id);
+			}
+
 		});
 
 		tmpl.onDestroyed(function() {
@@ -2385,6 +2432,8 @@ if (Meteor.isClient) {
 			_3w_haveData: () => Template.instance()[THREE_WAY_NAMESPACE].haveData.get(),
 			_3w_get: (propName) => Template.instance()._3w_get(propName),
 			_3w_getAll: () => Template.instance()._3w_getAll(),
+
+			_3w_focusedField: () => Template.instance()._3w_focusedField(),
 
 			_3w_isSyncedToServer: (propName) => Template.instance()._3w_isSyncedToServer(propName),
 			_3w_notSyncedToServer: (propName) => !Template.instance()._3w_isSyncedToServer(propName),

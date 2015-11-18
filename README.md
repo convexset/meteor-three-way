@@ -206,6 +206,7 @@ At this point, one might have a look at the full parameter set. Which will inclu
  - data validation
  - event bindings
  - database update settings
+ - suppressing and reporting the update of a focused field
 
 Further elaboration is available in the documentation below.
 
@@ -350,6 +351,20 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
     // Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
     methodInterval: 10, // default: 10
+
+    // Reports updates of focused fields
+    // default: null (i.e.: update focused field and do nothing;
+    //                feel free to do something and update the field anyway
+    //                via instance._3w_set)
+    // fieldMatchParams take the form like:
+    //      {
+    //          fieldPath: "personal.otherArr.0.a",
+    //          match: "personal.otherArr.*.*",
+    //          params: ["0", "a"]
+    //      }
+    updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
+        console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
+    }
 });
 ```
 
@@ -738,6 +753,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_expandParams(fieldSpec, params)`: takes a wild card field specification (like `'friends.*.name'`) and parameters (like `[3]`) to generate a field specifier (like `friends.3.name`).
 
+ - `_3w_focusedField()`: returns the currently focused field.
 
 ###### Ancestor Data
 
@@ -808,6 +824,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_getAll`: See [previous section](#instance-methods).
 
+ - `_3w_getAll`: See [previous section](#instance-methods).
+
  - `_3w_parentDataGet`: See [previous section](#instance-methods).
 
  - `_3w_parentDataGetAll`: See [previous section](#instance-methods).
@@ -836,6 +854,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_expandParams`: See [previous section](#instance-methods).
 
+ - `_3w_focusedField`: returns the currently focused field.
 
 #### Pre-processor Pipelines
 

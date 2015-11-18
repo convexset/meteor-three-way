@@ -240,6 +240,11 @@ if (Meteor.isClient) {
 		throttledUpdaters: ['emailPrefs'],
 		// Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
 		methodInterval: 100, // default: 100
+
+		// Reports updates of focused fields
+		updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
+			console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
+		},
 	});
 }
 
