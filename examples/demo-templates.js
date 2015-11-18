@@ -112,7 +112,16 @@ if (Meteor.isClient) {
 ////////////////////////////////////////////////////////////
 if (Meteor.isClient) {
 	Template.DemoThreeWayChild.onCreated(function() {
-		childTemplate = this;
+		var instance = this;
+		childTemplate = instance;
+		instance.allowThirdGrandchild = new ReactiveVar(false);
+		setTimeout(function() {
+			console.info('Third Grandchild released!!!');
+			instance.allowThirdGrandchild.set(true);
+		}, 10000);
+	});
+	Template.DemoThreeWayChild.helpers({
+		allowThirdGrandchild: () => Template.instance().allowThirdGrandchild.get(),
 	});
 }
 

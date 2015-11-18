@@ -8,6 +8,7 @@ const THREE_WAY_NAMESPACE = "__three_way__";
 const DATA_BIND_ATTRIBUTE = "data-bind";
 const THREE_WAY_ATTRIBUTE_NAMESPACE = "three-way";
 const THREE_WAY_DATA_BINDING_ID = "three-way-id";
+const THREE_WAY_DATA_BINDING_LEVEL = "three-way-id-level";
 const THREE_WAY_DATA_BINDING_INSTANCE = "three-way-instance";
 const RESTRICT_TEMPLATE_TYPE_ATTRIBUTE = 'restrict-template-type';
 const DEFAULT_DEBOUNCE_INTERVAL = 500;
@@ -360,6 +361,7 @@ if (Meteor.isClient) {
 				rootNode: document.body,
 				_rootNode: new ReactiveVar("document.body"),
 				_focusedField: new ReactiveVar(null),
+				__level: 0,
 			};
 
 			instance[THREE_WAY_NAMESPACE] = threeWay;
@@ -2193,6 +2195,16 @@ if (Meteor.isClient) {
 			// End Big Rebind Operation
 			////////////////////////////////////////////////////////////////
 			////////////////////////////////////////////////////////////////
+
+
+			//////////////////////////////////////////////////////////////////
+			// Peek upwards to determine level
+			//////////////////////////////////////////////////////////////////
+			var myId = 'progenitor_' + Math.floor(Math.random() * 1e15);
+			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
+				threeWay.__level = instance.parentTemplate()[THREE_WAY_NAMESPACE].__level + 1;
+			}
+
 		});
 
 		tmpl.onRendered(function() {
@@ -2324,9 +2336,22 @@ if (Meteor.isClient) {
 						instanceId = "~~id-unassigned~~";
 					}
 
+					function processSoCalledBindAuction(node) {
+						var eligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
+						if (!!eligibleLevel) {
+							if (threeWay.__level >= Number(eligibleLevel)) {
+								threeWay.__bindElem(node);
+								node.removeAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
+							}
+						}
+					}
+
 					mutations.forEach(function(mutation) {
 						if (!!mutation.addedNodes) {
 							Array.prototype.forEach.call(mutation.addedNodes, function(_node) {
+
+								var currEligibleLevel;
+
 								if (!!_node.getAttribute) {
 									// For each node, look for sub nodes
 									// Make sure to check both node and children
@@ -2339,7 +2364,16 @@ if (Meteor.isClient) {
 											var templateRestrictionsAttr = node.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE);
 											var templateRestrictions = templateRestrictionsAttr && templateRestrictionsAttr.split(',').map(x => x.trim()).filter(x => x !== "") || [];
 											if (templateRestrictions.indexOf(thisTemplateName) === -1) {
-												threeWay.__bindElem(node);
+												// don't bind now, instead state own level as a "bind auction bid"
+												// this enables child templates created later to stake their legitimate claims on new nodes
+												// threeWay.__bindElem(node);
+												currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
+												if (!currEligibleLevel || (Number(currEligibleLevel) < threeWay.__level)) {
+													node.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL, threeWay.__level);
+													setTimeout(function() {
+														processSoCalledBindAuction(node);
+													}, 0);
+												}
 											}
 										}
 									});
@@ -2408,7 +2442,16 @@ if (Meteor.isClient) {
 									stopBindingToNode(node);
 									threeWay.__bindElem(node);
 								} else if (!node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE)) {
-									threeWay.__bindElem(node);
+									// don't bind now, instead state own level as a "bind auction bid"
+									// this enables child templates created later to stake their legitimate claims on new nodes
+									// threeWay.__bindElem(node);
+									currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
+									if (!currEligibleLevel || (Number(currEligibleLevel) < threeWay.__level)) {
+										node.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL, threeWay.__level);
+										setTimeout(function() {
+											processSoCalledBindAuction(node);
+										}, 0);
+									}
 								}
 							}
 						}

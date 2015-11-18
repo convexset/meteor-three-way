@@ -600,6 +600,21 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 				{{/each}}
 			</tbody>
 		</table>
+		
+		<table class="ui table celled">
+			<thead>
+				<tr><th>Field (in <code>yet_another_grandkiddy</code>)</th>
+				<th>Value</th></tr>
+			</thead>
+			<tbody>
+				{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'yet_another_grandkiddy'))}}
+					<tr>
+						<td>{{key}}</td>
+						<td>{{value}}</td>
+					</tr>
+				{{/each}}
+			</tbody>
+		</table>
 	</div>
 
 	<div class="column">
@@ -625,6 +640,9 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 		
 		{{> DemoThreeWayGrandChild _3w_name='grandkiddy' initData="grandkiddy one" siblingName="other_grandkiddy" _3w_rootElementSelector=".DemoThreeWayGrandChild"}}
 		{{> DemoThreeWayGrandChild _3w_name='other_grandkiddy' initData="grandkiddy two" siblingName="grandkiddy" _3w_rootElementSelector=".DemoThreeWayGrandChild"}}
+		{{#if allowThirdGrandchild}}
+			{{> DemoThreeWayGrandChild _3w_name='yet_another_grandkiddy' initData="grandkiddy three" siblingName="grandkiddy" _3w_rootElementSelector=".DemoThreeWayGrandChild"}}
+		{{/if}}
 	</div>
 </template>
 

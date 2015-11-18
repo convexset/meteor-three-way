@@ -1,12 +1,10 @@
 /* global ThreeWay: true */
 /* global Demo: true */
 
-if (Meteor.isClient) {
-	// ThreeWay.setDebugModeOn();
-	// ThreeWay.debugModeSelect('bindings');
-	// ThreeWay.debugModeSelect('event');
-	// ThreeWay.debugModeSelect('checked');
-}
+// if (Meteor.isClient) {
+// 	ThreeWay.setDebugModeOn();
+// 	ThreeWay.debugModeSelect('bindings');
+// }
 
 ////////////////////////////////////////////////////////////
 // Preamble
@@ -19,7 +17,7 @@ updatersForServer['name'] = function(id, value) {
 };
 updatersForServer['personal.someArr.1'] = {
 	method: 'update-personal.someArr.1',
-	callback: function(err, res, instance) {
+	callback: function(err, res, info) {
 		console.info('[update-personal.someArr.1]', err, res, info);
 	}
 };
