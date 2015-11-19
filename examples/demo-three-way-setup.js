@@ -12,13 +12,13 @@
 var updatersForServer = _.object(Demo.fields, Demo.fields.map(x => "update-" + x));
 // updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
 updatersForServer['name'] = function(id, value) {
-	console.info('[update-name]', id, "to", value);
+	console.info('[update-name] Updating name of id ', id, "to", value);
 	Meteor.call('update-name', id, value);
 };
 updatersForServer['personal.someArr.1'] = {
 	method: 'update-personal.someArr.1',
 	callback: function(err, res, info) {
-		console.info('[update-personal.someArr.1]', err, res, info);
+		console.info('[update-personal.someArr.1] Updated.', err, res, info);
 	}
 };
 

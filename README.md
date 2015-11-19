@@ -18,52 +18,52 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
 - [Install](#install)
 - [The Example](#the-example)
 - [Usage](#usage)
-    - [Basic Set Up](#basic-set-up)
-    - ["Intermediate-level" Set Up](#intermediate-level-set-up)
-    - [Set Up: The Full Parameter Set](#set-up-the-full-parameter-set)
+  - [Basic Set Up](#basic-set-up)
+  - ["Intermediate-level" Set Up](#intermediate-level-set-up)
+  - [Set Up: The Full Parameter Set](#set-up-the-full-parameter-set)
 - [Documentation](#documentation)
-    - [Referring to Fields in Documents](#referring-to-fields-in-documents)
-    - [Default Values](#default-values)
-    - [Dynamic Data-Binding](#dynamic-data-binding)
-        - [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances)
-    - [Updaters to the Server](#updaters-to-the-server)
-        - [Extended Notation for Updaters](#extended-notation-for-updaters)
-    - [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
-    - [Binding to the View](#binding-to-the-view)
-        - [Binding: `html` and `text`](#binding-html-and-text)
-        - [Binding: `value`](#binding-value)
-        - [Binding: `checked`](#binding-checked)
-        - [Binding Modifiers for `value` and `checked`](#binding-modifiers-for-value-and-checked)
-        - [Bindings: `visible` and `disabled` (modern necessities)](#bindings-visible-and-disabled-modern-necessities)
-        - [Bindings: `focus`](#bindings-focus)
-        - [Style, Attribute and Class Bindings](#style-attribute-and-class-bindings)
-    - [Helpers, Template Helpers and Binding](#helpers-template-helpers-and-binding)
-        - [Multi-variable Display Bindings](#multi-variable-display-bindings)
-    - [Event Bindings](#event-bindings)
-    - [View Model to View Only Elements](#view-model-to-view-only-elements)
-    - [Instance Methods](#instance-methods)
-        - [Organizing the DOM](#organizing-the-dom)
-        - [My Data](#my-data)
-        - [Ancestor Data](#ancestor-data)
-        - [Descendant Data](#descendant-data)
-        - [Sibling Data](#sibling-data)
-    - [Additional Template Helpers](#additional-template-helpers)
-    - [Pre-processor Pipelines](#pre-processor-pipelines)
-    - [Data Validation](#data-validation)
-    - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
-    - [Debug](#debug)
+  - [Referring to Fields in Documents](#referring-to-fields-in-documents)
+  - [Default Values](#default-values)
+  - [Dynamic Data-Binding](#dynamic-data-binding)
+    - [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances)
+  - [Updaters to the Server](#updaters-to-the-server)
+    - [Extended Notation for Updaters](#extended-notation-for-updaters)
+  - [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
+  - [Binding to the View](#binding-to-the-view)
+    - [Binding: `html` and `text`](#binding-html-and-text)
+    - [Binding: `value`](#binding-value)
+    - [Binding: `checked`](#binding-checked)
+    - [Binding Modifiers for `value` and `checked`](#binding-modifiers-for-value-and-checked)
+    - [Bindings: `visible` and `disabled` (modern necessities)](#bindings-visible-and-disabled-modern-necessities)
+    - [Bindings: `focus`](#bindings-focus)
+    - [Style, Attribute and Class Bindings](#style-attribute-and-class-bindings)
+  - [Helpers, Template Helpers and Binding](#helpers-template-helpers-and-binding)
+    - [Multi-variable Display Bindings](#multi-variable-display-bindings)
+  - [Event Bindings](#event-bindings)
+  - [View Model to View Only Elements](#view-model-to-view-only-elements)
+  - [Instance Methods](#instance-methods)
+    - [Organizing the DOM](#organizing-the-dom)
+    - [My Data](#my-data)
+    - [Ancestor Data](#ancestor-data)
+    - [Descendant Data](#descendant-data)
+    - [Sibling Data](#sibling-data)
+  - [Additional Template Helpers](#additional-template-helpers)
+  - [Pre-processor Pipelines](#pre-processor-pipelines)
+  - [Data Validation](#data-validation)
+  - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
+  - [Debug](#debug)
 - [Extras](#extras)
-    - [Extra/Default Pre-processors](#extradefault-pre-processors)
-    - [Extra Pre-Processor Generators](#extra-pre-processor-generators)
-    - [Extra Transformations](#extra-transformations)
-    - [Extra Transformation Generators](#extra-transformation-generators)
-    - [Extra Event Generators](#extra-event-generators)
-    - [Extra Events](#extra-events)
+  - [Extra/Default Pre-processors](#extradefault-pre-processors)
+  - [Extra Pre-Processor Generators](#extra-pre-processor-generators)
+  - [Extra Transformations](#extra-transformations)
+  - [Extra Transformation Generators](#extra-transformation-generators)
+  - [Extra Event Generators](#extra-event-generators)
+  - [Extra Events](#extra-events)
 - [Notes](#notes)
-    - [View Model to Database Binding](#view-model-to-database-binding)
-    - [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
-    - [Dynamic Data Binding](#dynamic-data-binding)
-    - [Why Not Group Debounced Updates?](#why-not-group-debounced-updates)
+  - [View Model to Database Binding](#view-model-to-database-binding)
+  - [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
+  - [Dynamic Data Binding](#dynamic-data-binding)
+  - [Why Not Group Debounced Updates?](#why-not-group-debounced-updates)
 - [To Do](#to-do)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -83,7 +83,7 @@ It provides a view of the database via an `#each` block iterating over a cursor
 
 Here are some an example set-ups. Some of this will be clear immediately, the rest will become clear soon.
 
-#### Basic Set Up
+### Basic Set Up
 
 Here are some an example set-ups. Some of this will be clear immediately, the rest will become clear soon.
 
@@ -135,7 +135,7 @@ instance._3w_setId(_id);
 
 ... and things will happen.
 
-#### "Intermediate-level" Set Up
+### "Intermediate-level" Set Up
 
 Now here are more of the settings, including:
  - data transformations from view model to server and from server to view model
@@ -211,7 +211,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 });
 ```
 
-#### Set Up: The Full Parameter Set
+### Set Up: The Full Parameter Set
 
 At this point, one might have a look at the full parameter set. Which will include:
  - injection of default values for selected fields
@@ -382,7 +382,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 
 ## Documentation
 
-#### Referring to Fields in Documents
+### Referring to Fields in Documents
 
 Consider the following Mongo document. The relevant fields may be referred to with the identifiers in the comments:
 
@@ -413,7 +413,7 @@ Note that in the case of multiple matches, the most specific match will be used,
 
 **Note that having a more specific match is a signal to distinguish a field (or family of fields) from the more generic matches. This means that the more generic validators will not be used. There is no "fall through"... at the moment...**
 
-#### Default Values
+### Default Values
 
 If certain fields require a value but it is possible that database entries have such missing fields, they can be "injected" with defaults. These may be specified in the set up as follows:
 
@@ -428,7 +428,7 @@ injectDefaultValues: {
 
 As indicated, for wildcard fields, the last part of the field name cannot be a wildcard. Otherwise, it would be impossible to determine exactly what field to add. The "non-tail" part of existing fields are used to figure out if there is missing data.
 
-#### Dynamic Data-Binding
+### Dynamic Data-Binding
 
 The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings. For example:
 
@@ -448,7 +448,7 @@ The data binding responds to changes in the DOM. So Blaze can be used to generat
 
 ... and should a new field be added, data binding will take effect.
 
-###### Using Dynamic Data Bindings with Multiple `ThreeWay` instances
+#### Using Dynamic Data Bindings with Multiple `ThreeWay` instances
 
 Dynamic data binding works without a hitch (hopefully) when a template is operating in a vacuum. Multiple `ThreeWay` instances (See: ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data) for more information) work fine in the absence of dynamic data binding. But when DOM elements (to be data bound) are being added and removed dynamically, it is important to create certainty about which `ThreeWay` instance a given DOM element should be bound to.
 
@@ -459,7 +459,7 @@ To ensure proper bindings, the `_3w_setRoot(selectorString)` method should be us
 For more specificity, the `restrict-template-type` attribute can be set (with a comma separated list of template names) on DOM elements to specify which `ThreeWay`-linked template types should be used to data bind individual elements.
 
 
-#### Updaters to the Server
+### Updaters to the Server
 
 Data is sent back to the server via Meteor methods. This allows one to control matters like authentication and the like. What they have in common is method signatures taking the `_id` of the document, the updated value next, and a number of additional parameters equal to the number of wildcards in the field specification.
 
@@ -517,7 +517,7 @@ Meteor.methods({
 
 To use callbacks or otherwise deviate from the use of Meteor methods, use the following [Extended Notation for Updaters](#extended-notation-for-updaters).
 
-###### Extended Notation for Updaters
+#### Extended Notation for Updaters
 
 Aside from plain string names Also allowed are updater descriptions of the following form:
 
@@ -552,7 +552,7 @@ In the latter case, `info` takes the form:
 
 ... admittedly, that is a little excessive.
 
-#### Transforms: Translation from/to Database to/from View Model
+### Transforms: Translation from/to Database to/from View Model
 
 The format that data is stored in a database might not be the most convenient for use in the view model (e.g.: sparse representation "at rest"), as such it may be necessary to do some translation between database and view model.
 
@@ -572,11 +572,11 @@ In this example, for some reason, `tags` is stored in the view model as a string
 Note that transformations actually take two parameters, the first being the value in question and the second being all the view model data. Thus the complete method signature is `function(value, vmData)`.
 
 
-#### Binding to the View
+### Binding to the View
 
 When the template is rendered, the reactive elements are set up using `data-bind` attributes in the "mark up" part of the template. 
 
-###### Binding: `html` and `text`
+#### Binding: `html` and `text`
 
 For example, `<span data-bind="html: name"></span>`, binds the "name" field to the `innerHTML` property of the element. Also, `<span data-bind="text: something"></span>`, binds the "something" field to the `text` property of the element.
 
@@ -591,7 +591,7 @@ where `mapToAgeDisplay` was described as `x => ageRanges[x]` (or, equivalently, 
 
 Pre-processors actually take up-to three arguments, `(value, elem, vmData)` and return a value to be passed into the next pre-processor, or rendered on the page. This actually features in `ThreeWay.helpers.updateSemanticUIDropdown`, used in the demo, where the element itself has to be manipulated (see: [this](http://semantic-ui.com/modules/dropdown.html)) to achieve the desired result. More on pre-processors later.
 
-###### Binding: `value`
+#### Binding: `value`
 
 There's usually nothing much to say about this simple binding...
 
@@ -601,7 +601,7 @@ There's usually nothing much to say about this simple binding...
 
 (It works with `input` and `textarea` tags.)
 
-###### Binding: `checked`
+#### Binding: `checked`
 
 This one too, although the helper does bear some explaining. `repackageDictionaryAsArray` takes a dictionary (object) and maps it into an array of key-value pairs. That is, an array with elements of the form `{key: "key", value: "value"}`. So the below example lays out the various options as checkboxes and binds `checked` to an array.
 
@@ -627,7 +627,7 @@ In the case of radio buttons, `checked` is bound to a string.
 </div>
 ```
 
-###### Binding Modifiers for `value` and `checked`
+#### Binding Modifiers for `value` and `checked`
 
 One can apply certain modifiers to `value` and `checked` bindings such as:
 ```html
@@ -644,7 +644,7 @@ The following modifiers are available and are applied in the form `<binding>#<mo
  - `throttle`: throttles (e.g. `throttle-<interval in ms>`)
  - `debounce`: (e.g. `debounce-<interval in ms>`)
 
-###### Bindings: `visible` and `disabled` (modern necessities)
+#### Bindings: `visible` and `disabled` (modern necessities)
 
 `visible` and `disabled` can be bound to any boolean (or truthy) variable, and stuff disappears/gets disabled when it is set to `false` (false-ish).
 
@@ -653,7 +653,7 @@ The following modifiers are available and are applied in the form `<binding>#<mo
 <div data-bind="disabled: something">...</div>
 ```
 
-###### Bindings: `focus`
+#### Bindings: `focus`
 
 `focus` deals with whether an element is focused. (Personally not all too keen on this one.)
 
@@ -662,7 +662,7 @@ The following modifiers are available and are applied in the form `<binding>#<mo
 <div data-bind="visible: nameHasFocus">name has focus</div>
 ```
 
-###### Style, Attribute and Class Bindings
+#### Style, Attribute and Class Bindings
 
  Style bindings are done via: `data-bind="style: {font-weight: v1|preProc, font-size: v2|preProc; ...}"`. Things work just like the above html binding.
 
@@ -670,7 +670,7 @@ The following modifiers are available and are applied in the form `<binding>#<mo
 
  Class bindings are done via: `data-bind="class: {class1: bool1|preProc; ...}"`. However, things work more like the visible and disabled bindings in that the values to be bound to will be treated as boolean-ish.
 
-#### Helpers, Template Helpers and Binding
+### Helpers, Template Helpers and Binding
 
 Helper functions may be used as input for display-type bindings.
 Such bindings include `html`, `visible`, `disabled`, as well as the `class`, `style` and `attr` bindings.
@@ -690,7 +690,7 @@ One might find it to be particularly useful.
 
 A tenuous design decision has been made not to phase out helpers. A less tenuous design decision is to not unify helpers with pre-processors based on their different method signatures.
 
-###### Multi-variable Display Bindings
+#### Multi-variable Display Bindings
 
 Sometimes one variable alone is not enough to determine the state of a DOM property. For example, to determine whether a phone number is valid, might depend both on the number and on the country. On the other hand, that example is faulty since a validation callback can do the relevant computations with full access to the view model.
 
@@ -701,7 +701,7 @@ But anyway, usefulness aside, this is one example of such a binding:
 
 ... it is also an example that you might find in the demo. (Look for the bit asking you to some nodes to the DOM via the console.)
 
-#### Event Bindings
+### Event Bindings
 
 Event bindings may be achieved via: `data-bind="event: {change: cbFn, keyup:cbFn2|cbFn3, ...}"` where callbacks like `cbFn1` have signature `function(event, template, vmData)` (`vmData` being, of course, the data in the view model).
 
@@ -729,7 +729,7 @@ eventHandlers: {
 
 **Question**: Should these fire before or after the usual `change`-type events? Presently it happens after. (Does it matter? If it does, should it?)
 
-#### View Model to View Only Elements
+### View Model to View Only Elements
 
 However, since those are "template-level defaults" that are copied to all template instances, it may be useful at times to customize (update) them at instantiation. There are a few ways to do so. The first is through template instance data:
 
@@ -777,15 +777,15 @@ Due to the nature of jQuery selectors, a selector at a parent template might sel
 <twdata field="somethingElse" initial-value="value" restrict-template-type="MyTemplate, MyOtherTemplate"></twdata>
 ```
 
-#### Instance Methods
+### Instance Methods
 
 The following methods are crammed onto each template instance in an `onCreated` hook.
 
-###### Organizing the DOM
+#### Organizing the DOM
 
  - `_3w_setRoot(selectorString)`: selects the root of the `ThreeWay` instance using a selector string (`Template.instance().$` will be used); child nodes of the single node (the method throws an error if more than one node is matched), present and forthcoming, will be watched for changes (and the respective data bindings updated); See [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information
 
-###### My Data
+#### My Data
 
  - `_3w_getId()`: gets the id of the document bound to
 
@@ -811,7 +811,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
 
-###### Ancestor Data
+#### Ancestor Data
 
  - `_3w_parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
 
@@ -823,7 +823,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_parentDataGetAll_NR(levelsUp)`: (non-reactively) returns all data from parent instance `levelsUp` levels up (default: 1)
 
-###### Descendant Data
+#### Descendant Data
 
  - `_3w_childDataGetId(childNameArray)`: returns id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
@@ -858,7 +858,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 ]
 ```
 
-###### Sibling Data
+#### Sibling Data
 
  - `_3w_siblingDataGet(p, siblingName)`: returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
 
@@ -870,7 +870,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_siblingDataGetAll_NR(siblingName)`: (non-reactively) returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
 
-#### Additional Template Helpers
+### Additional Template Helpers
 
  - `_3w_id`: returns the `_id` of the document selected (if any)
 
@@ -915,7 +915,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
  - `_3w_focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
 
 
-#### Pre-processor Pipelines
+### Pre-processor Pipelines
 
 Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
 
@@ -953,7 +953,7 @@ Pre-processors have method signature `function(value, elem, vmData)` where `valu
 
 Pre-processors are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
 
-#### Data Validation
+### Data Validation
 
 Data validators are defined as follows:
 
@@ -1010,7 +1010,7 @@ If the change is a candidate for a database update (e.g.: the value is not the s
 
 The reasons for having two separate checks is to deal with include the possibility that a user may want to guard against a transformation being done on invalid data, and that checks may be more convenient in one form or another. (Not to mention silly stuff relating to wild card matching shenanigans.)
 
-#### "Family Access": Ancestor and Descendant Data
+### "Family Access": Ancestor and Descendant Data
 
 `ThreeWay`-linked template instances can be connected in parent-child relationships. Data can be accessed across template boundaries in the following ways (and more):
  - ancestor (any number of levels up)
@@ -1022,7 +1022,7 @@ In principle, as long at the template instance of the "highest-level" ancestor c
 See [Instance Methods](#instance-methods) for more information.
 
 
-#### Debug
+### Debug
 
 `ThreeWay.setDebugModeOn()` - Turns on debug mode
 
@@ -1054,7 +1054,7 @@ See [Instance Methods](#instance-methods) for more information.
 ## Extras
 
 
-#### Extra/Default Pre-processors
+### Extra/Default Pre-processors
 
 Extra processors may be accessed via the `ThreeWay.preProcessors` namespace (e.g.: `ThreeWay.preProcessors.updateSemanticUIDropdown`). All "extra" pre-processors will be included by default if no pre-processor with the same name is defined.
 
@@ -1067,7 +1067,7 @@ Extra processors may be accessed via the `ThreeWay.preProcessors` namespace (e.g
  - `updateSemanticUIDropdown`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)
  - `undefinedToEmptyStringFilter`: maps `undefined`'s to empty strings and passes other values
 
-#### Extra Pre-Processor Generators
+### Extra Pre-Processor Generators
 
 Similar to the above, but these are generators for pre-processor take one or more parameters and return a pre-processor. They may be accessed via the `ThreeWay.preProcessorGenerators` namespace (e.g.: `ThreeWay.preProcessorGenerators.undefinedFilterGenerator`).
 
@@ -1075,7 +1075,7 @@ Similar to the above, but these are generators for pre-processor take one or mor
 - `makeMap(map, defaultValue)`: a function that maps `k` to `map[k]` (and returns `defaultValue` if `map` does not have property `k`)
 
 
-#### Extra Transformations
+### Extra Transformations
 
 Built-in transformations, for mapping from server to view model and back, may be accessed via the `ThreeWay.transformations` namespace. (e.g.: `ThreeWay.transformations.dateToString` or `ThreeWay.transformations.dateFromString`) Generally, the naming convention is understood to be "server-side value" on left and "view model value" on right.
 
@@ -1084,7 +1084,7 @@ Built-in transformations, for mapping from server to view model and back, may be
 - `arrayFromCommaDelimitedString`: maps a comma delimited string to an array of a separated values (empty string maps to empty array)
 - `arrayToCommaDelimitedString`: maps an array to a comma delimited string
 
-#### Extra Transformation Generators
+### Extra Transformation Generators
 
 Similar to the above, but these are generators for transformations that take one or more parameters and return a transformation. They may be accessed via the `ThreeWay.transformationGenerators` namespace (e.g.: `ThreeWay.transformationGenerators.booleanFromArray`).
 
@@ -1093,7 +1093,7 @@ Similar to the above, but these are generators for transformations that take one
  - `booleanFromArray(trueIndicator)`: generates a transform function that returns `true` if the input is an array with a single element taking value `trueIndicator`) and `false` otherwise.
  - `booleanToArray(trueIndicator)`: generates a transform function that evaluates the "truthiness" of the input and returns `[trueIndicator]` if true and `[]` otherwise.
 
-#### Extra Event Generators
+### Extra Event Generators
 
 Similar to the above, but these are generators for transformations that take one or more parameters and return a transformation. They may be accessed via the `ThreeWay.eventGenerators` namespace (e.g.: `ThreeWay.eventGenerators.returnKeyHandlerGenerator`).
 
@@ -1114,7 +1114,7 @@ var ctrlReturnKey = ThreeWay.eventGenerators.returnKeyHandlerGenerator(() => con
  - `returnKeyHandlerGenerator(handler, specialKeys)`: calls event handler if the pressed key was RETURN and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
 
 
-#### Extra Events
+### Extra Events
 
 The following trigger when the relevant key is pressed in a `keyup`:
 
@@ -1149,13 +1149,13 @@ For finer grained control, the above may be prefixed with `keydown_` or `keyup_`
 
 ## Notes
 
-#### View Model to Database Binding
+### View Model to Database Binding
 
 Currently, binding to database fields only occurs if the required field is already in the database. So fields bound on in the DOM do not drive the binding. However, sometimes records in the database have missing values that should be filled in.
 
 As of v0.1.17, a compromise solution was included in the form of the `injectDefaultValues` option, where missing fields are filled in with default values.
 
-#### Database Updates and Observer Callbacks
+### Database Updates and Observer Callbacks
 
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart.
 The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-documents even if a single primitive value deep within was updated.
@@ -1166,7 +1166,7 @@ Pre-v0.1.14, the above race condition was still not fully solved. The "comprehen
 
 As of v0.1.20, promise chains/bins were no longer used.
 
-#### Dynamic Data Binding
+### Dynamic Data Binding
 
 Pre-v0.1.9, dynamic rebinding was incomplete and carried out by polling the DOM. As of v0.1.9, [Mutation Observers](https://developer.mozilla.org/en/docs/Web/API/MutationObserver) have been used to deal with things in an event-driven manner.
 
@@ -1180,11 +1180,11 @@ Pre-v0.1.20, late creation of child templates posed a problem. They were outside
  - Grandchild rendered
  - Child rendered
  - Parent rendered
-... which enabled appropriate creation of `MutationObeserver`'s in `onRendered` hooks, so the most junior nodes (in order of creation or "age") would get first bite at new nodes, which makes sense by default. (See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information on how to create nodes in a child template but have them bound to a parent.)
+... which enabled appropriate creation of `MutationObserver`'s in `onRendered` hooks, so the most junior nodes (in order of creation or "age") would get first bite at new nodes, which makes sense by default. (See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information on how to create nodes in a child template but have them bound to a parent.)
 
 The late creation problem was solved by introducing something of a "bind auction" for added and modified nodes. The bid value for each template instance involved being its level of depth in its `ThreeWay` family tree. Ties are broken arbitrarily (actually, on a first created first served basis).
 
-#### Why Not Group Debounced Updates?
+### Why Not Group Debounced Updates?
 
 (Debouncing)[http://underscorejs.org/#debounce] Meteor methods for updates ensures that updates are sent after a "pause in editing", such as with a text field. Due to the fact that cursors send entire sub-documents when changes are made, and to reduce the number of Meteor calls made, There is a sense in which one might combine updates into single debounced calls (e.g.: `{$set: {field1: value1, field2: value2}}` instead of `{$set: {field1: value1}}` and `{$set: {field2: value2}}`).
 

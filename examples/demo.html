@@ -159,7 +159,7 @@
 						&nbsp;<a href="#" id="focus-name"><i class="pointing right icon"></i></a>
 					</td>
 					<td>
-						<input name="name" style="border: 0; width: 90%;" data-bind="value: name; focus: nameHasFocus">
+						<input name="name" style="border: 0; width: 85%;" data-bind="value: name; focus: nameHasFocus">
 						&nbsp;&nbsp;&nbsp;
 						{{#if _3w_validValuesNotSynced 'name'}}<i class="notched circle loading icon"></i>{{/if}}
 						{{#if _3w_focusedFieldUpdatedOnServer 'name'}}<i class="warning icon"></i>{{/if}}
@@ -202,7 +202,7 @@
 					<td>
 						<table border=0 style="width: 100%;">
 							<tr>
-								<td style="width: 90%; border: none;">
+								<td style="width: 85%; border: none;">
 									<textarea data-bind="value#donotupdateon-input: notes" style="border: 0; width: 100%;"></textarea>
 								</td>
 								<td style="border: none;">
@@ -227,7 +227,7 @@
 					<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
 						<table border=0 style="width: 100%;">
 							<tr>
-								<td style="width: 90%; border: none;">
+								<td style="width: 85%; border: none;">
 									<div class="ui fluid multiple search selection dropdown" data-bind="value: tags" tabindex=0><!-- data binding has no effect, but the binding and tabindex allow the _3w_focusedField to work -->
 										<input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
 										<i class="dropdown icon"></i>

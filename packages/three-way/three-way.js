@@ -146,7 +146,12 @@ function matchParamStrings(templateStrings, itemString, matchOne) {
 }
 PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'matchParamStrings', matchParamStrings);
 
-
+// TODO: Remove this when appropriate
+function clearReactiveDictSafely(rd) {
+	_.forEach(rd.keys, function(v, k) {
+		rd.delete(k);
+	});
+}
 
 
 if (Meteor.isClient) {
@@ -334,7 +339,6 @@ if (Meteor.isClient) {
 			console.log('[Observer] Pseudo fields: ', pseudoFields);
 		}
 
-
 		tmpl.onCreated(function() {
 			var instance = this;
 
@@ -363,6 +367,8 @@ if (Meteor.isClient) {
 				_rootNode: new ReactiveVar("document.body"),
 				_focusedField: new ReactiveVar(null),
 				__level: 0,
+				__mostRecentDatabaseEntry: {},
+				__recentDBUpdates: {},
 			};
 
 			instance[THREE_WAY_NAMESPACE] = threeWay;
@@ -593,8 +599,8 @@ if (Meteor.isClient) {
 			// For VM-DB binding set-up
 			//
 
-			var mostRecentDatabaseEntry;
-			var recentDBUpdates;
+			var mostRecentDatabaseEntry = threeWay.__mostRecentDatabaseEntry;
+			var recentDBUpdates = threeWay.__recentDBUpdates;
 
 			// Setting Up Debounced/Throttled Updaters
 			// Old ones will trigger even if id changes since
@@ -617,7 +623,10 @@ if (Meteor.isClient) {
 						if (typeof options.updatersForServer[f] === "string") {
 							Meteor.apply(options.updatersForServer[f], params);
 						} else if (typeof options.updatersForServer[f] === "function") {
+							var currTemplateInstanceFunc = Template._currentTemplateInstanceFunc;
+							Template._currentTemplateInstanceFunc = () => instance;
 							options.updatersForServer[f].apply(instance, params);
+							Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
 						} else {
 							var updateTime = new Date();
 							Meteor.apply(options.updatersForServer[f].method, params, {}, function(err, res) {
@@ -804,21 +813,28 @@ if (Meteor.isClient) {
 				}
 			});
 
-			var vmData = _.extend({}, options.viewModelToViewOnly);
+			var vmOnlyData = _.extend({}, options.viewModelToViewOnly);
 			if (!!instance.data && !!instance.data._3w_additionalViewModelOnlyData) {
-				vmData = _.extend({}, instance.data._3w_additionalViewModelOnlyData);
+				vmOnlyData = _.extend({}, instance.data._3w_additionalViewModelOnlyData);
 			}
-			_.forEach(vmData, function(value, field) {
+			_.forEach(vmOnlyData, function(value, field) {
 				threeWay.data.set(field, value);
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
 					console.log("[vm-only] Setting up initial value for " + field + " to ", value, " using template-level options.");
 				}
-				threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
-					threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
-					if (IN_DEBUG_MODE_FOR('vm-only')) {
-						console.log("[vm-only] Updating vm-only data:", threeWay.viewModelOnlyData);
-					}
-				});
+				// Check vmOnlyData for nonsense that matches fields. Don't set up computation if so
+				if (matchParamStrings(options.fields, field).length > 0) {
+					// Do not set-up update computation (not an actual vm-only field)
+					console.warn("[vm-only] Not an actual view model only field:", field);
+				} else {
+					// Set up update computation as per normal (honest vm-only field)
+					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
+						threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
+						if (IN_DEBUG_MODE_FOR('vm-only')) {
+							console.log("[vm-only] Updating vm-only data:", threeWay.viewModelOnlyData);
+						}
+					});
+				}
 			});
 
 			// For matching fields
@@ -865,8 +881,10 @@ if (Meteor.isClient) {
 				if (IN_DEBUG_MODE_FOR('data-mirror')) {
 					console.log("[data-mirror] Clearing threeWay.data");
 				}
-				threeWay.data.clear();
-				threeWay._focusedFieldUpdatedOnServer.clear();
+
+				// TODO: Replace with .clear() when possible
+				clearReactiveDictSafely(threeWay.data); // threeWay.data.clear();
+				clearReactiveDictSafely(threeWay._focusedFieldUpdatedOnServer); // threeWay._focusedFieldUpdatedOnServer.clear();
 
 				// Replace ViewModel only data and set-up mirroring again
 				_.forEach(threeWay.viewModelOnlyData, function(value, field) {
@@ -884,9 +902,10 @@ if (Meteor.isClient) {
 
 				mostRecentDatabaseEntry = {};
 				recentDBUpdates = {};
-				// TODO: Figure out a sound way of reasoning when .clear() is ok
-				// threeWay.__serverIsUpdated.clear();
-				// threeWay.__dataIsNotInvalid.clear();
+
+				// TODO: Replace with .clear() when possible
+				clearReactiveDictSafely(threeWay.__serverIsUpdated); // threeWay.__serverIsUpdated.clear();
+				clearReactiveDictSafely(threeWay.__dataIsNotInvalid); // threeWay.__dataIsNotInvalid.clear();
 
 				if (!!_id) {
 					if (IN_DEBUG_MODE_FOR('new-id')) {
