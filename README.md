@@ -11,6 +11,8 @@ Presentation of data is facilitated by "pre-processors" which map values (displa
 
 ## Table of Contents
 
+Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](https://github.com/convexset/meteor-three-way/).
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -454,9 +456,14 @@ Dynamic data binding works without a hitch (hopefully) when a template is operat
 
 Briefly, the start of the template life cycle for a template and a child template is as follows: (i) parent created, (ii) child created, (iii) child rendered, (iv) parent rendered. Monitoring call backs work on a "first-come-first-bound" basis, with child nodes getting the first pick.
 
-To ensure proper bindings, the `_3w_setRoot(selectorString)` method should be used to select a root node (via a template-level jQuery selector), preferably in an `onRendered` hook. It is advisable for every template to be wrapped in a `div` element with a template specific class. This ensures that exactly one node will be selected by the selector (as required) even if multiple instances of the same template are created. (A design decision was made to not require a root node, but to leave it to the user to handle this matter.)
+To ensure proper bindings, it is advisable for every template to be wrapped in a `div` element which will be watched for changes within.
+A design decision was made to not require such a root node, but to leave it to the user to handle this matter.
+In the absence of a root node, all individual DOM elements in the template are observed for changes.
+(This is why having a wrapping element is useful.)
 
-For more specificity, the `restrict-template-type` attribute can be set (with a comma separated list of template names) on DOM elements to specify which `ThreeWay`-linked template types should be used to data bind individual elements.
+In the event that the user would (inexplicably) like to observe disjoint parts of a template for changes, the `_3w_setRoots(selectorString)` method should be used to select root nodes (via a template-level jQuery selector). This to be in an `onRendered` hook or after rendering completes.
+
+For even more specificity, the `restrict-template-type` attribute can be set (with a comma separated list of template names) on DOM elements to specify which `ThreeWay`-linked template types should be used to data bind individual elements.
 
 
 ### Updaters to the Server
@@ -783,7 +790,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 #### Organizing the DOM
 
- - `_3w_setRoot(selectorString)`: selects the root of the `ThreeWay` instance using a selector string (`Template.instance().$` will be used); child nodes of the single node (the method throws an error if more than one node is matched), present and forthcoming, will be watched for changes (and the respective data bindings updated); See [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information
+ - `_3w_setRoots(selectorString)`: selects the root of the `ThreeWay` instance using a selector string (`Template.instance().$` will be used); child nodes of the single node (the method throws an error if more than one node is matched), present and forthcoming, will be watched for changes (and the respective data bindings updated); See [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information
 
 #### My Data
 
@@ -1031,16 +1038,19 @@ See [Instance Methods](#instance-methods) for more information.
 `ThreeWay.debugModeSelectNone()` - Reset selection of debug message classes to none
 
 `ThreeWay.debugModeSelect(aspect)` - More granular control of debug messages, debug messages fall into the following classes:
+ - `'parse'`
  - `'bindings'`
- - `'data_mirror'`
+ - `'data-mirror'`
  - `'observer'`
  - `'tracker'`
- - `'new_id'`
+ - `'new-id'`
  - `'db'`
+ - `'default-values'`
  - `'methods'`
  - `'value'`
  - `'checked'`
- - `'html'`
+ - `'focus'`
+ - `'html-text'`
  - `'visible-and-disabled'`
  - `'style'`
  - `'attr'`
@@ -1050,6 +1060,7 @@ See [Instance Methods](#instance-methods) for more information.
  - `'validation'`
  - `'bind'`
 
+The above is obtainable from `ThreeWay.DEBUG_MESSAGE_HEADINGS`.
 
 ## Extras
 
@@ -1192,4 +1203,5 @@ However, this is when `check` and authentication causes a bit of a problem. The 
 
 ## To Do
 
-- Reconsider group debounced updates (given that autogeneration of a general updater in `convexset:collection-tools` is done)
+- Reconsider group debounced updates (given that auto-generation of a general updater in `convexset:collection-tools` is done)
+- Consider updating "parent items" like `friends` if both that and `friends.*.name` are bound.

@@ -54,7 +54,7 @@ if (Meteor.isClient) {
 			return arr.map(x => Demo.emailPrefsAll[x]).join(", ");
 		},
 		num: () => Template.instance().num.get(),
-		allDebugMessages: () => ThreeWay.DEBUG_MESSAGES,
+		allDebugMessages: () => ThreeWay.DEBUG_MESSAGE_HEADINGS,
 		toLowerCase: x => x.toLowerCase && x.toLowerCase(),
 		additionalVMOnlyData: function() {
 			return _.object(_.range(5).map(idx => ['idx_' + idx, Math.floor(Math.random() * 10000)]));
@@ -103,7 +103,7 @@ if (Meteor.isClient) {
 		"click a#focus-name": function(event) {
 			event.preventDefault();
 			Template.instance()._3w_set('nameHasFocus', true);
-		}
+		},
 	});
 }
 

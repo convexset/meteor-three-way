@@ -31,6 +31,7 @@ var DEBUG_MESSAGES = {
 	'methods': false,
 	'value': false,
 	'checked': false,
+	'focus': false,
 	'html-text': false,
 	'visible-and-disabled': false,
 	'style': false,
@@ -155,7 +156,7 @@ function clearReactiveDictSafely(rd) {
 
 
 if (Meteor.isClient) {
-	PackageUtilities.addImmutablePropertyArray(ThreeWay, 'DEBUG_MESSAGES', _.map(DEBUG_MESSAGES, (v, k) => k));
+	PackageUtilities.addImmutablePropertyArray(ThreeWay, 'DEBUG_MESSAGE_HEADINGS', _.map(DEBUG_MESSAGES, (v, k) => k));
 	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setDebugModeOn', function setDebugModeOn() {
 		DEBUG_MODE = true;
 	});
@@ -363,25 +364,22 @@ if (Meteor.isClient) {
 				boundElemComputations: {},
 				boundElemEventHandlers: {},
 				mutationObserver: null,
-				rootNode: document.body,
-				_rootNode: new ReactiveVar("document.body"),
+				rootNodes: [document.body],
+				_rootNodes: new ReactiveVar("document.body"),
 				_focusedField: new ReactiveVar(null),
 				__level: 0,
 				__mostRecentDatabaseEntry: {},
 				__recentDBUpdates: {},
+				__updatesToSkipDueToRelatedObjectUpdate: {},
 			};
 
 			instance[THREE_WAY_NAMESPACE] = threeWay;
 			var __rootChanges = 0;
-			instance._3w_setRoot = function(selectorString) {
+			instance._3w_setRoots = function(selectorString) {
 				var nodes = instance.$(selectorString);
-				if (nodes.length === 1) {
-					__rootChanges += 1;
-					threeWay.rootNode = nodes[0];
-					threeWay._rootNode.set(threeWay.rootNode.toString() + "|" + __rootChanges);
-				} else {
-					throw new Meteor.Error("expected-single-node-selector", selectorString);
-				}
+				__rootChanges += 1;
+				threeWay.rootNodes = Array.prototype.map.call(nodes, x => x);
+				threeWay._rootNodes.set(selectorString + "|" + __rootChanges);
 			};
 			instance._3w_setId = function(id) {
 				threeWay.id.set(id);
@@ -393,7 +391,10 @@ if (Meteor.isClient) {
 				return threeWay.instanceId.get();
 			};
 			instance._3w_get = p => threeWay.data.get(p);
-			instance._3w_set = (p, v) => threeWay.data.set(p, v);
+			instance._3w_set = function(p, v) {
+				threeWay.data.set(p, v);
+				updateRelatedFields(p, v);
+			};
 			instance._3w_get_NR = p => threeWay.dataMirror[p];
 			instance._3w_getAll = () => threeWay.data.all();
 			instance._3w_getAll_NR = () => _.extend({}, threeWay.dataMirror);
@@ -599,8 +600,41 @@ if (Meteor.isClient) {
 			// For VM-DB binding set-up
 			//
 
-			var mostRecentDatabaseEntry = threeWay.__mostRecentDatabaseEntry;
-			var recentDBUpdates = threeWay.__recentDBUpdates;
+			function updateRelatedFields(fieldName, value) {
+				var childFields = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length > fieldName.length) && (match.fieldPath.substr(0, fieldName.length) === fieldName));
+				var parentFields = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length < fieldName.length) && (fieldName.substr(0, match.fieldPath.length + 1) === match.fieldPath + '.'));
+				var fieldSplit = fieldName.split('.');
+				childFields.forEach(function(match) {
+					var matchSplit = match.fieldPath.split('.');
+					var curr_v = value;
+					var noTraversalError = true;
+					for (var k = fieldSplit.length; k < matchSplit.length; k++) {
+						curr_v = curr_v[matchSplit[k]];
+						if (typeof curr_v === "undefined") {
+							break;
+						}
+					}
+					if (noTraversalError) {
+						threeWay.data.set(match.fieldPath, curr_v);
+						threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
+					}
+				});
+				parentFields.forEach(function(match) {
+					var matchSplit = match.fieldPath.split('.');
+					var parentValue;
+					Tracker.nonreactive(function() {
+						parentValue = threeWay.data.get(match.fieldPath);
+					});
+					var thisSubValue = parentValue;
+					for (var k = matchSplit.length; k < fieldSplit.length - 1; k++) {
+						thisSubValue = thisSubValue[fieldSplit[k]];
+					}
+					thisSubValue[fieldSplit[fieldSplit.length - 1]] = value;
+					threeWay.data.set(match.fieldPath, parentValue);
+					threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
+				});
+			}
+
 
 			// Setting Up Debounced/Throttled Updaters
 			// Old ones will trigger even if id changes since
@@ -660,7 +694,14 @@ if (Meteor.isClient) {
 							console.log('[bindings] Field: ' + curr_f + "; id: " + __id + "; Value:", value);
 						}
 
-						if ((!!__id) && (!!threeWay.__idReady) && (!_.isEqual(value, mostRecentDatabaseEntry[curr_f]))) {
+						// Skip update if subsidiary update
+						var skipUpdate = !!threeWay.__updatesToSkipDueToRelatedObjectUpdate[curr_f];
+						if (!!skipUpdate) {
+							delete threeWay.__updatesToSkipDueToRelatedObjectUpdate[curr_f];
+							threeWay.__mostRecentDatabaseEntry[curr_f] = value;
+						}
+
+						if ((!!__id) && (!skipUpdate) && (!!threeWay.__idReady) && (!_.isEqual(value, threeWay.__mostRecentDatabaseEntry[curr_f]))) {
 							// Create specific updater for field if not already done.
 							// Presents updates being lost if "fast" updates are being done
 							// for a bunch of fields matching a spec. like "someArray.*"
@@ -672,7 +713,7 @@ if (Meteor.isClient) {
 									if (IN_DEBUG_MODE_FOR('db')) {
 										console.log('[db|update] Performing update... ' + curr_f + ' -> ', v);
 									}
-									mostRecentDatabaseEntry[curr_f] = v;
+									threeWay.__mostRecentDatabaseEntry[curr_f] = v;
 									threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 									baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
 								};
@@ -707,12 +748,12 @@ if (Meteor.isClient) {
 								_.forEach(threeWay.fieldMatchParams, function(m, f) {
 									if (f.substr(0, fieldPrefix.length) === fieldPrefix) {
 										if (typeof vmData[f] !== "undefined") {
-											if (typeof recentDBUpdates[f] === "undefined") {
-												recentDBUpdates[f] = [];
+											if (typeof threeWay.__recentDBUpdates[f] === "undefined") {
+												threeWay.__recentDBUpdates[f] = [];
 											}
 											var thisClientSideValue = (f === curr_f) ? value : vmData[f];
-											removeOldItems(recentDBUpdates[f], AGE_THRESHOLD_OLD_ITEM);
-											recentDBUpdates[f].push({
+											removeOldItems(threeWay.__recentDBUpdates[f], AGE_THRESHOLD_OLD_ITEM);
+											threeWay.__recentDBUpdates[f].push({
 												valueOnClient: thisClientSideValue,
 												ts: (new Date()).getTime(),
 											});
@@ -733,7 +774,7 @@ if (Meteor.isClient) {
 
 						} else {
 							if (IN_DEBUG_MODE_FOR('db')) {
-								console.log('[db|update] No update.');
+								console.log('[db|update] No update for ' + curr_f + '; value:', value);
 							}
 						}
 					});
@@ -815,7 +856,7 @@ if (Meteor.isClient) {
 
 			var vmOnlyData = _.extend({}, options.viewModelToViewOnly);
 			if (!!instance.data && !!instance.data._3w_additionalViewModelOnlyData) {
-				vmOnlyData = _.extend({}, instance.data._3w_additionalViewModelOnlyData);
+				vmOnlyData = _.extend(vmOnlyData, instance.data._3w_additionalViewModelOnlyData);
 			}
 			_.forEach(vmOnlyData, function(value, field) {
 				threeWay.data.set(field, value);
@@ -886,6 +927,13 @@ if (Meteor.isClient) {
 				clearReactiveDictSafely(threeWay.data); // threeWay.data.clear();
 				clearReactiveDictSafely(threeWay._focusedFieldUpdatedOnServer); // threeWay._focusedFieldUpdatedOnServer.clear();
 
+				// Check if focused field is data bound
+				(function() {
+					threeWay._focusedField.set(null);
+					var elem = document.activeElement;
+					$(elem).trigger('focus');
+				})();
+
 				// Replace ViewModel only data and set-up mirroring again
 				_.forEach(threeWay.viewModelOnlyData, function(value, field) {
 					threeWay.data.set(field, threeWay.viewModelOnlyData[field]);
@@ -900,8 +948,9 @@ if (Meteor.isClient) {
 					});
 				});
 
-				mostRecentDatabaseEntry = {};
-				recentDBUpdates = {};
+				threeWay.__mostRecentDatabaseEntry = {};
+				threeWay.__recentDBUpdates = {};
+				threeWay.__updatesToSkipDueToRelatedObjectUpdate = {};
 
 				// TODO: Replace with .clear() when possible
 				clearReactiveDictSafely(threeWay.__serverIsUpdated); // threeWay.__serverIsUpdated.clear();
@@ -962,21 +1011,24 @@ if (Meteor.isClient) {
 								}
 
 								// Update data if changed
-								var mostRecentValue = mostRecentDatabaseEntry[curr_f];
+								var mostRecentValue = threeWay.__mostRecentDatabaseEntry[curr_f];
 								var newValue = options.dataTransformFromServer[match.match](v, doc);
 								if (_.isEqual(mostRecentValue, newValue)) {
 									if (IN_DEBUG_MODE_FOR('db')) {
-										console.log('[db|receive] Most recent value matches. No change to view model.');
+										console.log('[db|receive] Most recent value matches for ' + curr_f + '. No change to view model.');
 									}
 									threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 								} else {
-									removeOldItems(recentDBUpdates[curr_f], AGE_THRESHOLD_OLD_ITEM);
-									if (popItemWithValue(recentDBUpdates[curr_f], newValue, 'valueOnClient', true) > 0) {
+									removeOldItems(threeWay.__recentDBUpdates[curr_f], AGE_THRESHOLD_OLD_ITEM);
+									if (popItemWithValue(threeWay.__recentDBUpdates[curr_f], newValue, 'valueOnClient', true) > 0) {
 										if (IN_DEBUG_MODE_FOR('db')) {
-											console.log('[db|receive] Matches value from recent update. No change to view model.');
+											console.log('[db|receive] Matches value from recent update for ' + curr_f + '. No change to view model.');
 										}
 									} else {
 
+										if (IN_DEBUG_MODE_FOR('db')) {
+											console.log('[db|receive] Updating view model value for ' + curr_f + ' to', newValue);
+										}
 										var focusedField;
 										var currentValue;
 										Tracker.nonreactive(function() {
@@ -990,7 +1042,7 @@ if (Meteor.isClient) {
 											threeWay.data.set(curr_f, newValue);
 											threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 										}
-										mostRecentDatabaseEntry[curr_f] = newValue;
+										threeWay.__mostRecentDatabaseEntry[curr_f] = newValue;
 									}
 								}
 
@@ -1486,6 +1538,7 @@ if (Meteor.isClient) {
 									console.log('[.value] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
 								}
 								threeWay.data.set(fieldName, value);
+								updateRelatedFields(fieldName, value);
 								Tracker.flush();
 
 								if (!!threeWay.fieldMatchParams[fieldName]) {
@@ -1640,6 +1693,7 @@ if (Meteor.isClient) {
 									console.log('[.checked] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 								}
 								threeWay.data.set(fieldName, new_value);
+								updateRelatedFields(fieldName, new_value);
 								Tracker.flush();
 
 								if (!!threeWay.fieldMatchParams[fieldName]) {
@@ -1804,13 +1858,15 @@ if (Meteor.isClient) {
 				//////////////////////////////////////////////////////
 				if (!!elemBindings.bindings.focus) {
 
-					var focusChangeHandler = function focusChangeHandler() { // function(event)
+					var focusChangeHandler = function focusChangeHandler(event) {
+						event.preventDefault();
+
 						var focus = elem === document.activeElement;
 						var pipelineSplit = elemBindings.bindings.focus.source.split('|').map(x => x.trim()).filter(x => x !== "");
 						var fieldName = pipelineSplit[0];
 						var curr_value = !!threeWay.dataMirror[fieldName];
 
-						if (IN_DEBUG_MODE_FOR('value')) {
+						if (IN_DEBUG_MODE_FOR('focus')) {
 							console.log('[.focus] Focus Change', elem);
 							console.log('[.focus] Field: ' + fieldName + '; data-bind | ' + dataBind);
 						}
@@ -1825,6 +1881,7 @@ if (Meteor.isClient) {
 									console.log('[.focus] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
 								}
 								threeWay.data.set(fieldName, focus);
+								updateRelatedFields(fieldName, focus);
 								Tracker.flush();
 
 								if (!!threeWay.fieldMatchParams[fieldName]) {
@@ -2226,7 +2283,6 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			// Peek upwards to determine level
 			//////////////////////////////////////////////////////////////////
-			var myId = 'progenitor_' + Math.floor(Math.random() * 1e15);
 			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
 				threeWay.__level = instance.parentTemplate()[THREE_WAY_NAMESPACE].__level + 1;
 			}
@@ -2237,13 +2293,6 @@ if (Meteor.isClient) {
 			var instance = this;
 			var thisTemplateName = instance.view.name.split('.').pop().trim();
 			var threeWay = instance[THREE_WAY_NAMESPACE];
-
-			if (!!instance.data && !!instance.data._3w_rootElementSelector) {
-				if (IN_DEBUG_MODE_FOR('bind')) {
-					console.log("[bind] Setting root node for instance of " + thisTemplateName + " via selector " + instance.data._3w_rootElementSelector + ". (Prev: " + threeWay.rootNode.toString().split('|')[0] + ")");
-				}
-				instance._3w_setRoot(instance.data._3w_rootElementSelector);
-			}
 
 			//////////////////////////////////////////////////////////////////
 			// Set initial values for data (in particular, VM-only fields)
@@ -2325,6 +2374,18 @@ if (Meteor.isClient) {
 			}
 			threeWay.instanceId.set(myId);
 
+			// Set root node if not already set
+			if (!!instance.data && !!instance.data._3w_rootElementSelector) {
+				if (IN_DEBUG_MODE_FOR('bind')) {
+					console.log("[bind] Setting root node for instance of " + thisTemplateName + " via selector " + instance.data._3w_rootElementSelector + ". (Prev: " + threeWay.rootNodes.toString().split('|')[0] + ")");
+				}
+				instance._3w_setRoots(instance.data._3w_rootElementSelector);
+			} else {
+				// Observe all the elements in the template
+				// (if there is a wrapping element, good... otherwise...)
+				instance._3w_setRoots("*");
+			}
+
 			//////////////////////////////////////////////////////////////////
 			// Initial Node Binding
 			//  - Template lifecycle:
@@ -2344,8 +2405,8 @@ if (Meteor.isClient) {
 
 			var lastGCOfComputations = 0;
 			instance.autorun(function() {
-				threeWay._rootNode.get();
-				var rootNode = threeWay.rootNode;
+				threeWay._rootNodes.get();
+				var rootNodes = threeWay.rootNodes;
 
 				if (!!threeWay.mutationObserver) {
 					threeWay.mutationObserver.disconnect();
@@ -2471,7 +2532,7 @@ if (Meteor.isClient) {
 									// don't bind now, instead state own level as a "bind auction bid"
 									// this enables child templates created later to stake their legitimate claims on new nodes
 									// threeWay.__bindElem(node);
-									currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
+									var currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
 									if (!currEligibleLevel || (Number(currEligibleLevel) < threeWay.__level)) {
 										node.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL, threeWay.__level);
 										setTimeout(function() {
@@ -2494,13 +2555,15 @@ if (Meteor.isClient) {
 					if (!instanceId) {
 						instanceId = "~~id-unassigned~~";
 					}
-					console.log("[bind] Starting Mutation Observer for " + instanceId + " (" + thisTemplateName + ") on ", rootNode);
+					console.log("[bind] Starting Mutation Observer for " + instanceId + " (" + thisTemplateName + ") on ", rootNodes);
 				}
-				threeWay.mutationObserver.observe(rootNode, {
-					childList: true,
-					subtree: true,
-					attributes: true,
-					characterData: false
+				rootNodes.forEach(function(rn) {
+					threeWay.mutationObserver.observe(rn, {
+						childList: true,
+						subtree: true,
+						attributes: true,
+						characterData: false
+					});
 				});
 			});
 

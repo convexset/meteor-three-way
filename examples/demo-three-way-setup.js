@@ -22,6 +22,24 @@ updatersForServer['personal.someArr.1'] = {
 	}
 };
 
+// WTH is this? Remove ASAP!!! (Used for testing overlapping bindings)
+updatersForServer['personal.otherArr'] = function(id, value) {
+	console.info('[personal.otherArr]', id, value);
+	Demo.collection.update(id, {
+		$set: {
+			'personal.otherArr': value
+		}
+	});
+};
+updatersForServer['personal.otherArr.0'] = function(id, value) {
+	console.info('[personal.otherArr.0]', id, value);
+	Demo.collection.update(id, {
+		$set: {
+			'personal.otherArr.0': value
+		}
+	});
+};
+
 
 ////////////////////////////////////////////////////////////
 // Parent Template
