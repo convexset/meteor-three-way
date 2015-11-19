@@ -809,6 +809,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_focusedField()`: returns the currently focused field.
 
+ - `_3w_focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
+
 ###### Ancestor Data
 
  - `_3w_parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
@@ -909,6 +911,9 @@ The following methods are crammed onto each template instance in an `onCreated` 
  - `_3w_expandParams`: See [previous section](#instance-methods).
 
  - `_3w_focusedField`: returns the currently focused field.
+
+ - `_3w_focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
+
 
 #### Pre-processor Pipelines
 
@@ -1167,6 +1172,17 @@ Pre-v0.1.9, dynamic rebinding was incomplete and carried out by polling the DOM.
 
 The mixing of dynamic data-binding and the possibility of multiple `ThreeWay` instances poses some challenges with regards to the question of which `ThreeWay` instance a new DOM element should be data bound with.
 See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information.
+
+Pre-v0.1.20, late creation of child templates posed a problem. They were outside of the normal order of the template life cycle:
+ - Parent created
+ - Child created
+ - Grandchild created
+ - Grandchild rendered
+ - Child rendered
+ - Parent rendered
+... which enabled appropriate creation of `MutationObeserver`'s in `onRendered` hooks, so the most junior nodes (in order of creation or "age") would get first bite at new nodes, which makes sense by default. (See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information on how to create nodes in a child template but have them bound to a parent.)
+
+The late creation problem was solved by introducing something of a "bind auction" for added and modified nodes. The bid value for each template instance involved being its level of depth in its `ThreeWay` family tree. Ties are broken arbitrarily (actually, on a first created first served basis).
 
 #### Why Not Group Debounced Updates?
 

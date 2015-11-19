@@ -160,8 +160,9 @@
 					</td>
 					<td>
 						<input name="name" style="border: 0; width: 90%;" data-bind="value: name; focus: nameHasFocus">
+						&nbsp;&nbsp;&nbsp;
 						{{#if _3w_validValuesNotSynced 'name'}}<i class="notched circle loading icon"></i>{{/if}}
-
+						{{#if _3w_focusedFieldUpdatedOnServer 'name'}}<i class="warning icon"></i>{{/if}}
 						<p style="font-size: 80%">Element updates the view model on <code>input</code> via <code>data-bind="value: name"</code>.</p>
 
 					</td>
@@ -175,7 +176,9 @@
 								<label>{{value}}</label>
 							</div>
 						{{/each}}
-						{{#if _3w_validValuesNotSynced 'emailPrefs'}}&nbsp;&nbsp;&nbsp;<i class="notched circle loading icon"></i>{{/if}}
+						&nbsp;&nbsp;&nbsp;
+						{{#if _3w_validValuesNotSynced 'emailPrefs'}}<i class="notched circle loading icon"></i>{{/if}}
+						{{#if _3w_focusedFieldUpdatedOnServer 'emailPrefs'}}<i class="warning icon"></i>{{/if}}
 					</td>
 				</tr>
 				<tr>
@@ -188,7 +191,9 @@
 									<label>{{value}}</label>
 								</div>
 							{{/each}}
-							{{#if _3w_validValuesNotSynced 'personal.particulars.age'}}&nbsp;&nbsp;&nbsp;<i class="notched circle loading icon"></i>{{/if}}
+							&nbsp;&nbsp;&nbsp;
+							{{#if _3w_validValuesNotSynced 'personal.particulars.age'}}<i class="notched circle loading icon"></i>{{/if}}
+							{{#if _3w_focusedFieldUpdatedOnServer 'personal.particulars.age'}}<i class="warning icon"></i>{{/if}}
 						</div>
 					</td>
 				</tr>
@@ -202,6 +207,7 @@
 								</td>
 								<td style="border: none;">
 									{{#if _3w_validValuesNotSynced 'notes'}}<i class="notched circle loading icon"></i>{{/if}}
+									{{#if _3w_focusedFieldUpdatedOnServer 'notes'}}<i class="warning icon"></i>{{/if}}
 								</td>
 							</tr>
 							<tr>
@@ -236,6 +242,7 @@
 								</td>
 								<td style="border: none;">
 									{{#if _3w_validValuesNotSynced 'tags'}}<i class="notched circle loading icon"></i>{{/if}}
+									{{#if _3w_focusedFieldUpdatedOnServer 'tags'}}<i class="warning icon"></i>{{/if}}
 								</td>
 							</tr>
 						</table>
@@ -260,6 +267,7 @@
 								style="width: 20%;" data-bind="value: personal.someArr.{{this}}; style: {color: someArrValidationErrorText.{{this}}|trueIfNonEmpty|redIfTrue}"
 								>
 								{{#if _3w_validValuesNotSynced (_3w_expandParams "personal.someArr.*" this)}}<i class="notched circle loading icon"></i>{{/if}}
+								{{#if _3w_focusedFieldUpdatedOnServer (_3w_expandParams "personal.someArr.*" this)}}<i class="warning icon"></i>{{/if}}
 								&nbsp;&nbsp;&nbsp;
 							{{/each}}
 						</div>
@@ -281,20 +289,28 @@
 					<td><strong><code>personal.otherArr[0]</code></strong></td>
 					<td>
 						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.a">
-						{{#if _3w_validValuesNotSynced 'personal.otherArr.0.a'}}<i class="notched circle loading icon"></i>&nbsp;&nbsp;&nbsp;{{/if}}
+						{{#if _3w_validValuesNotSynced 'personal.otherArr.0.a'}}<i class="notched circle loading icon"></i>{{/if}}
+						{{#if _3w_focusedFieldUpdatedOnServer 'personal.otherArr.0.a'}}<i class="warning icon"></i>{{/if}}
+						&nbsp;&nbsp;&nbsp;
 
 						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.b">
-						{{#if _3w_validValuesNotSynced 'personal.otherArr.0.b'}}<i class="notched circle loading icon"></i>&nbsp;&nbsp;&nbsp;{{/if}}
+						{{#if _3w_validValuesNotSynced 'personal.otherArr.0.b'}}<i class="notched circle loading icon"></i>{{/if}}
+						{{#if _3w_focusedFieldUpdatedOnServer 'personal.otherArr.0.b'}}<i class="warning icon"></i>{{/if}}
+						&nbsp;&nbsp;&nbsp;
 					</td>
 				</tr>
 				<tr>
 					<td><strong><code>personal.otherArr[1]</code></strong></td>
 					<td>
 						<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.a">
-						{{#if _3w_validValuesNotSynced 'personal.otherArr.1.a'}}<i class="notched circle loading icon"></i>&nbsp;&nbsp;&nbsp;{{/if}}
+						{{#if _3w_validValuesNotSynced 'personal.otherArr.1.a'}}<i class="notched circle loading icon"></i>{{/if}}
+						{{#if _3w_focusedFieldUpdatedOnServer 'personal.otherArr.1.a'}}<i class="warning icon"></i>{{/if}}
+						&nbsp;&nbsp;&nbsp;
 
 						<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.b">
-						{{#if _3w_validValuesNotSynced 'personal.otherArr.1.b'}}<i class="notched circle loading icon"></i>&nbsp;&nbsp;&nbsp;{{/if}}
+						{{#if _3w_validValuesNotSynced 'personal.otherArr.1.b'}}<i class="notched circle loading icon"></i>{{/if}}
+						{{#if _3w_focusedFieldUpdatedOnServer 'personal.otherArr.1.b'}}<i class="warning icon"></i>{{/if}}
+						&nbsp;&nbsp;&nbsp;
 					</td>
 				</tr>
 			</table>

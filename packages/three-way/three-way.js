@@ -345,6 +345,7 @@ if (Meteor.isClient) {
 				data: new ReactiveDict(),
 				__serverIsUpdated: new ReactiveDict(),
 				__dataIsNotInvalid: new ReactiveDict(),
+				_focusedFieldUpdatedOnServer: new ReactiveDict(),
 				viewModelOnlyData: {},
 				dataMirror: {},
 				fieldMatchParams: {}, // No need to re-create
@@ -392,6 +393,7 @@ if (Meteor.isClient) {
 			instance._3w_getAll_NR = () => _.extend({}, threeWay.dataMirror);
 
 			instance._3w_focusedField = () => threeWay._focusedField.get();
+			instance._3w_focusedFieldUpdatedOnServer = p => threeWay._focusedFieldUpdatedOnServer.get(p);
 
 			instance._3w_isSyncedToServer = p => !!threeWay.__serverIsUpdated.get(p);
 			instance._3w_allSyncedToServer = function() {
@@ -662,6 +664,7 @@ if (Meteor.isClient) {
 										console.log('[db|update] Performing update... ' + curr_f + ' -> ', v);
 									}
 									mostRecentDatabaseEntry[curr_f] = v;
+									threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 									baseUpdaters[matchFamily](v, threeWay.fieldMatchParams[curr_f]);
 								};
 								if (options.throttledUpdaters.indexOf(matchFamily) !== -1) {
@@ -863,6 +866,7 @@ if (Meteor.isClient) {
 					console.log("[data-mirror] Clearing threeWay.data");
 				}
 				threeWay.data.clear();
+				threeWay._focusedFieldUpdatedOnServer.clear();
 
 				// Replace ViewModel only data and set-up mirroring again
 				_.forEach(threeWay.viewModelOnlyData, function(value, field) {
@@ -945,6 +949,7 @@ if (Meteor.isClient) {
 									if (IN_DEBUG_MODE_FOR('db')) {
 										console.log('[db|receive] Most recent value matches. No change to view model.');
 									}
+									threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 								} else {
 									removeOldItems(recentDBUpdates[curr_f], AGE_THRESHOLD_OLD_ITEM);
 									if (popItemWithValue(recentDBUpdates[curr_f], newValue, 'valueOnClient', true) > 0) {
@@ -960,9 +965,11 @@ if (Meteor.isClient) {
 											currentValue = instance._3w_get(focusedField);
 										});
 										if ((focusedField === curr_f) && !!options.updateOfFocusedFieldCallback) {
+											threeWay._focusedFieldUpdatedOnServer.set(curr_f, true);
 											options.updateOfFocusedFieldCallback(threeWay.fieldMatchParams[focusedField], newValue, currentValue);
 										} else {
 											threeWay.data.set(curr_f, newValue);
+											threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 										}
 										mostRecentDatabaseEntry[curr_f] = newValue;
 									}
@@ -2521,6 +2528,7 @@ if (Meteor.isClient) {
 			_3w_getAll: () => Template.instance()._3w_getAll(),
 
 			_3w_focusedField: () => Template.instance()._3w_focusedField(),
+			_3w_focusedFieldUpdatedOnServer: p => Template.instance()._3w_focusedFieldUpdatedOnServer(p),
 
 			_3w_isSyncedToServer: (propName) => Template.instance()._3w_isSyncedToServer(propName),
 			_3w_notSyncedToServer: (propName) => !Template.instance()._3w_isSyncedToServer(propName),
