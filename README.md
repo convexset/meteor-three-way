@@ -1204,4 +1204,3 @@ However, this is when `check` and authentication causes a bit of a problem. The 
 ## To Do
 
 - Reconsider group debounced updates (given that auto-generation of a general updater in `convexset:collection-tools` is done)
-- Consider updating "parent items" like `friends` if both that and `friends.*.name` are bound.
