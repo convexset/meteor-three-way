@@ -44,7 +44,6 @@ if (Meteor.isServer) {
 			return Demo.collection.update(id, {
 				$set: updater
 			});
-			return true;
 		},
 		'update-personal.someArr.*': function(id, value, k) {
 			var updater = {};

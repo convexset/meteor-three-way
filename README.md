@@ -596,7 +596,7 @@ But "pre-processors" can be applied to view model data to process content before
 
 where `mapToAgeDisplay` was described as `x => ageRanges[x]` (or, equivalently, `function(x) {return ageRanges[x];}`) and `ageRanges` is a dictionary (object) mapping keys to descriptions.
 
-Pre-processors actually take up-to three arguments, `(value, elem, vmData)` and return a value to be passed into the next pre-processor, or rendered on the page. This actually features in `ThreeWay.helpers.updateSemanticUIDropdown`, used in the demo, where the element itself has to be manipulated (see: [this](http://semantic-ui.com/modules/dropdown.html)) to achieve the desired result. More on pre-processors later.
+Pre-processors actually take up-to three arguments, `(value, elem, vmData)` and return a value to be passed into the next pre-processor, or rendered on the page. This actually features in `ThreeWay.preProcessors.updateSemanticUIDropdown`, used in the demo, where the element itself has to be manipulated (see: [this](http://semantic-ui.com/modules/dropdown.html)) to achieve the desired result. More on pre-processors later.
 
 #### Binding: `value`
 
@@ -940,7 +940,7 @@ preProcessors: {
     },
     // This is something special to make the Semantic UI Dropdown work
     // More helpers will be written soon...
-    updateSemanticUIDropdown: ThreeWay.helpers.updateSemanticUIDropdown
+    updateSemanticUIDropdown: ThreeWay.preProcessors.updateSemanticUIDropdown
 },
 ```
 
@@ -948,7 +948,7 @@ preProcessors: {
 
 ... and a binding like `<span data-bind="html: age|mapToAgeDisplay|alert|toUpperCase"></span>` would, under the same circumstances, annoy the user with an alert with text "13 to 20" and then display the text "13 TO 20". (Please don't do something like that.)
 
-Multi-way data-bindings such as `value` and `checked` use pre-processing pipelines to deal with DOM manipulation only (e.g.: [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) via `ThreeWay.helpers.updateSemanticUIDropdown`). Pipeline functions do not manipulate value.
+Multi-way data-bindings such as `value` and `checked` use pre-processing pipelines to deal with DOM manipulation only (e.g.: [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) via `ThreeWay.preProcessors.updateSemanticUIDropdown`). Pipeline functions do not manipulate value.
 
 Pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model.
 

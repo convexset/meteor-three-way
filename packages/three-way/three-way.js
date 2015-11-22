@@ -1348,7 +1348,8 @@ if (Meteor.isClient) {
 							value = value[0];
 						}
 					} else {
-						mutatedValue = options.preProcessors[m].call(instance, value, elem, _.extend({}, threeWay.dataMirror));
+						// mutatedValue = options.preProcessors[m].call(instance, value, elem, _.extend({}, threeWay.dataMirror));
+						mutatedValue = options.preProcessors[m].call(instance, mutatedValue, elem, _.extend({}, threeWay.dataMirror));
 					}
 
 					if (processorsMutateValue) {
@@ -2357,7 +2358,7 @@ if (Meteor.isClient) {
 			var myId = 'progenitor_' + Math.floor(Math.random() * 1e15);
 			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
 				var parentThreeWayInstance = instance.parentTemplate()[THREE_WAY_NAMESPACE];
-				myId = instance.data._3w_name;
+				myId = instance && instance.data && instance.data._3w_name;
 
 				if (!!myId) {
 					if (!!parentThreeWayInstance.children[myId]) {
@@ -2650,14 +2651,17 @@ if (Meteor.isClient) {
 		toUpperCase: x => ((typeof x === "undefined") || (x === null)) ? "" : x.toString().toUpperCase(),
 		toLowerCase: x => ((typeof x === "undefined") || (x === null)) ? "" : x.toString().toLowerCase(),
 		updateSemanticUIDropdown: function updateSemanticUIDropdown(x, elem) {
-			if (typeof x === "string") {
-				if (x.trim() === "") {
+			if ((typeof x !== "undefined") && (x === null)) {
+				if (x.toString().trim() === "") {
 					$(elem.parentElement)
 						.dropdown('set exactly', []);
 				} else {
 					$(elem.parentElement)
-						.dropdown('set exactly', x.split(',').map(x => x.trim()));
+						.dropdown('set exactly', x.toString().split(',').map(x => x.trim()));
 				}
+			} else {
+				$(elem.parentElement)
+					.dropdown('refresh');
 			}
 			return x;
 		},
