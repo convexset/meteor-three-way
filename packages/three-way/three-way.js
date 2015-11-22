@@ -1327,28 +1327,22 @@ if (Meteor.isClient) {
 					return;
 				}
 
+				var mutatedValue;
+				var firstRunArgs = value.map(x => x);
 				if ((mappings.length === 0) && (value.length === 1)) {
 					// if single valued and no mappings, "unbox"
 					value = value[0];
 				}
+
 				_.forEach(mappings, function(m, idx) {
 					if (!(options.preProcessors[m] instanceof Function)) {
 						console.error('[ThreeWay] No such pre-processor: ' + m, elem);
 						return;
 					}
 
-					var mutatedValue;
 					if (idx === 0) {
-						var args = value.map(x => x);
-						mutatedValue = options.preProcessors[m].apply(instance, args.concat([elem, _.extend({}, threeWay.dataMirror)]));
-						if (!processorsMutateValue) {
-							// Yeah... this feels hacky... But it is all a
-							// sacrifice to realize multi-variable data-binding
-							// ... not sure if it is worth it
-							value = value[0];
-						}
+						mutatedValue = options.preProcessors[m].apply(instance, firstRunArgs.concat([elem, _.extend({}, threeWay.dataMirror)]));
 					} else {
-						// mutatedValue = options.preProcessors[m].call(instance, value, elem, _.extend({}, threeWay.dataMirror));
 						mutatedValue = options.preProcessors[m].call(instance, mutatedValue, elem, _.extend({}, threeWay.dataMirror));
 					}
 
@@ -2635,8 +2629,11 @@ if (Meteor.isClient) {
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'preProcessorGenerators', {
-		undefinedFilterGenerator: function undefinedFilter(defaultValue) {
+		undefinedFilterGenerator: function undefinedFilterGenerator(defaultValue) {
 			return x => (typeof x === "undefined") ? defaultValue : x;
+		},
+		nullOrUndefinedFilterGenerator: function nullOrUndefinedFilterGenerator(defaultValue) {
+			return x => ((typeof x === "undefined") || (x === null)) ? defaultValue : x;
 		},
 		makeMap: function makeMap(map, defaultValue) {
 			return k => map.hasOwnProperty(k) ? map[k] : defaultValue;
@@ -2651,7 +2648,7 @@ if (Meteor.isClient) {
 		toUpperCase: x => ((typeof x === "undefined") || (x === null)) ? "" : x.toString().toUpperCase(),
 		toLowerCase: x => ((typeof x === "undefined") || (x === null)) ? "" : x.toString().toLowerCase(),
 		updateSemanticUIDropdown: function updateSemanticUIDropdown(x, elem) {
-			if ((typeof x !== "undefined") && (x === null)) {
+			if ((typeof x !== "undefined") && (x !== null)) {
 				if (x.toString().trim() === "") {
 					$(elem.parentElement)
 						.dropdown('set exactly', []);
@@ -2666,16 +2663,20 @@ if (Meteor.isClient) {
 			return x;
 		},
 		undefinedToEmptyStringFilter: ThreeWay.preProcessorGenerators.undefinedFilterGenerator(""),
+		nullOrUndefinedToEmptyStringFilter: ThreeWay.preProcessorGenerators.nullOrUndefinedFilterGenerator(""),
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'transformationGenerators', {
 		arrayFromDelimitedString: function arrayFromDelimitedString(delimiter) {
 			return function arrayFromDelimitedString(x) {
+				if ((typeof x === "undefined") || (x === null)) {
+					return [];
+				}
 				var outcome;
-				if (!x || (x.trim() === '')) {
+				if (x.toString().trim() === '') {
 					outcome = [];
 				} else {
-					outcome = x.split(delimiter).map(y => y.trim());
+					outcome = x.toString().split(delimiter).map(y => y.trim());
 				}
 				return outcome;
 			};

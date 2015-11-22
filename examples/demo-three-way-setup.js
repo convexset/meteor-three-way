@@ -158,7 +158,7 @@ if (Meteor.isClient) {
 			// joins them to make the result "more presentable"
 			tagsTextDisplay: x => (!x) ? "" : x.split(',').map(x => x.trim()).join(', '),
 			// this maps a key to the corresponding long form description
-			mapToAgeDisplay: x => Demo.ageRanges[x],
+			mapToAgeDisplay: ThreeWay.preProcessorGenerators.makeMap(Demo.ageRanges, ''),
 			// this maps an array of keys to the corresponding long form
 			// descriptions and then joins them
 			mapToEmailPrefs: function(prefs, elem, vmData) {
@@ -167,29 +167,18 @@ if (Meteor.isClient) {
 				return outcome;
 			},
 			boldIfMoreThanOne: function(prefString) {
-				return (prefString.split(',').length <= 1) ? prefString : '<strong>' + prefString + '</strong>';
+				return (typeof prefString === "undefined") ? "" : ((prefString.split(',').length <= 1) ? prefString : '<strong>' + prefString + '</strong>');
 			},
 			sayHideToHide: function(v) {
 				return (v && v.trim().toUpperCase() || "") !== "HIDE";
 			},
-			colorCodeAge: function(v) {
-				if (v === '0_12') {
-					return "#8F8";
-				}
-				if (v === '13_20') {
-					return "#0F0";
-				}
-				if (v === '21_35') {
-					return "#4B0";
-				}
-				if (v === '36_65') {
-					return "#890";
-				}
-				if (v === '66_plus') {
-					return "#884";
-				}
-				return "";
-			},
+			colorCodeAge: ThreeWay.preProcessorGenerators.makeMap({
+				'0_12': "#8F8",
+				'13_20': "#0F0",
+				'21_35': "#4B0",
+				'36_65': "#890",
+				'66_plus': "#884",
+			}, ""),
 			appendTimeStamp: function(v) {
 				return v + ' (' + (new Date()) + ')';
 			},
