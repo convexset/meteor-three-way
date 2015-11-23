@@ -641,7 +641,7 @@ One can apply certain modifiers to `value` and `checked` bindings such as:
 <input name="name" data-bind="value#donotupdateon-input: name">
 <input name="comment" data-bind="value#throttle-1000: name">
 ```
-By default, `value` bindings update the view model on `change` and `input`. But the latter can be suppressed with a `donotchangeon-input` option. In the first example, the view model is only updated on `change` such as a loss of focus after a change is made.
+By default, `value` bindings update the view model on `change` and `input`. But the latter can be suppressed with a `donotupdateon-input` option. In the first example, the view model is only updated on `change` such as a loss of focus after a change is made.
 
 For the `comment` input element, updates can happen as one is typing (due to updates being made on `input`), however, those updates to the view model are [throttled](http://underscorejs.org/#throttle) with a 1 second interval.
 
