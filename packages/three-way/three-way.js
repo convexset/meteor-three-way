@@ -156,7 +156,6 @@ function clearReactiveDictSafely(rd) {
 }
 
 // Created to extricate event handlers that flush from computations
-var PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE = false;
 function pushToEndOfEventQueue(fn, context) {
 	return function fnAtBackOfEventQueue(...params) {
 		setTimeout(() => fn.apply(context, params), 0);
@@ -187,16 +186,6 @@ if (Meteor.isClient) {
 		if (DEBUG_MESSAGES.hasOwnProperty(k)) {
 			DEBUG_MESSAGES[k] = true;
 		}
-	});
-
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setPushFlushingHandlersToEndOfEventQueueOn', function setPushFlushingHandlersToEndOfEventQueueOn() {
-		PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE = true;
-	});
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setPushFlushingHandlersToEndOfEventQueueOff', function setPushFlushingHandlersToEndOfEventQueueOff() {
-		PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE = false;
-	});
-	PackageUtilities.addPropertyGetter(ThreeWay, 'areFlushingHandlersPushedToEndOfEventQueue', function areFlushingHandlersPushedToEndOfEventQueue() {
-		return PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE;
 	});
 
 	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'expandParams', function expandParams(fieldSpec, params) {
@@ -954,7 +943,10 @@ if (Meteor.isClient) {
 				(function() {
 					threeWay._focusedField.set(null);
 					var elem = document.activeElement;
-					$(elem).trigger('focus');
+					pushToEndOfEventQueue(function forceFocusActiveElementJustInCase() {
+						// Don't trigger synchronously to avoid flushes in a flush/computation
+						$(elem).trigger('focus');
+					}, instance);					
 				})();
 
 				// Replace ViewModel only data and set-up mirroring again
@@ -1605,22 +1597,12 @@ if (Meteor.isClient) {
 					});
 
 					// Bind change handler
-					if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
-						bindEventToThisElem('change', pushToEndOfEventQueue(valueChangeHandler, instance));
-					} else {
-						bindEventToThisElem('change', valueChangeHandler);
-					}
+					bindEventToThisElem('change', valueChangeHandler);
 					if (!_.filter(elemBindings.bindings.value.itemOptions, (v, opt) => (opt === 'donotupdateon') && (v === 'input')).length) {
 						// if not prevented from changing on input
-						if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
-							bindEventToThisElem('input', pushToEndOfEventQueue(function changeTriggeredByInput() {
-								$(elem).trigger('change');
-							}, instance));
-						} else {
-							bindEventToThisElem('input', function changeTriggeredByInput() {
-								$(elem).trigger('change');
-							});
-						}
+						bindEventToThisElem('input', function changeTriggeredByInput() {
+							$(elem).trigger('change');
+						});
 					}
 
 					// Bind to additional events
@@ -1629,15 +1611,9 @@ if (Meteor.isClient) {
 							if (IN_DEBUG_MODE_FOR('value')) {
 								console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
 							}
-							if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
-								bindEventToThisElem(v, pushToEndOfEventQueue(function changeTriggeredByOtherEvent() {
-									$(elem).trigger('change');
-								}, instance));
-							} else {
-								bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
-									$(elem).trigger('change');
-								});
-							}
+							bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
+								$(elem).trigger('change');
+							});
 						}
 					});
 
@@ -1776,11 +1752,7 @@ if (Meteor.isClient) {
 					});
 
 					// Bind change handler
-					if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
-						bindEventToThisElem('change', pushToEndOfEventQueue(checkedChangeHandler, instance));
-					} else {
-						bindEventToThisElem('change', checkedChangeHandler);
-					}
+					bindEventToThisElem('change', checkedChangeHandler);
 
 					// Bind to additional events
 					_.forEach(elemBindings.bindings.checked.itemOptions, function(v, opt) {
@@ -1788,15 +1760,9 @@ if (Meteor.isClient) {
 							if (IN_DEBUG_MODE_FOR('checked')) {
 								console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
 							}
-							if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
-								bindEventToThisElem(v, pushToEndOfEventQueue(function changeTriggeredByOtherEvent() {
-									$(elem).trigger('change');
-								}, instance));
-							} else {
-								bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
-									$(elem).trigger('change');
-								});
-							}
+							bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
+								$(elem).trigger('change');
+							});
 						}
 					});
 
@@ -1957,13 +1923,8 @@ if (Meteor.isClient) {
 						}
 					};
 
-					if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
-						bindEventToThisElem('focus', pushToEndOfEventQueue(focusChangeHandler, instance));
-						bindEventToThisElem('focusout', pushToEndOfEventQueue(focusChangeHandler, instance));
-					} else {
-						bindEventToThisElem('focus', focusChangeHandler);
-						bindEventToThisElem('focusout', focusChangeHandler);
-					}
+					bindEventToThisElem('focus', focusChangeHandler);
+					bindEventToThisElem('focusout', focusChangeHandler);
 
 					threeWay.computations.push(Tracker.autorun(function(c) {
 						var pipelineSplit = elemBindings.bindings.focus.source.split('|').map(x => x.trim()).filter(x => x !== "");

@@ -1007,6 +1007,7 @@ Recall that in the previous section, the following example was described:
 ```
 
 The validation flow is as follows:
+
     1. a change is made in the view which propagates to the view model
     2. validation starts
     3. view-model level validation using data in the view model and success/failure call-backs fire
