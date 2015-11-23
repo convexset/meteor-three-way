@@ -1,8 +1,8 @@
 # ThreeWay
 
-`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package). 
+`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package).
 
-Database to view model connectivity is provided by Meteor methods (with signatures `function(id, value)`), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature `function(id, value, param1, param2, ...)`). 
+Database to view model connectivity is provided by Meteor methods (with signatures `function(id, value)`), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature `function(id, value, param1, param2, ...)`).
 The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
 
 The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
@@ -272,7 +272,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // Arguments: (value, vmData, wildCardParams)
     // validators have method signature:
     //   function(value, wildCardParams)
-    // success/failure call backs have signature: 
+    // success/failure call backs have signature:
     //   function(template, value, vmData, field, wildCardParams)
     validatorsVM: {
         // tags seems to be a decent candidate for one here
@@ -284,7 +284,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // (no additional view-model data, work with that somewhere else)
     // validators have method signature:
     //   function(value, wildCardParams)
-    // success/failure call backs have signature: 
+    // success/failure call backs have signature:
     //   function(template, value, vmData, field, wildCardParams)
     validatorsServer: {
         tags: {
@@ -581,7 +581,7 @@ Note that transformations actually take two parameters, the first being the valu
 
 ### Binding to the View
 
-When the template is rendered, the reactive elements are set up using `data-bind` attributes in the "mark up" part of the template. 
+When the template is rendered, the reactive elements are set up using `data-bind` attributes in the "mark up" part of the template.
 
 #### Binding: `html` and `text`
 
@@ -647,7 +647,7 @@ For the `comment` input element, updates can happen as one is typing (due to upd
 
 The following modifiers are available and are applied in the form `<binding>#<modifier>-<option>#<modifier>-<option>: <view model field>`:
  - `updateon`: also updates the view model when a given event fires (e.g. `updateon-<event name>`)
- - `donotupdateon`: do not the view model when a given event fires (e.g. `donotupdateon-<event name>`); the only valid option is `input` and this only applies to `value` bindings.
+ - `donotupdateon`: do not update the view model when a given event fires (e.g. `donotupdateon-<event name>`); the only valid option is `input` and this only applies to `value` bindings.
  - `throttle`: throttles (e.g. `throttle-<interval in ms>`)
  - `debounce`: (e.g. `debounce-<interval in ms>`)
 
@@ -701,7 +701,7 @@ A tenuous design decision has been made not to phase out helpers. A less tenuous
 
 Sometimes one variable alone is not enough to determine the state of a DOM property. For example, to determine whether a phone number is valid, might depend both on the number and on the country. On the other hand, that example is faulty since a validation callback can do the relevant computations with full access to the view model.
 
-But anyway, usefulness aside, this is one example of such a binding: 
+But anyway, usefulness aside, this is one example of such a binding:
 ```html
 <div data-bind="style: {background-color: colR#colG#colB|makeRGB}">
 ```
@@ -778,7 +778,7 @@ preProcessors: {
 
 See [Pre-processor Pipelines](#pre-processor-pipelines) below for more information. While pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model, `{}` is passed in in place of view model data for such initializers.
 
-Due to the nature of jQuery selectors, a selector at a parent template might select such nodes in child templates and inadvertently pollute the local view model one way of dealing with the problem is to add a `restrict-template-type` attribute indicating the names of applicable templates as a comma separated list. Omission makes the initialization applicable to all.
+Due to the nature of jQuery selectors, a selector at a parent template might select such nodes in child templates and inadvertently pollute the local view model. One way of dealing with the problem is to add a `restrict-template-type` attribute indicating the names of applicable templates as a comma separated list. Omission makes the initialization applicable to all.
 
 ```html
 <twdata field="somethingElse" initial-value="value" restrict-template-type="MyTemplate, MyOtherTemplate"></twdata>
@@ -970,7 +970,7 @@ Data validators are defined as follows:
 // Arguments: (value, vmData, wildCardParams)
 // validators have method signature:
 //   function(value, wildCardParams)
-// success/failure call backs have signature: 
+// success/failure call backs have signature:
 //   function(template, value, vmData, field, wildCardParams)
 validatorsVM: {
     // tags seems to be a decent candidate for one here
@@ -982,7 +982,7 @@ validatorsVM: {
 // (no additional view-model data, work with that somewhere else)
 // validators have method signature:
 //   function(value, wildCardParams)
-// success/failure call backs have signature: 
+// success/failure call backs have signature:
 //   function(template, value, vmData, field, wildCardParams)
 validatorsServer: {
     tags: {
@@ -1080,7 +1080,7 @@ Extra processors may be accessed via the `ThreeWay.preProcessors` namespace (e.g
 
 ### Extra Pre-Processor Generators
 
-Similar to the above, but these are generators for pre-processor take one or more parameters and return a pre-processor. They may be accessed via the `ThreeWay.preProcessorGenerators` namespace (e.g.: `ThreeWay.preProcessorGenerators.undefinedFilterGenerator`).
+Similar to the above, but these are generators for pre-processors: they each accept one or more arguments and return a pre-processor. They may be accessed via the `ThreeWay.preProcessorGenerators` namespace (e.g.: `ThreeWay.preProcessorGenerators.undefinedFilterGenerator`).
 
 - `undefinedFilterGenerator(defaultValue)`: a function that returns a function that maps `undefined`'s to `defaultValue` and passes other values
 - `makeMap(map, defaultValue)`: a function that maps `k` to `map[k]` (and returns `defaultValue` if `map` does not have property `k`)
@@ -1188,7 +1188,7 @@ As of v0.1.17, a compromise solution was included in the form of the `injectDefa
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart.
 The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-documents even if a single primitive value deep within was updated.
 
-For a time, an attempt was made to address the problem by (i) queueing via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields). 
+For a time, an attempt was made to address the problem by (i) queueing via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
 
 Pre-v0.1.14, the above race condition was still not fully solved. The "comprehensive solution" was to store snapshots of entire sub-documents with the expectation that stuff would get sent back and data sent back from the server matching existing values (that were not too old) could be "ignored".
 

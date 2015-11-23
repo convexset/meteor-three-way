@@ -155,6 +155,14 @@ function clearReactiveDictSafely(rd) {
 	});
 }
 
+// Created to extricate event handlers that flush from computations
+var PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE = false;
+function pushToEndOfEventQueue(fn, context) {
+	return function fnAtBackOfEventQueue(...params) {
+		setTimeout(() => fn.apply(context, params), 0);
+	};
+}
+
 
 if (Meteor.isClient) {
 	PackageUtilities.addImmutablePropertyArray(ThreeWay, 'DEBUG_MESSAGE_HEADINGS', _.map(DEBUG_MESSAGES, (v, k) => k));
@@ -179,6 +187,16 @@ if (Meteor.isClient) {
 		if (DEBUG_MESSAGES.hasOwnProperty(k)) {
 			DEBUG_MESSAGES[k] = true;
 		}
+	});
+
+	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setPushFlushingHandlersToEndOfEventQueueOn', function setPushFlushingHandlersToEndOfEventQueueOn() {
+		PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE = true;
+	});
+	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setPushFlushingHandlersToEndOfEventQueueOff', function setPushFlushingHandlersToEndOfEventQueueOff() {
+		PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE = false;
+	});
+	PackageUtilities.addPropertyGetter(ThreeWay, 'areFlushingHandlersPushedToEndOfEventQueue', function areFlushingHandlersPushedToEndOfEventQueue() {
+		return PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE;
 	});
 
 	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'expandParams', function expandParams(fieldSpec, params) {
@@ -345,6 +363,7 @@ if (Meteor.isClient) {
 			var instance = this;
 
 			var threeWay = {
+				options: options,
 				instanceId: new ReactiveVar(null),
 				children: {},
 				__hasChild: new ReactiveDict(),
@@ -1198,7 +1217,7 @@ if (Meteor.isClient) {
 			threeWay.fieldMatchParamsForValidationServer = {};
 			var validatorFieldsVM = _.map(options.validatorsVM, (v, k) => k);
 			var validatorFieldsServer = _.map(options.validatorsServer, (v, k) => k);
-			threeWay.validateInput = function vmValidate(field, value, validateForServer) {
+			threeWay.validateInput = function validateVMThenServer(field, value, validateForServer) {
 				if (typeof validateForServer === "undefined") {
 					validateForServer = true;
 				}
@@ -1236,7 +1255,7 @@ if (Meteor.isClient) {
 					console.log('[validation] Doing validation... Field: ' + field + '; Value:', value, '; Validation Info (VM):', threeWay.fieldMatchParamsForValidationVM[field], '; Validation Info (Server):', threeWay.fieldMatchParamsForValidationServer[field]);
 				}
 
-				var vmData;
+				var vmData = _.extend({}, threeWay.dataMirror);
 
 				var matchFamily = threeWay.fieldMatchParams[field] && threeWay.fieldMatchParams[field].match || null;
 
@@ -1252,7 +1271,6 @@ if (Meteor.isClient) {
 				var passed = true;
 				var validator, successCB, failureCB;
 				if (useValidatorForVM) {
-					vmData = _.extend({}, threeWay.dataMirror);
 					validator = !!options.validatorsVM[matchFamilyVM].validator ? options.validatorsVM[matchFamilyVM].validator : () => true;
 					successCB = !!options.validatorsVM[matchFamilyVM].success ? options.validatorsVM[matchFamilyVM].success : function() {};
 					failureCB = !!options.validatorsVM[matchFamilyVM].failure ? options.validatorsVM[matchFamilyVM].failure : function() {};
@@ -1355,6 +1373,11 @@ if (Meteor.isClient) {
 					}
 				});
 				Template._currentTemplateInstanceFunc = currTemplateInstanceFunc;
+
+				if (!processorsMutateValue && (mappings.length > 0)  && (value.length === 1)) {
+					// if single valued and mappings do not mutate value, "unbox"
+					value = value[0];
+				}
 
 				return value;
 			};
@@ -1581,8 +1604,12 @@ if (Meteor.isClient) {
 						}
 					});
 
-					// Bind change handler	
-					bindEventToThisElem('change', valueChangeHandler);
+					// Bind change handler
+					if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
+						bindEventToThisElem('change', pushToEndOfEventQueue(valueChangeHandler, instance));
+					} else {
+						bindEventToThisElem('change', valueChangeHandler);
+					}
 					if (!_.filter(elemBindings.bindings.value.itemOptions, (v, opt) => (opt === 'donotupdateon') && (v === 'input')).length) {
 						// if not prevented from changing on input
 						bindEventToThisElem('input', function() {
@@ -1737,7 +1764,11 @@ if (Meteor.isClient) {
 					});
 
 					// Bind change handler
-					bindEventToThisElem('change', checkedChangeHandler);
+					if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
+						bindEventToThisElem('change', pushToEndOfEventQueue(checkedChangeHandler, instance));
+					} else {
+						bindEventToThisElem('change', checkedChangeHandler);
+					}
 
 					// Bind to additional events
 					_.forEach(elemBindings.bindings.checked.itemOptions, function(v, opt) {
@@ -1908,8 +1939,13 @@ if (Meteor.isClient) {
 						}
 					};
 
-					bindEventToThisElem('focus', focusChangeHandler);
-					bindEventToThisElem('focusout', focusChangeHandler);
+					if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
+						bindEventToThisElem('focus', pushToEndOfEventQueue(focusChangeHandler, instance));
+						bindEventToThisElem('focusout', pushToEndOfEventQueue(focusChangeHandler, instance));
+					} else {
+						bindEventToThisElem('focus', focusChangeHandler);
+						bindEventToThisElem('focusout', focusChangeHandler);
+					}
 
 					threeWay.computations.push(Tracker.autorun(function(c) {
 						var pipelineSplit = elemBindings.bindings.focus.source.split('|').map(x => x.trim()).filter(x => x !== "");
