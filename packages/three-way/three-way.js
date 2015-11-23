@@ -1612,9 +1612,15 @@ if (Meteor.isClient) {
 					}
 					if (!_.filter(elemBindings.bindings.value.itemOptions, (v, opt) => (opt === 'donotupdateon') && (v === 'input')).length) {
 						// if not prevented from changing on input
-						bindEventToThisElem('input', function() {
-							$(this).trigger('change');
-						});
+						if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
+							bindEventToThisElem('input', pushToEndOfEventQueue(function changeTriggeredByInput() {
+								$(elem).trigger('change');
+							}, instance));
+						} else {
+							bindEventToThisElem('input', function changeTriggeredByInput() {
+								$(elem).trigger('change');
+							});
+						}
 					}
 
 					// Bind to additional events
@@ -1623,9 +1629,15 @@ if (Meteor.isClient) {
 							if (IN_DEBUG_MODE_FOR('value')) {
 								console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
 							}
-							bindEventToThisElem(v, function() {
-								$(this).trigger('change');
-							});
+							if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
+								bindEventToThisElem(v, pushToEndOfEventQueue(function changeTriggeredByOtherEvent() {
+									$(elem).trigger('change');
+								}, instance));
+							} else {
+								bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
+									$(elem).trigger('change');
+								});
+							}
 						}
 					});
 
@@ -1776,9 +1788,15 @@ if (Meteor.isClient) {
 							if (IN_DEBUG_MODE_FOR('checked')) {
 								console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
 							}
-							bindEventToThisElem(v, function() {
-								$(this).trigger('change');
-							});
+							if (PUSH_EVENT_HANDLERS_THAT_FLUSH_ONTO_EVENT_QUEUE) {
+								bindEventToThisElem(v, pushToEndOfEventQueue(function changeTriggeredByOtherEvent() {
+									$(elem).trigger('change');
+								}, instance));
+							} else {
+								bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
+									$(elem).trigger('change');
+								});
+							}
 						}
 					});
 
