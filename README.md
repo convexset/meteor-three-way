@@ -1,8 +1,8 @@
 # ThreeWay
 
-`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package). 
+`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package).
 
-Database to view model connectivity is provided by Meteor methods (with signatures `function(id, value)`), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature `function(id, value, param1, param2, ...)`). 
+Database to view model connectivity is provided by Meteor methods (with signatures `function(id, value)`), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature `function(id, value, param1, param2, ...)`).
 The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
 
 The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
@@ -20,52 +20,52 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
 - [Install](#install)
 - [The Example](#the-example)
 - [Usage](#usage)
-  - [Basic Set Up](#basic-set-up)
-  - ["Intermediate-level" Set Up](#intermediate-level-set-up)
-  - [Set Up: The Full Parameter Set](#set-up-the-full-parameter-set)
+	- [Basic Set Up](#basic-set-up)
+	- ["Intermediate-level" Set Up](#intermediate-level-set-up)
+	- [Set Up: The Full Parameter Set](#set-up-the-full-parameter-set)
 - [Documentation](#documentation)
-  - [Referring to Fields in Documents](#referring-to-fields-in-documents)
-  - [Default Values](#default-values)
-  - [Dynamic Data-Binding](#dynamic-data-binding)
-    - [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances)
-  - [Updaters to the Server](#updaters-to-the-server)
-    - [Extended Notation for Updaters](#extended-notation-for-updaters)
-  - [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
-  - [Binding to the View](#binding-to-the-view)
-    - [Binding: `html` and `text`](#binding-html-and-text)
-    - [Binding: `value`](#binding-value)
-    - [Binding: `checked`](#binding-checked)
-    - [Binding Modifiers for `value` and `checked`](#binding-modifiers-for-value-and-checked)
-    - [Bindings: `visible` and `disabled` (modern necessities)](#bindings-visible-and-disabled-modern-necessities)
-    - [Bindings: `focus`](#bindings-focus)
-    - [Style, Attribute and Class Bindings](#style-attribute-and-class-bindings)
-  - [Helpers, Template Helpers and Binding](#helpers-template-helpers-and-binding)
-    - [Multi-variable Display Bindings](#multi-variable-display-bindings)
-  - [Event Bindings](#event-bindings)
-  - [View Model to View Only Elements](#view-model-to-view-only-elements)
-  - [Instance Methods](#instance-methods)
-    - [Organizing the DOM](#organizing-the-dom)
-    - [My Data](#my-data)
-    - [Ancestor Data](#ancestor-data)
-    - [Descendant Data](#descendant-data)
-    - [Sibling Data](#sibling-data)
-  - [Additional Template Helpers](#additional-template-helpers)
-  - [Pre-processor Pipelines](#pre-processor-pipelines)
-  - [Data Validation](#data-validation)
-  - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
-  - [Debug](#debug)
+	- [Referring to Fields in Documents](#referring-to-fields-in-documents)
+	- [Default Values](#default-values)
+	- [Dynamic Data-Binding](#dynamic-data-binding)
+		- [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances)
+	- [Updaters to the Server](#updaters-to-the-server)
+		- [Extended Notation for Updaters](#extended-notation-for-updaters)
+	- [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
+	- [Binding to the View](#binding-to-the-view)
+		- [Binding: `html` and `text`](#binding-html-and-text)
+		- [Binding: `value`](#binding-value)
+		- [Binding: `checked`](#binding-checked)
+		- [Binding Modifiers for `value` and `checked`](#binding-modifiers-for-value-and-checked)
+		- [Bindings: `visible` and `disabled` (modern necessities)](#bindings-visible-and-disabled-modern-necessities)
+		- [Bindings: `focus`](#bindings-focus)
+		- [Style, Attribute and Class Bindings](#style-attribute-and-class-bindings)
+	- [Helpers, Template Helpers and Binding](#helpers-template-helpers-and-binding)
+		- [Multi-variable Display Bindings](#multi-variable-display-bindings)
+	- [Event Bindings](#event-bindings)
+	- [View Model to View Only Elements](#view-model-to-view-only-elements)
+	- [Instance Methods](#instance-methods)
+		- [Organizing the DOM](#organizing-the-dom)
+		- [My Data](#my-data)
+		- [Ancestor Data](#ancestor-data)
+		- [Descendant Data](#descendant-data)
+		- [Sibling Data](#sibling-data)
+	- [Additional Template Helpers](#additional-template-helpers)
+	- [Pre-processor Pipelines](#pre-processor-pipelines)
+	- [Data Validation](#data-validation)
+	- ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
+	- [Debug](#debug)
 - [Extras](#extras)
-  - [Extra/Default Pre-processors](#extradefault-pre-processors)
-  - [Extra Pre-Processor Generators](#extra-pre-processor-generators)
-  - [Extra Transformations](#extra-transformations)
-  - [Extra Transformation Generators](#extra-transformation-generators)
-  - [Extra Event Generators](#extra-event-generators)
-  - [Extra Events](#extra-events)
+	- [Extra/Default Pre-processors](#extradefault-pre-processors)
+	- [Extra Pre-Processor Generators](#extra-pre-processor-generators)
+	- [Extra Transformations](#extra-transformations)
+	- [Extra Transformation Generators](#extra-transformation-generators)
+	- [Extra Event Generators](#extra-event-generators)
+	- [Extra Events](#extra-events)
 - [Notes](#notes)
-  - [View Model to Database Binding](#view-model-to-database-binding)
-  - [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
-  - [Dynamic Data Binding](#dynamic-data-binding)
-  - [Why Not Group Debounced Updates?](#why-not-group-debounced-updates)
+	- [View Model to Database Binding](#view-model-to-database-binding)
+	- [Database Updates and Observer Callbacks](#database-updates-and-observer-callbacks)
+	- [Dynamic Data Binding](#dynamic-data-binding)
+	- [Why Not Group Debounced Updates?](#why-not-group-debounced-updates)
 - [To Do](#to-do)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -93,33 +93,33 @@ Let's start with a simple vanilla set-up.
 
 ```javascript
 ThreeWay.prepare(Template.DemoThreeWay, {
-    // The relevant Mongo.Collection
-    collection: DataCollection,
+		// The relevant Mongo.Collection
+		collection: DataCollection,
 
-    // Meteor methods for updating the database
-    // The keys being the respective fields/field selectors for the database
-    // The method signature for these methods being
-    // function(_id, value, ...wildCardParams)
-    updatersForServer: {
-        'name': 'update-name',
-        'tags': 'update-tags',
-    },
+		// Meteor methods for updating the database
+		// The keys being the respective fields/field selectors for the database
+		// The method signature for these methods being
+		// function(_id, value, ...wildCardParams)
+		updatersForServer: {
+				'name': 'update-name',
+				'tags': 'update-tags',
+		},
 
-    // (Global) initial values for fields that feature only in the local view model
-    // and are not used to update the database
-    viewModelToViewOnly: {
-        'vmOnlyValue': '',
-    },
+		// (Global) initial values for fields that feature only in the local view model
+		// and are not used to update the database
+		viewModelToViewOnly: {
+				'vmOnlyValue': '',
+		},
 });
 ```
 
 One then proceeds to bind input and display elements like so:
 ```html
 <ul>
-    <li>Name: <input type="text" data-bind="value: name"></li>
-    <li>Name in View Model: <span data-bind="html: name"></span></li>
-    <li>vmOnlyValue: <input type="text" data-bind="value: vmOnlyValue"></li>
-    <li>vmOnlyValue in View Model: <span data-bind="text: vmOnlyValue"></span></li>
+		<li>Name: <input type="text" data-bind="value: name"></li>
+		<li>Name in View Model: <span data-bind="html: name"></span></li>
+		<li>vmOnlyValue: <input type="text" data-bind="value: vmOnlyValue"></li>
+		<li>vmOnlyValue in View Model: <span data-bind="text: vmOnlyValue"></span></li>
 </ul>
 ```
 
@@ -146,70 +146,70 @@ Now here are more of the settings, including:
 
 ```javascript
 ThreeWay.prepare(Template.DemoThreeWay, {
-    // The relevant Mongo.Collection
-    collection: DataCollection,
+		// The relevant Mongo.Collection
+		collection: DataCollection,
 
-    // Meteor methods for updating the database
-    // The keys being the respective fields/field selectors for the database
-    // The method signature for these methods being
-    // function(_id, value, ...wildCardParams)
-    updatersForServer: {
-        'name': 'update-name',
-        'emailPrefs': 'update-emailPrefs',
-        'personal.particulars.age': 'update-age',
-        'tags': 'update-tags',
-        'personal.someArr.*': 'update-some-arr',
-        'personal.someArr.1': 'update-some-arr-1',  // More specific than the previous, will be selected
-        'personal.otherArr.*.*': 'update-other-arr',
-    },
+		// Meteor methods for updating the database
+		// The keys being the respective fields/field selectors for the database
+		// The method signature for these methods being
+		// function(_id, value, ...wildCardParams)
+		updatersForServer: {
+				'name': 'update-name',
+				'emailPrefs': 'update-emailPrefs',
+				'personal.particulars.age': 'update-age',
+				'tags': 'update-tags',
+				'personal.someArr.*': 'update-some-arr',
+				'personal.someArr.1': 'update-some-arr-1',  // More specific than the previous, will be selected
+				'personal.otherArr.*.*': 'update-other-arr',
+		},
 
-    // Transformations from the server to the view model
-    // In this example, "tags" are stored in the view model as a comma
-    // separated list in a string, while it is stored in the server as
-    // an array
-    dataTransformToServer: {
-        tags: x => x.split(',').map(y => y.trim())
-    },
+		// Transformations from the server to the view model
+		// In this example, "tags" are stored in the view model as a comma
+		// separated list in a string, while it is stored in the server as
+		// an array
+		dataTransformToServer: {
+				tags: x => x.split(',').map(y => y.trim())
+		},
 
-    // Transformations from the view model to the server
-    // (Transform and call the updater Meteor method)
-    // In this example, "tags" are stored in the view model as a comma
-    // separated list in a string, while it is stored in the server as
-    // an array
-    dataTransformFromServer: {
-        tags: arr => arr.join && arr.join(',') || ''
-    },
+		// Transformations from the view model to the server
+		// (Transform and call the updater Meteor method)
+		// In this example, "tags" are stored in the view model as a comma
+		// separated list in a string, while it is stored in the server as
+		// an array
+		dataTransformFromServer: {
+				tags: arr => arr.join && arr.join(',') || ''
+		},
 
-    // Pre-processors for data pre-render (view model to view)
-    preProcessors: {
-        // this takes a string of comma separated tags, splits, trims then
-        // joins them to make the result "more presentable"
-        tagsTextDisplay: x => (!x) ? '' : x.split(',').map(x => x.trim()).join(', '),
+		// Pre-processors for data pre-render (view model to view)
+		preProcessors: {
+				// this takes a string of comma separated tags, splits, trims then
+				// joins them to make the result "more presentable"
+				tagsTextDisplay: x => (!x) ? '' : x.split(',').map(x => x.trim()).join(', '),
 
-        // this maps a key to the corresponding long form description
-        mapToAgeDisplay: x => ageRanges[x],
+				// this maps a key to the corresponding long form description
+				mapToAgeDisplay: x => ageRanges[x],
 
-        // this maps an array of keys to the corresponding long form
-        // descriptions and then joins them
-        // emailPrefsAll is of the form {"1_12": "1 to 12", ...})
-        mapToEmailPrefs: prefs => prefs.map(x => emailPrefsAll[x]).join(", "),
+				// this maps an array of keys to the corresponding long form
+				// descriptions and then joins them
+				// emailPrefsAll is of the form {"1_12": "1 to 12", ...})
+				mapToEmailPrefs: prefs => prefs.map(x => emailPrefsAll[x]).join(", "),
 
-        // These processors support visual feedback for validation
-        // e.g.: the red "Invalid e-mail address" text that appears when
-        // an invalid e-mail address has been entered
-        trueIfNonEmpty: x => x.length > 0,
-        grayIfTrue: x => (!!x) ? "#ccc" : '',
-        redIfTrue: x => (!!x) ? "red" : '',
-    },
+				// These processors support visual feedback for validation
+				// e.g.: the red "Invalid e-mail address" text that appears when
+				// an invalid e-mail address has been entered
+				trueIfNonEmpty: x => x.length > 0,
+				grayIfTrue: x => (!!x) ? "#ccc" : '',
+				redIfTrue: x => (!!x) ? "red" : '',
+		},
 
-    // (Global) initial values for fields that feature only in the local view
-    // model and are not used to update the database
-    // Will be overridden by value tags in the rendered template of the form:
-    // <data field="sliderValue" initial-value="50"></data>
-    viewModelToViewOnly: {
-        sliderValue: "0",
-        "tagsValidationErrorText": '',
-    },
+		// (Global) initial values for fields that feature only in the local view
+		// model and are not used to update the database
+		// Will be overridden by value tags in the rendered template of the form:
+		// <data field="sliderValue" initial-value="50"></data>
+		viewModelToViewOnly: {
+				sliderValue: "0",
+				"tagsValidationErrorText": '',
+		},
 });
 ```
 
@@ -226,159 +226,159 @@ Further elaboration is available in the documentation below.
 
 ```javascript
 ThreeWay.prepare(Template.DemoThreeWay, {
-    // The relevant Mongo.Collection
-    collection: DataCollection,
+		// The relevant Mongo.Collection
+		collection: DataCollection,
 
-    // Meteor methods for updating the database
-    // The keys being the respective fields/field selectors for the database
-    // The method signature for these methods being
-    // function(_id, value, ...wildCardParams)
-    updatersForServer: {
-        'name': 'update-name',
-        'emailPrefs': 'update-emailPrefs',
-        'personal.particulars.age': 'update-age',
-        'tags': 'update-tags',
-        'personal.someArr.*': 'update-some-arr',
-        'personal.someArr.1': 'update-some-arr-1',  // More specific than the previous, will be selected
-        'personal.otherArr.*.*': 'update-other-arr',
-    },
+		// Meteor methods for updating the database
+		// The keys being the respective fields/field selectors for the database
+		// The method signature for these methods being
+		// function(_id, value, ...wildCardParams)
+		updatersForServer: {
+				'name': 'update-name',
+				'emailPrefs': 'update-emailPrefs',
+				'personal.particulars.age': 'update-age',
+				'tags': 'update-tags',
+				'personal.someArr.*': 'update-some-arr',
+				'personal.someArr.1': 'update-some-arr-1',  // More specific than the previous, will be selected
+				'personal.otherArr.*.*': 'update-other-arr',
+		},
 
-    // Inject default values if not in database record
-    injectDefaultValues: {
-        'name': 'Unnamed Person',
-        // for wildcard fields, the last part of the field name cannot be a wildcard
-        'personal.otherArr.*.a': '100',
-    },
+		// Inject default values if not in database record
+		injectDefaultValues: {
+				'name': 'Unnamed Person',
+				// for wildcard fields, the last part of the field name cannot be a wildcard
+				'personal.otherArr.*.a': '100',
+		},
 
-    // Transformations from the server to the view model
-    // In this example, "tags" are stored in the view model as a comma
-    // separated list in a string, while it is stored in the server as
-    // an array
-    dataTransformToServer: {
-        tags: x => x.split(',').map(y => y.trim())
-    },
+		// Transformations from the server to the view model
+		// In this example, "tags" are stored in the view model as a comma
+		// separated list in a string, while it is stored in the server as
+		// an array
+		dataTransformToServer: {
+				tags: x => x.split(',').map(y => y.trim())
+		},
 
-    // Transformations from the view model to the server
-    // (Transform and call the updater Meteor method)
-    // In this example, "tags" are stored in the view model as a comma
-    // separated list in a string, while it is stored in the server as
-    // an array
-    dataTransformFromServer: {
-        tags: arr => arr.join && arr.join(',') || ''
-    },
+		// Transformations from the view model to the server
+		// (Transform and call the updater Meteor method)
+		// In this example, "tags" are stored in the view model as a comma
+		// separated list in a string, while it is stored in the server as
+		// an array
+		dataTransformFromServer: {
+				tags: arr => arr.join && arr.join(',') || ''
+		},
 
-    // Validators under validatorsVM consider view-model data
-    // Useful for making sure that transformations to server values do not fail
-    // Arguments: (value, vmData, wildCardParams)
-    // validators have method signature:
-    //   function(value, wildCardParams)
-    // success/failure call backs have signature: 
-    //   function(template, value, vmData, field, wildCardParams)
-    validatorsVM: {
-        // tags seems to be a decent candidate for one here
-        // but see below
-    },
+		// Validators under validatorsVM consider view-model data
+		// Useful for making sure that transformations to server values do not fail
+		// Arguments: (value, vmData, wildCardParams)
+		// validators have method signature:
+		//   function(value, wildCardParams)
+		// success/failure call backs have signature:
+		//   function(template, value, vmData, field, wildCardParams)
+		validatorsVM: {
+				// tags seems to be a decent candidate for one here
+				// but see below
+		},
 
-    // Validators under validatorsServer consider transformed values
-    // and are called only if the VM validation check does not fail
-    // (no additional view-model data, work with that somewhere else)
-    // validators have method signature:
-    //   function(value, wildCardParams)
-    // success/failure call backs have signature: 
-    //   function(template, value, vmData, field, wildCardParams)
-    validatorsServer: {
-        tags: {
-            validator: function(x, vmData, wildCardParams) {
-                // tags must begin with "tag"
-                return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
-            },
-            success: function(template, value, vmData, field, wildCardParams) {
-                template._3w_set('tagsValidationErrorText', '');
-            },
-            failure: function(template, value, vmData, field, wildCardParams) {
-                template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
-            },
-        },
-    },
+		// Validators under validatorsServer consider transformed values
+		// and are called only if the VM validation check does not fail
+		// (no additional view-model data, work with that somewhere else)
+		// validators have method signature:
+		//   function(value, wildCardParams)
+		// success/failure call backs have signature:
+		//   function(template, value, vmData, field, wildCardParams)
+		validatorsServer: {
+				tags: {
+						validator: function(x, vmData, wildCardParams) {
+								// tags must begin with "tag"
+								return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
+						},
+						success: function(template, value, vmData, field, wildCardParams) {
+								template._3w_set('tagsValidationErrorText', '');
+						},
+						failure: function(template, value, vmData, field, wildCardParams) {
+								template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+						},
+				},
+		},
 
-    // Helper functions that may be used as input for display-type bindings
-    // Order of search: three-way helpers, then template helpers, then data
-    // Called with this bound to template instance
-    // (be aware that arrow functions are lexically scoped)
-    helpers: {
-        altGetId: function() {
-            return this._3w_getId()
-        }
-    }
+		// Helper functions that may be used as input for display-type bindings
+		// Order of search: three-way helpers, then template helpers, then data
+		// Called with this bound to template instance
+		// (be aware that arrow functions are lexically scoped)
+		helpers: {
+				altGetId: function() {
+						return this._3w_getId()
+				}
+		}
 
-    // Pre-processors for data pre-render (view model to view)
-    preProcessors: {
-        // this takes a string of comma separated tags, splits, trims then
-        // joins them to make the result "more presentable"
-        tagsTextDisplay: x => (!x) ? '' : x.split(',').map(x => x.trim()).join(', '),
+		// Pre-processors for data pre-render (view model to view)
+		preProcessors: {
+				// this takes a string of comma separated tags, splits, trims then
+				// joins them to make the result "more presentable"
+				tagsTextDisplay: x => (!x) ? '' : x.split(',').map(x => x.trim()).join(', '),
 
-        // this maps a key to the corresponding long form description
-        mapToAgeDisplay: x => ageRanges[x],
+				// this maps a key to the corresponding long form description
+				mapToAgeDisplay: x => ageRanges[x],
 
-        // this maps an array of keys to the corresponding long form
-        // descriptions and then joins them
-        // emailPrefsAll is of the form {"1_12": "1 to 12", ...})
-        mapToEmailPrefs: prefs => prefs.map(x => emailPrefsAll[x]).join(", "),
+				// this maps an array of keys to the corresponding long form
+				// descriptions and then joins them
+				// emailPrefsAll is of the form {"1_12": "1 to 12", ...})
+				mapToEmailPrefs: prefs => prefs.map(x => emailPrefsAll[x]).join(", "),
 
-        // These processors support visual feedback for validation
-        // e.g.: the red "Invalid e-mail address" text that appears when
-        // an invalid e-mail address has been entered
-        trueIfNonEmpty: x => x.length > 0,
-        grayIfTrue: x => (!!x) ? "#ccc" : '',
-        redIfTrue: x => (!!x) ? "red" : '',
-    },
+				// These processors support visual feedback for validation
+				// e.g.: the red "Invalid e-mail address" text that appears when
+				// an invalid e-mail address has been entered
+				trueIfNonEmpty: x => x.length > 0,
+				grayIfTrue: x => (!!x) ? "#ccc" : '',
+				redIfTrue: x => (!!x) ? "red" : '',
+		},
 
-    // (Global) initial values for fields that feature only in the local view
-    // model and are not used to update the database
-    // Will be overridden by value tags in the rendered template of the form:
-    // <data field="sliderValue" initial-value="50"></data>
-    viewModelToViewOnly: {
-        sliderValue: "0",
-        "tagsValidationErrorText": '',
-    },
+		// (Global) initial values for fields that feature only in the local view
+		// model and are not used to update the database
+		// Will be overridden by value tags in the rendered template of the form:
+		// <data field="sliderValue" initial-value="50"></data>
+		viewModelToViewOnly: {
+				sliderValue: "0",
+				"tagsValidationErrorText": '',
+		},
 
-    // Event Handlers bound like
-    // <input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range">
-    eventHandlers: {
-        dragStartHandler: function(event, template, vmData) {
-            console.info("Drag Start at " + (new Date()), event, template, vmData);
-        },
-        dragEndHandler: function(event, template, vmData) {
-            console.info("Drag End at " + (new Date()), event, template, vmData);
-        },
-        saySomethingHappy: function() {
-            console.info("Let\'s chill. (Second mouseup event to fire.)");
-        },
-    },
+		// Event Handlers bound like
+		// <input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range">
+		eventHandlers: {
+				dragStartHandler: function(event, template, vmData) {
+						console.info("Drag Start at " + (new Date()), event, template, vmData);
+				},
+				dragEndHandler: function(event, template, vmData) {
+						console.info("Drag End at " + (new Date()), event, template, vmData);
+				},
+				saySomethingHappy: function() {
+						console.info("Let\'s chill. (Second mouseup event to fire.)");
+				},
+		},
 
-    // Database Update Parameters
-    // "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
-    debounceInterval: 300, // default: 500
-    // "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
-    throttleInterval: 500, // default: 500
-    // Fields for which updaters are throttle'd instead of debounce'ed
-    throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
-    // Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
-    methodInterval: 10, // default: 10
+		// Database Update Parameters
+		// "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
+		debounceInterval: 300, // default: 500
+		// "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
+		throttleInterval: 500, // default: 500
+		// Fields for which updaters are throttle'd instead of debounce'ed
+		throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
+		// Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
+		methodInterval: 10, // default: 10
 
-    // Reports updates of focused fields
-    // default: null (i.e.: update focused field and do nothing;
-    //                feel free to do something and update the field anyway
-    //                via instance._3w_set)
-    // fieldMatchParams take the form like:
-    //      {
-    //          fieldPath: "personal.otherArr.0.a",
-    //          match: "personal.otherArr.*.*",
-    //          params: ["0", "a"]
-    //      }
-    updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
-        console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
-    }
+		// Reports updates of focused fields
+		// default: null (i.e.: update focused field and do nothing;
+		//                feel free to do something and update the field anyway
+		//                via instance._3w_set)
+		// fieldMatchParams take the form like:
+		//      {
+		//          fieldPath: "personal.otherArr.0.a",
+		//          match: "personal.otherArr.*.*",
+		//          params: ["0", "a"]
+		//      }
+		updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
+				console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
+		}
 });
 ```
 
@@ -390,20 +390,20 @@ Consider the following Mongo document. The relevant fields may be referred to wi
 
 ```javascript
 {
-    topLevelField: 'xxx',  // "topLevelField"
-    topLevelArray: [  // "topLevelArray"
-        'a',  // "topLevelArray.0"
-        'b',  // "topLevelArray.1"
-        'c',  // "topLevelArray.2"
-    ],
-    topLevelObject: {  // "topLevelObject"
-        nestedField: 'xxx',  // "topLevelObject.nestedField"
-        nestedArray: [  // "topLevelObject.nestedArray"
-            1,  // "topLevelObject.nestedArray.0"
-            2,  // "topLevelObject.nestedArray.1"
-            3,  // "topLevelObject.nestedArray.2"
-        ],
-    }
+		topLevelField: 'xxx',  // "topLevelField"
+		topLevelArray: [  // "topLevelArray"
+				'a',  // "topLevelArray.0"
+				'b',  // "topLevelArray.1"
+				'c',  // "topLevelArray.2"
+		],
+		topLevelObject: {  // "topLevelObject"
+				nestedField: 'xxx',  // "topLevelObject.nestedField"
+				nestedArray: [  // "topLevelObject.nestedArray"
+						1,  // "topLevelObject.nestedArray.0"
+						2,  // "topLevelObject.nestedArray.1"
+						3,  // "topLevelObject.nestedArray.2"
+				],
+		}
 }
 ```
 
@@ -422,9 +422,9 @@ If certain fields require a value but it is possible that database entries have 
 ```javascript
 // Inject default values if not in database record
 injectDefaultValues: {
-    'name': 'Unnamed Person',
-    // for wildcard fields, the last part of the field name cannot be a wildcard
-    'personal.otherArr.*.a': '100',
+		'name': 'Unnamed Person',
+		// for wildcard fields, the last part of the field name cannot be a wildcard
+		'personal.otherArr.*.a': '100',
 },
 ```
 
@@ -436,7 +436,7 @@ The data binding responds to changes in the DOM. So Blaze can be used to generat
 
 ```html
 {{#each fields}}
-    <div>{{name}}: <input data-bind="value: particulars.{{field}}"></div>
+		<div>{{name}}: <input data-bind="value: particulars.{{field}}"></div>
 {{/each}}
 ```
 
@@ -484,9 +484,9 @@ Here are more examples:
 
 ```javascript
 updatersForServer: {
-    'x': 'update-x',
-    'someArray.*': 'update-someArray.*',
-    'anotherArray.*.properties.*': 'update-anotherArray.*.properties.*'
+		'x': 'update-x',
+		'someArray.*': 'update-someArray.*',
+		'anotherArray.*.properties.*': 'update-anotherArray.*.properties.*'
 },
 ```
 
@@ -494,29 +494,29 @@ updatersForServer: {
 
 ```javascript
 Meteor.methods({
-    'update-x': function(id, value) {
-        if (someAuthCheck(this.userId)) {
-            DataCollection.update(id, {
-                $set: {
-                    x: value
-                }
-            });
-        }
-    },
-    'update-someArray.*': function(id, value, k) {
-        var updater = {};
-        updater['someArray.' + k] = value;
-        DataCollection.update(id, {
-            $set: updater
-        });
-    },
-    'update-anotherArray.*.properties.*': function(id, value, k, fld) {
-        var updater = {};
-        updater['anotherArray.' + k + '.properties.' + fld] = value;
-        DataCollection.update(id, {
-            $set: updater
-        });
-    }
+		'update-x': function(id, value) {
+				if (someAuthCheck(this.userId)) {
+						DataCollection.update(id, {
+								$set: {
+										x: value
+								}
+						});
+				}
+		},
+		'update-someArray.*': function(id, value, k) {
+				var updater = {};
+				updater['someArray.' + k] = value;
+				DataCollection.update(id, {
+						$set: updater
+				});
+		},
+		'update-anotherArray.*.properties.*': function(id, value, k, fld) {
+				var updater = {};
+				updater['anotherArray.' + k + '.properties.' + fld] = value;
+				DataCollection.update(id, {
+						$set: updater
+				});
+		}
 });
 ```
 
@@ -530,16 +530,16 @@ Aside from plain string names Also allowed are updater descriptions of the follo
 
 ```javascript
 {
-    'name': function(id, value) {
-        console.info('[update-name]', id, "to", value);
-        Meteor.call('update-name', id, value);
-    },
-    'personal.someArr.1': {
-        method: 'update-personal.someArr.1',
-        callback: function(err, res, info) {
-            console.info('[update-personal.someArr.1]', err, res, info);
-        }
-    },
+		'name': function(id, value) {
+				console.info('[update-name]', id, "to", value);
+				Meteor.call('update-name', id, value);
+		},
+		'personal.someArr.1': {
+				method: 'update-personal.someArr.1',
+				callback: function(err, res, info) {
+						console.info('[update-personal.someArr.1]', err, res, info);
+				}
+		},
 }
 ```
 
@@ -547,13 +547,13 @@ In the latter case, `info` takes the form:
 
 ```javascript
 {
-    instance: instance,  // template instance
-    id: _id,   // _id
-    value: v,  // update value
-    params: params,  // wildcard params
-    methodName: methodName,  // method name
-    updateTime: updateTime,  // time update started
-    returnTime: returnTime,  // time update completed
+		instance: instance,  // template instance
+		id: _id,   // _id
+		value: v,  // update value
+		params: params,  // wildcard params
+		methodName: methodName,  // method name
+		updateTime: updateTime,  // time update started
+		returnTime: returnTime,  // time update completed
 };
 ```
 
@@ -567,10 +567,10 @@ Consider the following example:
 
 ```javascript
 dataTransformFromServer: {
-    tags: arr => arr.join && arr.join(',') || ''
+		tags: arr => arr.join && arr.join(',') || ''
 },
 dataTransformToServer: {
-    tags: x => x.split(',').map(y => y.trim())
+		tags: x => x.split(',').map(y => y.trim())
 },
 ```
 
@@ -581,7 +581,7 @@ Note that transformations actually take two parameters, the first being the valu
 
 ### Binding to the View
 
-When the template is rendered, the reactive elements are set up using `data-bind` attributes in the "mark up" part of the template. 
+When the template is rendered, the reactive elements are set up using `data-bind` attributes in the "mark up" part of the template.
 
 #### Binding: `html` and `text`
 
@@ -614,10 +614,10 @@ This one too, although the helper does bear some explaining. `repackageDictionar
 
 ```html
 {{#each repackageDictionaryAsArray emailPrefsAll}}
-    <div class="ui checkbox">
-        <input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
-        <label>{{value}}</label>
-    </div>
+		<div class="ui checkbox">
+				<input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
+				<label>{{value}}</label>
+		</div>
 {{/each}}
 ```
 
@@ -625,12 +625,12 @@ In the case of radio buttons, `checked` is bound to a string.
 
 ```html
 <div class="inline fields">
-    {{#each repackageDictionaryAsArray ageRanges}}
-        <div class="ui radio checkbox">
-            <input type="radio" name="age" value="{{key}}" data-bind="checked: age">
-            <label>{{value}}</label>
-        </div>
-    {{/each}}
+		{{#each repackageDictionaryAsArray ageRanges}}
+				<div class="ui radio checkbox">
+						<input type="radio" name="age" value="{{key}}" data-bind="checked: age">
+						<label>{{value}}</label>
+				</div>
+		{{/each}}
 </div>
 ```
 
@@ -647,7 +647,7 @@ For the `comment` input element, updates can happen as one is typing (due to upd
 
 The following modifiers are available and are applied in the form `<binding>#<modifier>-<option>#<modifier>-<option>: <view model field>`:
  - `updateon`: also updates the view model when a given event fires (e.g. `updateon-<event name>`)
- - `donotupdateon`: do not the view model when a given event fires (e.g. `donotupdateon-<event name>`); the only valid option is `input` and this only applies to `value` bindings.
+ - `donotupdateon`: do not update the view model when a given event fires (e.g. `donotupdateon-<event name>`); the only valid option is `input` and this only applies to `value` bindings.
  - `throttle`: throttles (e.g. `throttle-<interval in ms>`)
  - `debounce`: (e.g. `debounce-<interval in ms>`)
 
@@ -701,7 +701,7 @@ A tenuous design decision has been made not to phase out helpers. A less tenuous
 
 Sometimes one variable alone is not enough to determine the state of a DOM property. For example, to determine whether a phone number is valid, might depend both on the number and on the country. On the other hand, that example is faulty since a validation callback can do the relevant computations with full access to the view model.
 
-But anyway, usefulness aside, this is one example of such a binding: 
+But anyway, usefulness aside, this is one example of such a binding:
 ```html
 <div data-bind="style: {background-color: colR#colG#colB|makeRGB}">
 ```
@@ -716,15 +716,15 @@ The event handlers may be specified in the set up as follows:
 
 ```javascript
 eventHandlers: {
-    dragStartHandler: function(event, template, vmData) {
-        console.info("Drag Start at " + (new Date()), event, template, vmData);
-    },
-    dragEndHandler: function(event, template, vmData) {
-        console.info("Drag End at " + (new Date()), event, template, vmData);
-    },
-    saySomethingHappy: function() {
-        console.info("Let\'s chill. (Second mouseup event to fire.)");
-    },
+		dragStartHandler: function(event, template, vmData) {
+				console.info("Drag Start at " + (new Date()), event, template, vmData);
+		},
+		dragEndHandler: function(event, template, vmData) {
+				console.info("Drag End at " + (new Date()), event, template, vmData);
+		},
+		saySomethingHappy: function() {
+				console.info("Let\'s chill. (Second mouseup event to fire.)");
+		},
 },
 ```
 
@@ -749,10 +749,10 @@ Alternatively, it can be done via HTML:
 ```html
 <twdata field="additional" initial-value="view model to view only"></twdata>
 <div>
-    Additional (View Model Only): <input data-bind="value: additional">
+		Additional (View Model Only): <input data-bind="value: additional">
 </div>
 <div>
-    Additional: <span data-bind="html: additional"></span>
+		Additional: <span data-bind="html: additional"></span>
 </div>
 ```
 
@@ -767,18 +767,18 @@ Note also that tag-based initializers take an optional `processors` attribute, w
 ```javascript
 // In the config...
 preProcessors: {
-    toUpperCase: function(v) {
-        return v.toUpperCase();
-    },
-    appendTimeStamp: function(v) {
-        return v + ' (' + (new Date()) + ')';
-    },
+		toUpperCase: function(v) {
+				return v.toUpperCase();
+		},
+		appendTimeStamp: function(v) {
+				return v + ' (' + (new Date()) + ')';
+		},
 }
 ```
 
 See [Pre-processor Pipelines](#pre-processor-pipelines) below for more information. While pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model, `{}` is passed in in place of view model data for such initializers.
 
-Due to the nature of jQuery selectors, a selector at a parent template might select such nodes in child templates and inadvertently pollute the local view model one way of dealing with the problem is to add a `restrict-template-type` attribute indicating the names of applicable templates as a comma separated list. Omission makes the initialization applicable to all.
+Due to the nature of jQuery selectors, a selector at a parent template might select such nodes in child templates and inadvertently pollute the local view model. One way of dealing with the problem is to add a `restrict-template-type` attribute indicating the names of applicable templates as a comma separated list. Omission makes the initialization applicable to all.
 
 ```html
 <twdata field="somethingElse" initial-value="value" restrict-template-type="MyTemplate, MyOtherTemplate"></twdata>
@@ -850,18 +850,18 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 ```javascript
 [
-    {
-        id: "kiddy",
-        instance: [Blaze.TemplateInstance],
-        level: 1,
-        templateType: "Template.DemoThreeWayChild",
-    },
-    {
-        id: "grandkiddy",
-        instance: [Blaze.TemplateInstance],
-        level: 2,
-        templateType: "Template.DemoThreeWayGrandChild",
-    },
+		{
+				id: "kiddy",
+				instance: [Blaze.TemplateInstance],
+				level: 1,
+				templateType: "Template.DemoThreeWayChild",
+		},
+		{
+				id: "grandkiddy",
+				instance: [Blaze.TemplateInstance],
+				level: 2,
+				templateType: "Template.DemoThreeWayGrandChild",
+		},
 ]
 ```
 
@@ -932,15 +932,15 @@ Display (one-directional) bindings like `html` and `visible` (later `class`, `st
 
 ```javascript
 preProcessors: {
-    mapToAgeDisplay: x => ageRanges[x],
-    toUpperCase: x => x.toUpperCase(),
-    alert: function(x) {
-        alert(x);
-        return x;
-    },
-    // This is something special to make the Semantic UI Dropdown work
-    // More helpers will be written soon...
-    updateSemanticUIDropdown: ThreeWay.preProcessors.updateSemanticUIDropdown
+		mapToAgeDisplay: x => ageRanges[x],
+		toUpperCase: x => x.toUpperCase(),
+		alert: function(x) {
+				alert(x);
+				return x;
+		},
+		// This is something special to make the Semantic UI Dropdown work
+		// More helpers will be written soon...
+		updateSemanticUIDropdown: ThreeWay.preProcessors.updateSemanticUIDropdown
 },
 ```
 
@@ -970,11 +970,11 @@ Data validators are defined as follows:
 // Arguments: (value, vmData, wildCardParams)
 // validators have method signature:
 //   function(value, wildCardParams)
-// success/failure call backs have signature: 
+// success/failure call backs have signature:
 //   function(template, value, vmData, field, wildCardParams)
 validatorsVM: {
-    // tags seems to be a decent candidate for one here
-    // but see below
+		// tags seems to be a decent candidate for one here
+		// but see below
 },
 
 // Validators under validatorsServer consider transformed values
@@ -982,21 +982,21 @@ validatorsVM: {
 // (no additional view-model data, work with that somewhere else)
 // validators have method signature:
 //   function(value, wildCardParams)
-// success/failure call backs have signature: 
+// success/failure call backs have signature:
 //   function(template, value, vmData, field, wildCardParams)
 validatorsServer: {
-    tags: {
-        validator: function(x, vmData, wildCardParams) {
-            // tags must begin with "tag"
-            return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
-        },
-        success: function(template, value, vmData, field, wildCardParams) {
-            template._3w_set('tagsValidationErrorText', '');
-        },
-        failure: function(template, value, vmData, field, wildCardParams) {
-            template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
-        },
-    },
+		tags: {
+				validator: function(x, vmData, wildCardParams) {
+						// tags must begin with "tag"
+						return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
+				},
+				success: function(template, value, vmData, field, wildCardParams) {
+						template._3w_set('tagsValidationErrorText', '');
+				},
+				failure: function(template, value, vmData, field, wildCardParams) {
+						template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+				},
+		},
 },
 ```
 
@@ -1007,11 +1007,12 @@ Recall that in the previous section, the following example was described:
 ```
 
 The validation flow is as follows:
-    1. a change is made in the view which propagates to the view model
-    2. validation starts
-    3. view-model level validation using data in the view model and success/failure call-backs fire
-    4. if the view-model level check does not fail, server validation is run and success/failure call-backs fire
-    5. the overall result is returned
+
+		1. a change is made in the view which propagates to the view model
+		2. validation starts
+		3. view-model level validation using data in the view model and success/failure call-backs fire
+		4. if the view-model level check does not fail, server validation is run and success/failure call-backs fire
+		5. the overall result is returned
 
 If the change is a candidate for a database update (e.g.: the value is not the same as the previous known value in the database), then validity is used as a requirement for an update. (As is common sense.)
 
@@ -1080,7 +1081,7 @@ Extra processors may be accessed via the `ThreeWay.preProcessors` namespace (e.g
 
 ### Extra Pre-Processor Generators
 
-Similar to the above, but these are generators for pre-processor take one or more parameters and return a pre-processor. They may be accessed via the `ThreeWay.preProcessorGenerators` namespace (e.g.: `ThreeWay.preProcessorGenerators.undefinedFilterGenerator`).
+Similar to the above, but these are generators for a pre-processor. Takes one or more parameters and return a pre-processor. They may be accessed via the `ThreeWay.preProcessorGenerators` namespace (e.g.: `ThreeWay.preProcessorGenerators.undefinedFilterGenerator`).
 
 - `undefinedFilterGenerator(defaultValue)`: a function that returns a function that maps `undefined`'s to `defaultValue` and passes other values
 - `makeMap(map, defaultValue)`: a function that maps `k` to `map[k]` (and returns `defaultValue` if `map` does not have property `k`)
@@ -1104,16 +1105,16 @@ Similar to the above, but these are generators for transformations that take one
  - `arrayFromIdKeyDictionary(idField)`: generates a transform function that maps dictionaries (objects) like:
  ```javascript
  [
-    {_id: 'abc', f1: 'a', f2: 1}
-    {_id: 'def', f1: 'b', f2: 2}
-    {_id: 'ghi', f1: 'c', f2: 3}
+		{_id: 'abc', f1: 'a', f2: 1}
+		{_id: 'def', f1: 'b', f2: 2}
+		{_id: 'ghi', f1: 'c', f2: 3}
  ]
  ```
  ... to ...
  {
-    'abc': {_id: 'abc', f1: 'a', f2: 1}
-    'def': {_id: 'def', f1: 'b', f2: 2}
-    'ghi': {_id: 'ghi', f1: 'c', f2: 3}
+		'abc': {_id: 'abc', f1: 'a', f2: 1}
+		'def': {_id: 'def', f1: 'b', f2: 2}
+		'ghi': {_id: 'ghi', f1: 'c', f2: 3}
  }
  ... (here `idField` is `_id`).
  - `arrayToIdKeyDictionary(idField)`: generates the reverse transformation of `arrayFromIdKeyDictionary(idField)`.
@@ -1132,9 +1133,9 @@ Generally, these generators take, as first argument, an event handler with signa
 For example:
 ```javascript
 var ctrlReturnKey = ThreeWay.eventGenerators.returnKeyHandlerGenerator(() => console.info('[CTRL-ENTER handler]'), {
-    ctrlKey: true,
-    altKey: false,
-    shiftKey: false,
+		ctrlKey: true,
+		altKey: false,
+		shiftKey: false,
 });
 ```
 
@@ -1188,7 +1189,7 @@ As of v0.1.17, a compromise solution was included in the form of the `injectDefa
 Pre-v0.1.2, there was the issue of a race condition when multiple fields with the same top level field (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`) would be updated tens of milliseconds apart.
 The [observer callbacks](http://docs.meteor.com/#/full/observe_changes) would send entire top level sub-documents even if a single primitive value deep within was updated.
 
-For a time, an attempt was made to address the problem by (i) queueing via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields). 
+For a time, an attempt was made to address the problem by (i) queueing via promise chains of Meteor methods grouped by top-level fields plus a delay before next Meteor method being triggered, and (ii) field specific updaters (with individual throttling/debouncing) to avoid inadvertent skipping of updates from sub-fields (due to debounce/throttle effects on a method being used to update multiple sub-fields).
 
 Pre-v0.1.14, the above race condition was still not fully solved. The "comprehensive solution" was to store snapshots of entire sub-documents with the expectation that stuff would get sent back and data sent back from the server matching existing values (that were not too old) could be "ignored".
 
