@@ -686,11 +686,11 @@ Such bindings include `html`, `visible`, `disabled`, as well as the `class`, `st
 
 Helpers are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
 
-It is useful to highlight `_3w_haveData`, which is automatically added to the set of template helpers.
+It is useful to highlight `_3w_hasData`, which is automatically added to the set of template helpers.
 
 ```html
-<div data-bind="visible: _3w_haveData">...</div>
-<button data-bind="disabled: _3w_haveData">...</button>
+<div data-bind="visible: _3w_hasData">...</div>
+<button data-bind="disabled: _3w_hasData">...</button>
 ```
 
 One might find it to be particularly useful.
@@ -881,7 +881,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_id`: returns the `_id` of the document selected (if any)
 
- - `_3w_haveData`: returns a boolean indicating whether the view model has data yet
+ - `_3w_hasData`: returns a boolean indicating whether the view model has data yet
 
  - `_3w_get`: See [previous section](#instance-methods).
 
