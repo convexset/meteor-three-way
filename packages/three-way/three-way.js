@@ -2699,6 +2699,10 @@ if (Meteor.isClient) {
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'transformations', {
+		numberFromString: function numberFromString(num) {
+			var _num = Number(num);
+			return Number.isNaN(_num) ? 0.0 : _num;
+		},
 		dateFromString: function dateFromString(ds) {
 			var splt = ds.split('-');
 			var dt = new Date();
