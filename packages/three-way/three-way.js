@@ -4,18 +4,19 @@
 var __tw = function ThreeWay() {};
 ThreeWay = new __tw();
 
-const THREE_WAY_NAMESPACE = "__three_way__";
-const DATA_BIND_ATTRIBUTE = "data-bind";
-const THREE_WAY_ATTRIBUTE_NAMESPACE = "three-way";
-const THREE_WAY_DATA_BINDING_ID = "three-way-id";
-const THREE_WAY_DATA_BINDING_LEVEL = "three-way-id-level";
-const THREE_WAY_DATA_BINDING_INSTANCE = "three-way-instance";
-const RESTRICT_TEMPLATE_TYPE_ATTRIBUTE = 'restrict-template-type';
-const DEFAULT_DEBOUNCE_INTERVAL = 500;
-const DEFAULT_THROTTLE_INTERVAL = 500;
-const DEFAULT_METHOD_INTERVAL = 10;
+var THREE_WAY_NAMESPACE = "__three_way__";
+var THREE_WAY_NAMESPACE_METHODS = "_3w_";
+var DATA_BIND_ATTRIBUTE = "data-bind";
+var THREE_WAY_ATTRIBUTE_NAMESPACE = "three-way";
+var THREE_WAY_DATA_BINDING_ID = "three-way-id";
+var THREE_WAY_DATA_BINDING_LEVEL = "three-way-id-level";
+var THREE_WAY_DATA_BINDING_INSTANCE = "three-way-instance";
+var RESTRICT_TEMPLATE_TYPE_ATTRIBUTE = 'restrict-template-type';
+var DEFAULT_DEBOUNCE_INTERVAL = 500;
+var DEFAULT_THROTTLE_INTERVAL = 500;
+var DEFAULT_METHOD_INTERVAL = 10;
 
-const AGE_THRESHOLD_OLD_ITEM = 10000;
+var AGE_THRESHOLD_OLD_ITEM = 10000;
 
 var DEBUG_MODE = false;
 var DEBUG_MODE_ALL = false;
@@ -356,7 +357,7 @@ if (Meteor.isClient) {
 				fieldMatchParams: {}, // No need to re-create
 				_fieldPseudoMatched: [], // No need to re-create
 				_fieldsTested: [], // No need to re-create
-				haveData: new ReactiveVar(false),
+				hasData: new ReactiveVar(false),
 				id: new ReactiveVar(null),
 				observer: null,
 				computations: [],
@@ -374,47 +375,50 @@ if (Meteor.isClient) {
 			};
 
 			instance[THREE_WAY_NAMESPACE] = threeWay;
+
+			instance[THREE_WAY_NAMESPACE_METHODS] = {};
+
 			var __rootChanges = 0;
-			instance._3w_setRoots = function(selectorString) {
+			instance[THREE_WAY_NAMESPACE_METHODS].setRoots = function(selectorString) {
 				var nodes = instance.$(selectorString);
 				__rootChanges += 1;
 				threeWay.rootNodes = Array.prototype.map.call(nodes, x => x);
 				threeWay._rootNodes.set(selectorString + "|" + __rootChanges);
 			};
-			instance._3w_setId = function(id) {
+			instance[THREE_WAY_NAMESPACE_METHODS].setId = function(id) {
 				threeWay.id.set(id);
 			};
-			instance._3w_getId = function() {
+			instance[THREE_WAY_NAMESPACE_METHODS].getId = function() {
 				return threeWay.id.get();
 			};
-			instance._3w_get3wInstanceId = function() {
+			instance[THREE_WAY_NAMESPACE_METHODS].get3wInstanceId = function() {
 				return threeWay.instanceId.get();
 			};
-			instance._3w_get = p => threeWay.data.get(p);
-			instance._3w_set = function(p, v) {
+			instance[THREE_WAY_NAMESPACE_METHODS].get = p => threeWay.data.get(p);
+			instance[THREE_WAY_NAMESPACE_METHODS].set = function(p, v) {
 				threeWay.data.set(p, v);
 				updateRelatedFields(p, v);
 			};
-			instance._3w_get_NR = p => threeWay.dataMirror[p];
-			instance._3w_getAll = () => threeWay.data.all();
-			instance._3w_getAll_NR = () => _.extend({}, threeWay.dataMirror);
+			instance[THREE_WAY_NAMESPACE_METHODS].get_NR = p => threeWay.dataMirror[p];
+			instance[THREE_WAY_NAMESPACE_METHODS].getAll = () => threeWay.data.all();
+			instance[THREE_WAY_NAMESPACE_METHODS].getAll_NR = () => _.extend({}, threeWay.dataMirror);
 
-			instance._3w_focusedField = () => threeWay._focusedField.get();
-			instance._3w_focusedFieldUpdatedOnServer = p => threeWay._focusedFieldUpdatedOnServer.get(p);
+			instance[THREE_WAY_NAMESPACE_METHODS].focusedField = () => threeWay._focusedField.get();
+			instance[THREE_WAY_NAMESPACE_METHODS].focusedFieldUpdatedOnServer = p => threeWay._focusedFieldUpdatedOnServer.get(p);
 
-			instance._3w_isSyncedToServer = p => !!threeWay.__serverIsUpdated.get(p);
-			instance._3w_allSyncedToServer = function() {
+			instance[THREE_WAY_NAMESPACE_METHODS].isSyncedToServer = p => !!threeWay.__serverIsUpdated.get(p);
+			instance[THREE_WAY_NAMESPACE_METHODS].allSyncedToServer = function() {
 				return _.reduce(threeWay.__serverIsUpdated.all(), (m, v) => !!m && !!v, true);
 			};
-			instance._3w_isNotInvalid = p => !!threeWay.__dataIsNotInvalid.get(p);
+			instance[THREE_WAY_NAMESPACE_METHODS].isNotInvalid = p => !!threeWay.__dataIsNotInvalid.get(p);
 
-			instance._3w_parentDataGet = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.get(p);
-			instance._3w_parentDataGetAll = (levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.all();
-			instance._3w_parentDataSet = (p, v, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.set(p, v);
-			instance._3w_parentDataGet_NR = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].dataMirror[p];
-			instance._3w_parentDataGetAll_NR = (levelsUp) => _.extend({}, instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].dataMirror);
+			instance[THREE_WAY_NAMESPACE_METHODS].parentDataGet = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.get(p);
+			instance[THREE_WAY_NAMESPACE_METHODS].parentDataGetAll = (levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.all();
+			instance[THREE_WAY_NAMESPACE_METHODS].parentDataSet = (p, v, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].data.set(p, v);
+			instance[THREE_WAY_NAMESPACE_METHODS].parentDataGet_NR = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].dataMirror[p];
+			instance[THREE_WAY_NAMESPACE_METHODS].parentDataGetAll_NR = (levelsUp) => _.extend({}, instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE].dataMirror);
 
-			instance._3w_childDataGetId = function _3w_childDataGetId(childNameArray) {
+			instance[THREE_WAY_NAMESPACE_METHODS].childDataGetId = function _3w_childDataGetId(childNameArray) {
 				if (childNameArray instanceof Array) {
 					if (childNameArray.length === 0) {
 						return;
@@ -424,17 +428,17 @@ if (Meteor.isClient) {
 						return;
 					}
 					if (childNameArray.length === 1) {
-						return threeWay.children[childNameArray[0]]._3w_getId();
+						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].getId();
 					} else {
 						var cn = childNameArray.map(x => x);
 						cn.shift();
-						return threeWay.children[childNameArray[0]]._3w_childDataGetId(cn);
+						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGetId(cn);
 					}
 				} else {
-					return instance._3w_childDataGetId([childNameArray]);
+					return instance[THREE_WAY_NAMESPACE_METHODS].childDataGetId([childNameArray]);
 				}
 			};
-			instance._3w_childDataSetId = function _3w_childDataSetId(id, childNameArray) {
+			instance[THREE_WAY_NAMESPACE_METHODS].childDataSetId = function _3w_childDataSetId(id, childNameArray) {
 				if (childNameArray instanceof Array) {
 					if (childNameArray.length === 0) {
 						return;
@@ -447,17 +451,17 @@ if (Meteor.isClient) {
 						return;
 					}
 					if (childNameArray.length === 1) {
-						threeWay.children[childNameArray[0]]._3w_setId(id);
+						threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].setId(id);
 					} else {
 						var cn = childNameArray.map(x => x);
 						cn.shift();
-						threeWay.children[childNameArray[0]]._3w_childDataSetId(id, cn);
+						threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataSetId(id, cn);
 					}
 				} else {
-					instance._3w_childDataSetId(id, [childNameArray]);
+					instance[THREE_WAY_NAMESPACE_METHODS].childDataSetId(id, [childNameArray]);
 				}
 			};
-			instance._3w_childDataGet = function _3w_childDataGet(p, childNameArray) {
+			instance[THREE_WAY_NAMESPACE_METHODS].childDataGet = function _3w_childDataGet(p, childNameArray) {
 				if (childNameArray instanceof Array) {
 					if (childNameArray.length === 0) {
 						return;
@@ -472,13 +476,13 @@ if (Meteor.isClient) {
 					} else {
 						var cn = childNameArray.map(x => x);
 						cn.shift();
-						return threeWay.children[childNameArray[0]]._3w_childDataGet(p, cn);
+						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGet(p, cn);
 					}
 				} else {
-					return instance._3w_childDataGet(p, [childNameArray]);
+					return instance[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, [childNameArray]);
 				}
 			};
-			instance._3w_childDataGetAll = function _3w_childDataGetAll(childNameArray) {
+			instance[THREE_WAY_NAMESPACE_METHODS].childDataGetAll = function _3w_childDataGetAll(childNameArray) {
 				if (childNameArray instanceof Array) {
 					if (childNameArray.length === 0) {
 						return;
@@ -493,13 +497,13 @@ if (Meteor.isClient) {
 					} else {
 						var cn = childNameArray.map(x => x);
 						cn.shift();
-						return threeWay.children[childNameArray[0]]._3w_childDataGetAll(cn);
+						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGetAll(cn);
 					}
 				} else {
-					return instance._3w_childDataGetAll([childNameArray]);
+					return instance[THREE_WAY_NAMESPACE_METHODS].childDataGetAll([childNameArray]);
 				}
 			};
-			instance._3w_childDataSet = function _3w_childDataSet(p, v, childNameArray) {
+			instance[THREE_WAY_NAMESPACE_METHODS].childDataSet = function _3w_childDataSet(p, v, childNameArray) {
 				if (childNameArray instanceof Array) {
 					if (childNameArray.length === 0) {
 						return;
@@ -517,28 +521,28 @@ if (Meteor.isClient) {
 					} else {
 						var cn = childNameArray.map(x => x);
 						cn.shift();
-						return threeWay.children[childNameArray[0]]._3w_childDataSet(p, v, cn);
+						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, cn);
 					}
 				} else {
-					return instance._3w_childDataSet(p, v, [childNameArray]);
+					return instance[THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, [childNameArray]);
 				}
 			};
-			instance._3w_childDataGet_NR = function _3w_childDataGet_NR(p, childNameArray) {
+			instance[THREE_WAY_NAMESPACE_METHODS].childDataGet_NR = function _3w_childDataGet_NR(p, childNameArray) {
 				var value;
 				Tracker.nonreactive(function() {
-					value = instance._3w_childDataGet(p, childNameArray);
+					value = instance[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, childNameArray);
 				});
 				return value;
 			};
-			instance._3w_childDataGetAll_NR = function _3w_childDataGetAll_NR(childNameArray) {
+			instance[THREE_WAY_NAMESPACE_METHODS].childDataGetAll_NR = function _3w_childDataGetAll_NR(childNameArray) {
 				var value;
 				Tracker.nonreactive(function() {
-					value = instance._3w_childDataGetAll(childNameArray);
+					value = instance[THREE_WAY_NAMESPACE_METHODS].childDataGetAll(childNameArray);
 				});
 				return value;
 			};
 
-			instance._3w_getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth, path) {
+			instance[THREE_WAY_NAMESPACE_METHODS].getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth, path) {
 				if (typeof levels === "undefined") {
 					levels = Number.MAX_SAFE_INTEGER;
 				}
@@ -566,32 +570,32 @@ if (Meteor.isClient) {
 							instance: threeWay.children[id],
 							templateType: threeWay.children[id].view.name
 						});
-						Array.prototype.push.apply(descendants, threeWay.children[id]._3w_getAllDescendants_NR(levels - 1, currDepth + 1, thisPath));
+						Array.prototype.push.apply(descendants, threeWay.children[id][THREE_WAY_NAMESPACE_METHODS].getAllDescendants_NR(levels - 1, currDepth + 1, thisPath));
 					}
 				});
 				return descendants;
 			};
 
-			instance._3w_siblingDataGet = function _3w_siblingDataGet(p, siblingName) {
-				return instance.parentTemplate()._3w_childDataGet(p, siblingName);
+			instance[THREE_WAY_NAMESPACE_METHODS].siblingDataGet = function _3w_siblingDataGet(p, siblingName) {
+				return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, siblingName);
 			};
-			instance._3w_siblingDataGetAll = function _3w_siblingDataGet(siblingName) {
-				return instance.parentTemplate()._3w_childDataGetAll(siblingName);
+			instance[THREE_WAY_NAMESPACE_METHODS].siblingDataGetAll = function _3w_siblingDataGet(siblingName) {
+				return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].childDataGetAll(siblingName);
 			};
-			instance._3w_siblingDataSet = function _3w_siblingDataSet(p, v, siblingName) {
-				return instance.parentTemplate()._3w_childDataSet(p, v, siblingName);
+			instance[THREE_WAY_NAMESPACE_METHODS].siblingDataSet = function _3w_siblingDataSet(p, v, siblingName) {
+				return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, siblingName);
 			};
-			instance._3w_siblingDataGet_NR = function _3w_siblingDataGet_NR(p, siblingName) {
+			instance[THREE_WAY_NAMESPACE_METHODS].siblingDataGet_NR = function _3w_siblingDataGet_NR(p, siblingName) {
 				var value;
 				Tracker.nonreactive(function() {
-					value = instance._3w_siblingDataGet(p, siblingName);
+					value = instance[THREE_WAY_NAMESPACE_METHODS].siblingDataGet(p, siblingName);
 				});
 				return value;
 			};
-			instance._3w_siblingDataGetAll_NR = function _3w_siblingDataGetAll_NR(siblingName) {
+			instance[THREE_WAY_NAMESPACE_METHODS].siblingDataGetAll_NR = function _3w_siblingDataGetAll_NR(siblingName) {
 				var value;
 				Tracker.nonreactive(function() {
-					value = instance._3w_siblingDataGetAll(siblingName);
+					value = instance[THREE_WAY_NAMESPACE_METHODS].siblingDataGetAll(siblingName);
 				});
 				return value;
 			};
@@ -1032,8 +1036,8 @@ if (Meteor.isClient) {
 										var focusedField;
 										var currentValue;
 										Tracker.nonreactive(function() {
-											focusedField = instance._3w_focusedField();
-											currentValue = instance._3w_get(focusedField);
+											focusedField = instance[THREE_WAY_NAMESPACE_METHODS].focusedField();
+											currentValue = instance[THREE_WAY_NAMESPACE_METHODS].get(focusedField);
 										});
 										if ((focusedField === curr_f) && !!options.updateOfFocusedFieldCallback) {
 											threeWay._focusedFieldUpdatedOnServer.set(curr_f, true);
@@ -1130,7 +1134,7 @@ if (Meteor.isClient) {
 							if (IN_DEBUG_MODE_FOR('observer')) {
 								console.log('[Observer] Added:', id, doc);
 							}
-							threeWay.haveData.set(true);
+							threeWay.hasData.set(true);
 							threeWay.__idReady = true;
 							descendInto(fields, doc, true);
 
@@ -1181,7 +1185,7 @@ if (Meteor.isClient) {
 							if (IN_DEBUG_MODE_FOR('observer')) {
 								console.log('[Observer] Removed:', id);
 							}
-							threeWay.haveData.set(false);
+							threeWay.hasData.set(false);
 							threeWay.id.set(null);
 							threeWay.__idReady = false;
 						}
@@ -2174,6 +2178,10 @@ if (Meteor.isClient) {
 
 							handlerNames.forEach(function(m) {
 								var handler = options.eventHandlers[m];
+								if (!(handler instanceof Function)) {
+									console.error('[ThreeWay] No such event handler: ' + m, elem);
+									return;
+								}
 								var compositeHandlerUsed = false;
 
 								_.forEach({
@@ -2374,11 +2382,11 @@ if (Meteor.isClient) {
 				if (IN_DEBUG_MODE_FOR('bind')) {
 					console.log("[bind] Setting root node for instance of " + thisTemplateName + " via selector " + instance.data._3w_rootElementSelector + ". (Prev: " + threeWay.rootNodes.toString().split('|')[0] + ")");
 				}
-				instance._3w_setRoots(instance.data._3w_rootElementSelector);
+				instance[THREE_WAY_NAMESPACE_METHODS].setRoots(instance.data._3w_rootElementSelector);
 			} else {
 				// Observe all the elements in the template
 				// (if there is a wrapping element, good... otherwise...)
-				instance._3w_setRoots("*");
+				instance[THREE_WAY_NAMESPACE_METHODS].setRoots("*");
 			}
 
 			//////////////////////////////////////////////////////////////////
@@ -2569,7 +2577,7 @@ if (Meteor.isClient) {
 				if (IN_DEBUG_MODE_FOR('new-id')) {
 					console.log("[new-id] Setting initial id for instance of " + thisTemplateName + " to " + instance.data._3w_id);
 				}
-				instance._3w_setId(instance.data._3w_id);
+				instance[THREE_WAY_NAMESPACE_METHODS].setId(instance.data._3w_id);
 			}
 
 		});
@@ -2598,33 +2606,33 @@ if (Meteor.isClient) {
 		});
 
 		tmpl.helpers({
-			_3w_id: () => Template.instance()._3w_getId(),
-			_3w_3wInstanceId: () => Template.instance()._3w_get3wInstanceId(),
-			_3w_haveData: () => Template.instance()[THREE_WAY_NAMESPACE].haveData.get(),
-			_3w_get: (propName) => Template.instance()._3w_get(propName),
-			_3w_getAll: () => Template.instance()._3w_getAll(),
+			_3w_id: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].getId(),
+			_3w_3wInstanceId: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].get3wInstanceId(),
+			_3w_hasData: () => Template.instance()[THREE_WAY_NAMESPACE].hasData.get(),
+			_3w_get: (propName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].get(propName),
+			_3w_getAll: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].getAll(),
 
-			_3w_focusedField: () => Template.instance()._3w_focusedField(),
-			_3w_focusedFieldUpdatedOnServer: p => Template.instance()._3w_focusedFieldUpdatedOnServer(p),
+			_3w_focusedField: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].focusedField(),
+			_3w_focusedFieldUpdatedOnServer: p => Template.instance()[THREE_WAY_NAMESPACE_METHODS].focusedFieldUpdatedOnServer(p),
 
-			_3w_isSyncedToServer: (propName) => Template.instance()._3w_isSyncedToServer(propName),
-			_3w_notSyncedToServer: (propName) => !Template.instance()._3w_isSyncedToServer(propName),
-			_3w_allSyncedToServer: () => Template.instance()._3w_allSyncedToServer(),
-			_3w_isNotInvalid: (propName) => Template.instance()._3w_isNotInvalid(propName),
-			_3w_isInvalid: (propName) => !Template.instance()._3w_isNotInvalid(propName),
-			_3w_validValuesSynced: (propName) => Template.instance()._3w_isSyncedToServer(propName) || (!Template.instance()._3w_isNotInvalid(propName)),
-			_3w_validValuesNotSynced: (propName) => (!Template.instance()._3w_isSyncedToServer(propName)) && Template.instance()._3w_isNotInvalid(propName),
+			_3w_isSyncedToServer: (propName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].isSyncedToServer(propName),
+			_3w_notSyncedToServer: (propName) => !Template.instance()[THREE_WAY_NAMESPACE_METHODS].isSyncedToServer(propName),
+			_3w_allSyncedToServer: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].allSyncedToServer(),
+			_3w_isNotInvalid: (propName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].isNotInvalid(propName),
+			_3w_isInvalid: (propName) => !Template.instance()[THREE_WAY_NAMESPACE_METHODS].isNotInvalid(propName),
+			_3w_validValuesSynced: (propName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].isSyncedToServer(propName) || (!Template.instance()[THREE_WAY_NAMESPACE_METHODS].isNotInvalid(propName)),
+			_3w_validValuesNotSynced: (propName) => (!Template.instance()[THREE_WAY_NAMESPACE_METHODS].isSyncedToServer(propName)) && Template.instance()[THREE_WAY_NAMESPACE_METHODS].isNotInvalid(propName),
 			_3w_expandParams: ThreeWay.expandParams,
 
-			_3w_parentDataGet: (p, levelsUp) => Template.instance()._3w_parentDataGet(p, levelsUp),
-			_3w_parentDataGetAll: (levelsUp) => Template.instance()._3w_parentDataGetAll(levelsUp),
+			_3w_parentDataGet: (p, levelsUp) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].parentDataGet(p, levelsUp),
+			_3w_parentDataGetAll: (levelsUp) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].parentDataGetAll(levelsUp),
 
-			_3w_childDataGetId: (childNameArray) => Template.instance()._3w_childDataGetId(childNameArray),
-			_3w_childDataGet: (p, childNameArray) => Template.instance()._3w_childDataGet(p, childNameArray),
-			_3w_childDataGetAll: (childNameArray) => Template.instance()._3w_childDataGetAll(childNameArray),
+			_3w_childDataGetId: (childNameArray) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].childDataGetId(childNameArray),
+			_3w_childDataGet: (p, childNameArray) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, childNameArray),
+			_3w_childDataGetAll: (childNameArray) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].childDataGetAll(childNameArray),
 
-			_3w_siblingDataGet: (p, siblingName) => Template.instance()._3w_siblingDataGet(p, siblingName),
-			_3w_siblingDataGetAll: (siblingName) => Template.instance()._3w_siblingDataGetAll(siblingName),
+			_3w_siblingDataGet: (p, siblingName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].siblingDataGet(p, siblingName),
+			_3w_siblingDataGetAll: (siblingName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].siblingDataGetAll(siblingName),
 		});
 	});
 
@@ -2656,10 +2664,9 @@ if (Meteor.isClient) {
 					$(elem.parentElement)
 						.dropdown('set exactly', x.toString().split(',').map(x => x.trim()));
 				}
-			} else {
-				$(elem.parentElement)
-					.dropdown('refresh');
 			}
+			$(elem.parentElement)
+				.dropdown('refresh');
 			return x;
 		},
 		undefinedToEmptyStringFilter: ThreeWay.preProcessorGenerators.undefinedFilterGenerator(""),
@@ -2667,6 +2674,16 @@ if (Meteor.isClient) {
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'transformationGenerators', {
+		arrayFromIdKeyDictionary: idField => function arrayFromIdKeyDictionary(dict) {
+			return (!!dict) ? _.map(dict, function(v, id) {
+				var o = _.extend({}, v);
+				o[idField] = id;
+				return o;
+			}) : [];
+		},
+		arrayToIdKeyDictionary: idField => function arrayToIdKeyDictionary(arr) {
+			return (!!arr) ? _.object(arr.map(x => [x[idField], x])) : {};
+		},
 		arrayFromDelimitedString: function arrayFromDelimitedString(delimiter) {
 			return function arrayFromDelimitedString(x) {
 				if ((typeof x === "undefined") || (x === null)) {
@@ -2696,13 +2713,13 @@ if (Meteor.isClient) {
 				return !!x ? [trueIndicator] : [];
 			};
 		},
+		numberFromString: (defaultValue) => function numberFromString(num) {
+			var _num = Number(num);
+			return Number.isNaN(_num) ? defaultValue : _num;
+		},
 	});
 
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'transformations', {
-		numberFromString: function numberFromString(num) {
-			var _num = Number(num);
-			return Number.isNaN(_num) ? 0.0 : _num;
-		},
 		dateFromString: function dateFromString(ds) {
 			var splt = ds.split('-');
 			var dt = new Date();

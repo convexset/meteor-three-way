@@ -1,7 +1,17 @@
 /* global Demo: true */
 
+DataThing = function DataThing(doc) {
+	_.extend(this, doc);
+}
+
+DataThing.prototype = {
+	someMethod: () => "lalalala"
+};
+
 Demo = {
-	collection: new Mongo.Collection('data'),
+	collection: new Mongo.Collection('data', {
+		transform: (doc) => new DataThing(doc)
+	}),
 	fields: [
 		'name',
 		'emailPrefs',

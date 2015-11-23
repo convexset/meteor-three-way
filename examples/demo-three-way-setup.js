@@ -113,11 +113,11 @@ if (Meteor.isClient) {
 				},
 				success: function(template, value, vmData, field, params) {
 					console.info('[Validated!] personal.someArr.*', value, field, params);
-					template._3w_set('someArrValidationErrorText.' + params[0], '');
+					template._3w_.set('someArrValidationErrorText.' + params[0], '');
 				},
 				failure: function(template, value, vmData, field, params) {
 					console.warn('[Validation Failed] personal.someArr.*', value, field, params);
-					template._3w_set('someArrValidationErrorText.' + params[0], 'Invalid Value: ' + value);
+					template._3w_.set('someArrValidationErrorText.' + params[0], 'Invalid Value: ' + value);
 				},
 			}
 		},
@@ -132,11 +132,11 @@ if (Meteor.isClient) {
 				},
 				success: function(template, value, vmData, field, params) {
 					console.info('[Validated!] tags:', value, field, params);
-					template._3w_set('tagsValidationErrorText', '');
+					template._3w_.set('tagsValidationErrorText', '');
 				},
 				failure: function(template, value, vmData, field, params) {
 					console.warn('[Validation Failed] tags:', value, field, params);
-					template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+					template._3w_.set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
 				},
 			}
 		},
@@ -148,7 +148,7 @@ if (Meteor.isClient) {
 		helpers: {
 			altGetId: function() {
 				// console.info('altGetId called!', Template.instance() && Template.instance().view.name);
-				return this._3w_getId();
+				return this._3w_.getId();
 			},
 		},
 

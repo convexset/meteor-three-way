@@ -786,67 +786,67 @@ Due to the nature of jQuery selectors, a selector at a parent template might sel
 
 ### Instance Methods
 
-The following methods are crammed onto each template instance in an `onCreated` hook.
+The following methods are crammed onto each template instance in an `onCreated` hook. They may be accessed via `instance._3w_` (where `instance` is the relevant template instance).
 
 #### Organizing the DOM
 
- - `_3w_setRoots(selectorString)`: selects the root of the `ThreeWay` instance using a selector string (`Template.instance().$` will be used); child nodes of the single node (the method throws an error if more than one node is matched), present and forthcoming, will be watched for changes (and the respective data bindings updated); See [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information
+ - `setRoots(selectorString)`: selects the root of the `ThreeWay` instance using a selector string (`Template.instance().$` will be used); child nodes of the single node (the method throws an error if more than one node is matched), present and forthcoming, will be watched for changes (and the respective data bindings updated); See [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information
 
 #### My Data
 
- - `_3w_getId()`: gets the id of the document bound to
+ - `getId()`: gets the id of the document bound to
 
- - `_3w_setId(id)`: sets the id of the document to bind to
+ - `setId(id)`: sets the id of the document to bind to
 
- - `_3w_get(prop)`: gets a property
+ - `get(prop)`: gets a property
 
- - `_3w_set(prop, value)`: sets a property
+ - `set(prop, value)`: sets a property
 
- - `_3w_get_NR(prop)`: gets a property "non-reactively"
+ - `get_NR(prop)`: gets a property "non-reactively"
 
- - `_3w_getAll_NR`: gets all the data "non-reactively"
+ - `getAll_NR`: gets all the data "non-reactively"
 
- - `_3w_isSyncedToServer(prop)`: returns `true` if `ThreeWay` can be sure that data for the field with name `prop` has been received and written by the server.
+ - `isSyncedToServer(prop)`: returns `true` if `ThreeWay` can be sure that data for the field with name `prop` has been received and written by the server.
 
- - `_3w_allSyncedToServer`: returns `true` if `ThreeWay` can be sure that all data has been received and written by the server.
+ - `allSyncedToServer`: returns `true` if `ThreeWay` can be sure that all data has been received and written by the server.
 
- - `_3w_isNotInvalid(prop)`: returns `true` if data is not invalid (i.e.: available validators return `true`).
+ - `isNotInvalid(prop)`: returns `true` if data is not invalid (i.e.: available validators return `true`).
 
- - `_3w_expandParams(fieldSpec, params)`: takes a wild card field specification (like `'friends.*.name'`) and parameters (like `[3]`) to generate a field specifier (like `friends.3.name`).
+ - `expandParams(fieldSpec, params)`: takes a wild card field specification (like `'friends.*.name'`) and parameters (like `[3]`) to generate a field specifier (like `friends.3.name`).
 
- - `_3w_focusedField()`: returns the currently focused field.
+ - `focusedField()`: returns the currently focused field.
 
- - `_3w_focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
+ - `focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
 
 #### Ancestor Data
 
- - `_3w_parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
+ - `parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
 
- - `_3w_parentDataGetAll(p, levelsUp)`: returns all data from parent instance `levelsUp` levels up (default: 1)
+ - `parentDataGetAll(p, levelsUp)`: returns all data from parent instance `levelsUp` levels up (default: 1)
 
- - `_3w_parentDataSet(p, v, levelsUp)`: sets property `p` on parent instance to `v` `levelsUp` levels up (default: 1)
+ - `parentDataSet(p, v, levelsUp)`: sets property `p` on parent instance to `v` `levelsUp` levels up (default: 1)
 
- - `_3w_parentDataGet_NR(p, levelsUp)`: (non-reactively) returns property `p` from parent instance `levelsUp` levels up (default: 1)
+ - `parentDataGet_NR(p, levelsUp)`: (non-reactively) returns property `p` from parent instance `levelsUp` levels up (default: 1)
 
- - `_3w_parentDataGetAll_NR(levelsUp)`: (non-reactively) returns all data from parent instance `levelsUp` levels up (default: 1)
+ - `parentDataGetAll_NR(levelsUp)`: (non-reactively) returns all data from parent instance `levelsUp` levels up (default: 1)
 
 #### Descendant Data
 
- - `_3w_childDataGetId(childNameArray)`: returns id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `childDataGetId(childNameArray)`: returns id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
- - `_3w_childDataSetId(id, childNameArray)`: sets id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `childDataSetId(id, childNameArray)`: sets id from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
- - `_3w_childDataGet(p, childNameArray)`: returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `childDataGet(p, childNameArray)`: returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
- - `_3w_childDataGetAll(childNameArray)`: returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `childDataGetAll(childNameArray)`: returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
- - `_3w_childDataSet(p, v, childNameArray)`: sets property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `childDataSet(p, v, childNameArray)`: sets property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
- - `_3w_childDataGet_NR(p, childNameArray)`: (non-reactively) returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `childDataGet_NR(p, childNameArray)`: (non-reactively) returns property `p` from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
- - `_3w_childDataGetAll_NR(childNameArray)`: (non-reactively) returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
+ - `childDataGetAll_NR(childNameArray)`: (non-reactively) returns all data from descendant instance where `childNameArray` gives a sequential list of successive descendant names (alternatively a string in the special case of a direct child)
 
- - `_3w_getAllDescendants_NR(levels)`: (non-reactively) returns all descendant instances and information on them as objects. For example...
+ - `getAllDescendants_NR(levels)`: (non-reactively) returns all descendant instances and information on them as objects. For example...
 
 ```javascript
 [
@@ -867,15 +867,15 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 #### Sibling Data
 
- - `_3w_siblingDataGet(p, siblingName)`: returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `siblingDataGet(p, siblingName)`: returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
 
- - `_3w_siblingDataGetAll(siblingName)`: returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `siblingDataGetAll(siblingName)`: returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
 
- - `_3w_siblingDataSet(p, v, siblingName)`: sets property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `siblingDataSet(p, v, siblingName)`: sets property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
 
- - `_3w_siblingDataGet_NR(p, siblingName)`: (non-reactively) returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `siblingDataGet_NR(p, siblingName)`: (non-reactively) returns property `p` from sibling instance where `siblingName` gives the name of the relevant sibling
 
- - `_3w_siblingDataGetAll_NR(siblingName)`: (non-reactively) returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
+ - `siblingDataGetAll_NR(siblingName)`: (non-reactively) returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
 
 ### Additional Template Helpers
 
@@ -1006,7 +1006,7 @@ Recall that in the previous section, the following example was described:
 <div data-bind="html: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
 ```
 
-They validation flow is as follows:
+The validation flow is as follows:
     1. a change is made in the view which propagates to the view model
     2. validation starts
     3. view-model level validation using data in the view model and success/failure call-backs fire
@@ -1101,8 +1101,25 @@ Similar to the above, but these are generators for transformations that take one
 
  - `arrayFromDelimitedString(delimiter)`: generates transformations like `arrayFromCommaDelimitedString` above
  - `arrayToDelimitedString(delimiter)`: generates transformations like `arrayToCommaDelimitedString` above
+ - `arrayFromIdKeyDictionary(idField)`: generates a transform function that maps dictionaries (objects) like:
+ ```javascript
+ [
+    {_id: 'abc', f1: 'a', f2: 1}
+    {_id: 'def', f1: 'b', f2: 2}
+    {_id: 'ghi', f1: 'c', f2: 3}
+ ]
+ ```
+ ... to ...
+ {
+    'abc': {_id: 'abc', f1: 'a', f2: 1}
+    'def': {_id: 'def', f1: 'b', f2: 2}
+    'ghi': {_id: 'ghi', f1: 'c', f2: 3}
+ }
+ ... (here `idField` is `_id`).
+ - `arrayToIdKeyDictionary(idField)`: generates the reverse transformation of `arrayFromIdKeyDictionary(idField)`.
  - `booleanFromArray(trueIndicator)`: generates a transform function that returns `true` if the input is an array with a single element taking value `trueIndicator`) and `false` otherwise.
  - `booleanToArray(trueIndicator)`: generates a transform function that evaluates the "truthiness" of the input and returns `[trueIndicator]` if true and `[]` otherwise.
+ - `numberFromString(defaultValue)`: generates a function that maps a string to a number with a default value in the event of a casting error.
 
 ### Extra Event Generators
 

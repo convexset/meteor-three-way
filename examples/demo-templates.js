@@ -8,7 +8,7 @@
 // Preamble
 ////////////////////////////////////////////////////////////
 function setUpDebugMessages(template) {
-	var _selectedDebugMessages = template && template._3w_get_NR('debugMessages') || [];
+	var _selectedDebugMessages = template && template._3w_.get_NR('debugMessages') || [];
 	console.info('Selected Debug Messages:', _selectedDebugMessages);
 	ThreeWay.setDebugModeOn();
 	ThreeWay.debugModeSelectNone();
@@ -72,7 +72,7 @@ if (Meteor.isClient) {
 			// Set time out to allow the effects of setting num to 1 to set in
 			// so the additional elements are only rendered later
 			setTimeout(function() {
-				template._3w_setId(id);
+				template._3w_.setId(id);
 
 				setTimeout(function() {
 					$('html, body').animate({
@@ -92,17 +92,17 @@ if (Meteor.isClient) {
 		},
 		"click button#randomize-child-ids": function() {
 			/* global alert: true */
-			Template.instance()._3w_childDataSetId(randomId(), 'kiddy');
-			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'grandkiddy']);
-			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'other_grandkiddy']);
-			Template.instance()._3w_childDataSetId(randomId(), ['kiddy', 'yet_another_grandkiddy']);
+			Template.instance()._3w_.childDataSetId(randomId(), 'kiddy');
+			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'grandkiddy']);
+			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'other_grandkiddy']);
+			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'yet_another_grandkiddy']);
 		},
 		"change input[name=debug-messages]": function(event, template) {
 			setTimeout(() => setUpDebugMessages(template), 50);
 		},
 		"click a#focus-name": function(event) {
 			event.preventDefault();
-			Template.instance()._3w_set('nameHasFocus', true);
+			Template.instance()._3w_.set('nameHasFocus', true);
 		},
 	});
 }
@@ -139,7 +139,7 @@ if (Meteor.isClient) {
 		Tracker.autorun(function() {
 			// sub.ready changes once... supposedly...
 			if (sub.ready()) {
-				instance._3w_setId(randomId());
+				instance._3w_.setId(randomId());
 			}
 		});
 	});
