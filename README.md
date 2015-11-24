@@ -634,7 +634,7 @@ But "pre-processors" can be applied to view model data to process content before
 
 where `mapToAgeDisplay` was described as `x => ageRanges[x]` (or, equivalently, `function(x) {return ageRanges[x];}`) and `ageRanges` is a dictionary (object) mapping keys to descriptions.
 
-Pre-processors actually take up-to three arguments, `(value, elem, vmData)` and return a value to be passed into the next pre-processor, or rendered on the page. This actually features in `ThreeWay.preProcessors.updateSemanticUIDropdown`, used in the demo, where the element itself has to be manipulated (see: [this](http://semantic-ui.com/modules/dropdown.html)) to achieve the desired result. More on pre-processors later.
+Pre-processors actually take up-to four arguments, `(value, elem, vmData, dataSourceInfomation)` and return a value to be passed into the next pre-processor, or rendered on the page. This actually features in `ThreeWay.preProcessors.updateSemanticUIDropdown`, used in the demo, where the element itself has to be manipulated (see: [this](http://semantic-ui.com/modules/dropdown.html)) to achieve the desired result. More on pre-processors later.
 
 #### Binding: `value`
 
@@ -817,7 +817,7 @@ preProcessors: {
 }
 ```
 
-See [Pre-processor Pipelines](#pre-processor-pipelines) below for more information. While pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model, `{}` is passed in in place of view model data for such initializers.
+See [Pre-processor Pipelines](#pre-processor-pipelines) below for more information.
 
 Due to the nature of jQuery selectors, a selector at a parent template might select such nodes in child templates and inadvertently pollute the local view model. One way of dealing with the problem is to add a `restrict-template-type` attribute indicating the names of applicable templates as a comma separated list. Omission makes the initialization applicable to all.
 
