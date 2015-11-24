@@ -797,68 +797,6 @@ if (Meteor.isClient) {
 			////////////////////////////////////////////////////////////////
 
 
-			////////////////////////////////////////////////////////////////
-			// For batching Meteor calls
-			//
-			var templateLevelUpdatePromiseLedger = {};
-			var templateLevelUpdatePromiseLedger_LastTimings = {};
-
-			function meteorApply_usePromiseBins(fieldPath, method, args, _options) {
-				if (!!_options) {
-					_options = {};
-				}
-				var bin = fieldPath.split('.')[0];
-				if (typeof templateLevelUpdatePromiseLedger[bin] === "undefined") {
-					templateLevelUpdatePromiseLedger[bin] = Promise.resolve(true);
-					templateLevelUpdatePromiseLedger_LastTimings[bin] = (new Date()).getTime();
-				}
-
-				templateLevelUpdatePromiseLedger[bin] = templateLevelUpdatePromiseLedger[bin]
-				// need "resist change list" to "resist updates" in the observer
-				// clear it once method returns (after the methodInterval delay)
-				.then(function() {
-					return new Promise(function(resolve, reject) {
-							if (IN_DEBUG_MODE_FOR('methods')) {
-								console.info('[methods|' + bin + '] Updating server...\n', method, args);
-							}
-							Meteor.apply(method, args, _options, function meteorApplyCB(err, res) {
-								if (!!err) {
-									reject(err);
-								} else {
-									resolve(res);
-								}
-							});
-						})
-						.then(function() {
-							return new Promise(function(resolve) {
-								var t_now = (new Date()).getTime();
-								if (IN_DEBUG_MODE_FOR('methods')) {
-									console.info('[methods|' + bin + '] Updated server.\n', method, args);
-									console.info('[methods|' + bin + '] Since Last: ' + (t_now - templateLevelUpdatePromiseLedger_LastTimings[bin]));
-								}
-
-								// Pausing for updates from the database to be complete
-								templateLevelUpdatePromiseLedger_LastTimings[bin] = t_now;
-								setTimeout(function() {
-									if (IN_DEBUG_MODE_FOR('methods')) {
-										console.info('[methods|' + bin + '] Waited: ' + ((new Date()).getTime() - templateLevelUpdatePromiseLedger_LastTimings[bin]), method, args);
-									}
-									resolve(true);
-								}, options.methodInterval);
-							});
-						})
-						.catch(function(err) {
-							if (IN_DEBUG_MODE_FOR('methods')) {
-								console.error('[Error updating server]', err);
-							}
-						});
-				});
-			}
-			//
-			// End Meteor call batching
-			////////////////////////////////////////////////////////////////
-
-
 			instance.autorun(function() {
 				threeWay.dataMirror = threeWay.data.all();
 				if (IN_DEBUG_MODE_FOR('data-mirror')) {
