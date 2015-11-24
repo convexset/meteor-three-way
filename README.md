@@ -94,7 +94,7 @@ Let's start with a simple vanilla set-up.
 ```javascript
 ThreeWay.prepare(Template.DemoThreeWay, {
     // The relevant Mongo.Collection
-    collection: DataCollection,
+    collection: DataCollection,  // alt: string with collection name or null
 
     // Meteor methods for updating the database
     // The keys being the respective fields/field selectors for the database
@@ -158,7 +158,7 @@ Now here are more of the settings, including:
 ```javascript
 ThreeWay.prepare(Template.DemoThreeWay, {
     // The relevant Mongo.Collection
-    collection: DataCollection,
+    collection: DataCollection,  // alt: string with collection name or null
 
     // Meteor methods for updating the database
     // The keys being the respective fields/field selectors for the database
@@ -252,7 +252,7 @@ Further elaboration is available in the documentation below.
 ```javascript
 ThreeWay.prepare(Template.DemoThreeWay, {
     // The relevant Mongo.Collection
-    collection: DataCollection,
+    collection: DataCollection,  // alt: string with collection name or null
 
     // Meteor methods for updating the database
     // The keys being the respective fields/field selectors for the database

@@ -253,8 +253,8 @@ if (Meteor.isClient) {
 			validateRepeats: false,
 		}, options);
 
-		if (!(options.collection instanceof Mongo.Collection)) {
-			throw new Meteor.Error('options-error', 'collection should be a Mongo.Collection');
+		if (!(options.collection instanceof Mongo.Collection) && !(typeof options.collection === "string") && (options.collection !== null)) {
+			throw new Meteor.Error('options-error', 'collection should be a Mongo.Collection or a string with naming the collection, or null');
 		}
 		options.fields = _.map(options.updatersForServer, (v, k) => k);
 
@@ -384,6 +384,11 @@ if (Meteor.isClient) {
 				__recentDBUpdates: {},
 				__updatesToSkipDueToRelatedObjectUpdate: {},
 			};
+			if (options.collection instanceof Mongo.Collection) {
+				threeWay.collection = options.collection;
+			} else {
+				threeWay.collection = new Mongo.Collection(options.collection);
+			}
 
 			var threeWayMethods = {};
 
@@ -969,7 +974,7 @@ if (Meteor.isClient) {
 					// Retrieve only the necessary fields
 					// Not doing a minimal field set retrieval because
 					// that aspect should have been handled by the subscription
-					var cursor = options.collection.find(_id);
+					var cursor = threeWay.collection.find(_id);
 
 					//////////////////////////////////////////////////// 
 					// Descend into objects and arrays
@@ -1126,7 +1131,7 @@ if (Meteor.isClient) {
 					// Setting Up Observers
 					threeWay.observer = cursor.observeChanges({
 						added: function(id, fields) {
-							var doc = options.collection.findOne(id, {
+							var doc = threeWay.collection.findOne(id, {
 								reactive: false
 							});
 							if (IN_DEBUG_MODE_FOR('observer')) {
@@ -1154,7 +1159,7 @@ if (Meteor.isClient) {
 							});
 						},
 						changed: function(id, fields) {
-							var doc = options.collection.findOne(id, {
+							var doc = threeWay.collection.findOne(id, {
 								reactive: false
 							});
 							if (IN_DEBUG_MODE_FOR('observer')) {
@@ -1611,7 +1616,7 @@ if (Meteor.isClient) {
 									var isUpdated;
 									Tracker.nonreactive(function() {
 										// get current value by digging into document
-										var doc = options.collection.findOne(threeWay.id.get());
+										var doc = threeWay.collection.findOne(threeWay.id.get());
 										var currValue = doc;
 										var fieldNameSplit = fieldName.split('.');
 										while (fieldNameSplit.length > 0) {
@@ -1766,7 +1771,7 @@ if (Meteor.isClient) {
 									var isUpdated;
 									Tracker.nonreactive(function() {
 										// get current value by digging into document
-										var doc = options.collection.findOne(threeWay.id.get());
+										var doc = threeWay.collection.findOne(threeWay.id.get());
 										var currValue = doc;
 										var fieldNameSplit = fieldName.split('.');
 										while (fieldNameSplit.length > 0) {
@@ -1954,7 +1959,7 @@ if (Meteor.isClient) {
 									var isUpdated;
 									Tracker.nonreactive(function() {
 										// get current value by digging into document
-										var doc = options.collection.findOne(threeWay.id.get());
+										var doc = threeWay.collection.findOne(threeWay.id.get());
 										var currValue = doc;
 										var fieldNameSplit = fieldName.split('.');
 										while (fieldNameSplit.length > 0) {
