@@ -89,56 +89,71 @@ if (Meteor.isClient) {
 
 		// Validators under validatorsVM consider view-model data
 		// Useful for making sure that transformations to server values do not fail
-		// Arguments: (value, vmData, wildCardParams)
+		// Validators under validatorsServer consider transformed data (for the server)
+		//
+		// validators have method signature:
+		//   function(value, matchInformation, vmData)
+		// success/failure call backs have signature:
+		//   function(value, matchInformation, vmData)
+		// all are called with the template instance as context
+		//
+		// matchInformation takes the form:
+		//   {
+		//      "fieldPath": "personal.otherArr.0.a",
+		//      "match": "personal.otherArr.*.*",
+		//      "params": ["0","a"]
+		//   }
 		validatorsVM: {
 			'personal.someArr.*': {
-				validator: function(value, vmData, wildCardParams) {
+				validator: function(value, matchInformation) {
 					var result;
-					if (Number(wildCardParams[0]) === 2) {
+					if (Number(matchInformation.params[0]) === 2) {
 						// No exclamation marks
 						if (typeof value === "undefined") {
 							value = "";
 						}
 						result = value.indexOf('!') === -1;
 						if (!result) {
-							console.warn('[validatorsVM] personal.someArr.2 should have no \"!\"s', value, wildCardParams);
+							console.warn('[validatorsVM] personal.someArr.2 should have no \"!\"s', value, matchInformation.params);
 						}
 					} else {
 						result = !Number.isNaN(Number(value));
 						if (!result) {
-							console.warn('[validatorsVM] personal.someArr.* (less 2) should be a number', value, wildCardParams);
+							console.warn('[validatorsVM] personal.someArr.* (less 2) should be a number', value, matchInformation.params);
 						}
 					}
 					return result;
 				},
-				success: function(template, value, vmData, field, params) {
-					console.info('[Validated!] personal.someArr.*', value, field, params);
-					template._3w_.set('someArrValidationErrorText.' + params[0], '');
+				success: function(value, matchInformation) {
+					console.info('[Validated!] personal.someArr.*', value);
+					Template.instance()._3w_.set('someArrValidationErrorText.' + matchInformation.params[0], '');
 				},
-				failure: function(template, value, vmData, field, params) {
-					console.warn('[Validation Failed] personal.someArr.*', value, field, params);
-					template._3w_.set('someArrValidationErrorText.' + params[0], 'Invalid Value: ' + value);
+				failure: function(value, matchInformation, vmData) {
+					var instance = this;
+					console.warn('[Validation Failed] personal.someArr.*', value);
+					console.warn('[Validation Failed] ... but lookie what else accessible', matchInformation, vmData);
+					instance._3w_.set('someArrValidationErrorText.' + matchInformation.params[0], 'Invalid Value: ' + value);
 				},
 			}
 		},
-
-		// Validators under validatorsServer consider transformed values
-		// (no additional view-model data, work with that somewhere else)
-		// Arguments: (value, wildCardParams)
 		validatorsServer: {
 			tags: {
 				validator: function(value) {
+					// tags must begin with "tag"
 					return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
 				},
-				success: function(template, value, vmData, field, params) {
-					console.info('[Validated!] tags:', value, field, params);
-					template._3w_.set('tagsValidationErrorText', '');
+				success: function(value) {
+					var instance = this;
+					console.info('[Validated!] tags:', value);
+					instance._3w_.set('tagsValidationErrorText', '');
 				},
-				failure: function(template, value, vmData, field, params) {
-					console.warn('[Validation Failed] tags:', value, field, params);
-					template._3w_.set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+				failure: function(value, matchInformation, vmData) {
+					var instance = this;
+					console.warn('[Validation Failed] tags:', value);
+					console.warn('[Validation Failed] ... but lookie what else accessible', matchInformation, vmData);
+					instance._3w_.set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
 				},
-			}
+			},
 		},
 
 		// Helper functions that may be used as input for display-type bindings
@@ -161,9 +176,10 @@ if (Meteor.isClient) {
 			mapToAgeDisplay: ThreeWay.preProcessorGenerators.makeMap(Demo.ageRanges, ''),
 			// this maps an array of keys to the corresponding long form
 			// descriptions and then joins them
-			mapToEmailPrefs: function(prefs, elem, vmData) {
+			mapToEmailPrefs: function(prefs, elem, vmData, matchInformation) {
 				var outcome = prefs.map(x => Demo.emailPrefsAll[x]).join(", ");
-				console.log('preProcessors[\'mapToEmailPrefs\']\nValue: ', prefs, "\nDOM Element:", elem, "\nView Model Data:", vmData, '-->', outcome);
+				console.log("preProcessors[\'mapToEmailPrefs\'] DOM Element:", elem, "\nView Model Data:", vmData, "\nMatch Information:", matchInformation);
+				console.log("preProcessors[\'mapToEmailPrefs\'] Value: ", prefs, '-->', outcome);
 				return outcome;
 			},
 			boldIfMoreThanOne: function(prefString) {

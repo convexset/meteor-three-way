@@ -269,37 +269,42 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 
     // Validators under validatorsVM consider view-model data
     // Useful for making sure that transformations to server values do not fail
-    // Arguments: (value, vmData, wildCardParams)
+    // Validators under validatorsServer consider transformed data (for the server)
+    //
     // validators have method signature:
-    //   function(value, wildCardParams)
+    //   function(value, matchInformation, vmData)
     // success/failure call backs have signature:
-    //   function(template, value, vmData, field, wildCardParams)
+    //   function(value, matchInformation, vmData)
+    // all are called with the template instance as context
+    //
+    // matchInformation takes the form:
+    //   {
+    //      "fieldPath": "personal.otherArr.0.a",
+    //      "match": "personal.otherArr.*.*",
+    //      "params": ["0","a"]
+    //   }
     validatorsVM: {
         // tags seems to be a decent candidate for one here
         // but see below
     },
-
-    // Validators under validatorsServer consider transformed values
-    // and are called only if the VM validation check does not fail
-    // (no additional view-model data, work with that somewhere else)
-    // validators have method signature:
-    //   function(value, wildCardParams)
-    // success/failure call backs have signature:
-    //   function(template, value, vmData, field, wildCardParams)
     validatorsServer: {
         tags: {
-            validator: function(x, vmData, wildCardParams) {
+            validator: function(value, matchInformation, vmData) {
                 // tags must begin with "tag"
                 return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
             },
-            success: function(template, value, vmData, field, wildCardParams) {
-                template._3w_set('tagsValidationErrorText', '');
+            success: function(value, matchInformation, vmData) {
+                var instance = this;
+                instance._3w_.set('tagsValidationErrorText', '');
             },
-            failure: function(template, value, vmData, field, wildCardParams) {
-                template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+            failure: function(value, matchInformation, vmData) {
+                var instance = this;
+                instance._3w_.set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
             },
         },
     },
+    // determines whether to re-validate repeated values
+    validateRepeats: false,  // (default: false)
 
     // Helper functions that may be used as input for display-type bindings
     // Order of search: three-way helpers, then template helpers, then data
@@ -950,7 +955,16 @@ preProcessors: {
 
 Multi-way data-bindings such as `value` and `checked` use pre-processing pipelines to deal with DOM manipulation only (e.g.: [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) via `ThreeWay.preProcessors.updateSemanticUIDropdown`). Pipeline functions do not manipulate value.
 
-Pre-processors have method signature `function(value, elem, vmData)` where `value` is the value in the view model, `elem` is the bound element, and `vmData` is a dictionary containing all the data from the view model.
+Pre-processors have method signature `function(value, elem, vmData, dataSourceInfomation)` where `value` is the value in the view model, `elem` is the bound element, `vmData` is a dictionary containing all the data from the view model, and `dataSourceInfomation` contains information on the source of the data in the form:
+```javascript
+{
+    "type": 'field',
+    "name": 'personal.otherArr.0.a',
+    "fieldPath": "personal.otherArr.0.a",  // applicable if source is a field from database
+    "match": "personal.otherArr.*.*",      // applicable if source is a field from database
+    "params": ["0","a"]                    // applicable if source is a field from database
+}
+```
 
 **Example Use Case**: Consider an input field with some validator. An invalid value might cause some validation error message to be set to be non-empty, and that change in view model data might trigger various forms of presentation. For example:
 
@@ -967,38 +981,44 @@ Data validators are defined as follows:
 ```javascript
 // Validators under validatorsVM consider view-model data
 // Useful for making sure that transformations to server values do not fail
-// Arguments: (value, vmData, wildCardParams)
+// Validators under validatorsServer consider transformed data (for the server)
+//
 // validators have method signature:
-//   function(value, wildCardParams)
+//   function(value, matchInformation, vmData)
 // success/failure call backs have signature:
-//   function(template, value, vmData, field, wildCardParams)
+//   function(value, matchInformation, vmData)
+// all are called with the template instance as context
+//
+// matchInformation takes the form:
+//   {
+//      "fieldPath": "personal.otherArr.0.a",
+//      "match": "personal.otherArr.*.*",
+//      "params": ["0","a"]
+//   }
 validatorsVM: {
     // tags seems to be a decent candidate for one here
     // but see below
 },
-
-// Validators under validatorsServer consider transformed values
-// and are called only if the VM validation check does not fail
-// (no additional view-model data, work with that somewhere else)
-// validators have method signature:
-//   function(value, wildCardParams)
-// success/failure call backs have signature:
-//   function(template, value, vmData, field, wildCardParams)
 validatorsServer: {
     tags: {
-        validator: function(x, vmData, wildCardParams) {
+        validator: function(value, matchInformation, vmData) {
             // tags must begin with "tag"
             return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
         },
-        success: function(template, value, vmData, field, wildCardParams) {
-            template._3w_set('tagsValidationErrorText', '');
+        success: function(value, matchInformation, vmData) {
+            var instance = this;
+            instance._3w_.set('tagsValidationErrorText', '');
         },
-        failure: function(template, value, vmData, field, wildCardParams) {
-            template._3w_set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+        failure: function(value, matchInformation, vmData) {
+            var instance = this;
+            instance._3w_.set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
         },
     },
 },
+validateRepeats: false,  // (default: false)
 ```
+
+In `options` one can set the value of `validateRepeats` to determines whether successive identical values are validated. Deals with the issue of validation firing on change and then for the server updates.
 
 Recall that in the previous section, the following example was described:
 
