@@ -616,6 +616,22 @@ if (Meteor.isClient) {
 				}
 			};
 
+			threeWayMethods.__getFamilyHeritageHelperBundle = function _3w_getFamilyHeritageHelperBundle(bundle) {
+				// Returns all helpers than can be accessed via getInheritedHelper (i.e.: own, and from ancestors)
+				if (typeof bundle === "undefined") {
+					bundle = {};
+				}
+				_.forEach(options.helpers, function(fn, h) {
+					if (!bundle.hasOwnProperty(h)) {
+						bundle[h] = fn;
+					}
+				});
+				if (!!instance.parentTemplate() && !!instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS]) {
+					bundle = instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].__getFamilyHeritageHelperBundle(bundle);
+				}
+				return bundle;
+			};
+
 			threeWayMethods.siblingDataGet = function _3w_siblingDataGet(p, siblingName) {
 				return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, siblingName);
 			};
@@ -2336,6 +2352,18 @@ if (Meteor.isClient) {
 				threeWay.__level = instance.parentTemplate()[THREE_WAY_NAMESPACE].__level + 1;
 			}
 
+
+			//////////////////////////////////////////////////////////////////
+			// Pollute template helper namespace if there is space
+			//////////////////////////////////////////////////////////////////
+			_.forEach(threeWayMethods.__getFamilyHeritageHelperBundle(), function(fn, h) {
+				var thisTemplate = instance && instance.view && instance.view.template;
+				if (!!thisTemplate && !!thisTemplate.__helpers) {
+					if (!thisTemplate.__helpers.has(h)) {
+						thisTemplate.helpers(_.object([[h, fn]]));
+					};
+				}
+			});
 		});
 
 		tmpl.onRendered(function() {

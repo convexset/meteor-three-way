@@ -292,6 +292,9 @@ if (Meteor.isClient) {
 		viewModelToViewOnly: {
 			"childData": "1234"
 		},
+		helpers: {
+			childHelper: "childHelper",
+		},
 	});
 }
 
@@ -304,6 +307,9 @@ if (Meteor.isClient) {
 		collection: Demo.collection,
 		updatersForServer: {
 			'name': 'update-name'
+		},
+		helpers: {
+			grandchildHelper: "grandchildHelper",
 		},
 	});
 }
