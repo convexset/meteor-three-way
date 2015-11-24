@@ -1,8 +1,9 @@
 /* global Demo: true */
+/* global DataThing: true */
 
 DataThing = function DataThing(doc) {
 	_.extend(this, doc);
-}
+};
 
 DataThing.prototype = {
 	someMethod: () => "lalalala"

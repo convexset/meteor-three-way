@@ -253,7 +253,7 @@ if (Meteor.isClient) {
 			validateRepeats: false,
 		}, options);
 
-		if (!(options.collection instanceof Mongo.Collection) || (typeof options.collection === "string") || (options.collection === null)) {
+		if (!(options.collection instanceof Mongo.Collection) || (typeof options.collection === "string") || (options.collection !== null)) {
 			throw new Meteor.Error('options-error', 'collection should be a Mongo.Collection or a string with naming the collection, or null');
 		}
 		options.fields = _.map(options.updatersForServer, (v, k) => k);
