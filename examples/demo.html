@@ -674,6 +674,7 @@
 			<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>
 			<li><strong>Sibling Data <code>{{siblingName}}.grandchildData</code></strong>: {{_3w_siblingDataGet 'grandchildData' siblingName}}</li>
 			<li class='sneaky-li'><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
+			<li><strong>id via ancestor method</strong>: <span data-bind="text: altGetId"></span></li>
 		</ul>
 	</div>
 </template>

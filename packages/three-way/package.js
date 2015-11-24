@@ -12,7 +12,7 @@ Package.onUse(function(api) {
 	api.use([
 		'blaze', 'tracker',
 		'reactive-var', 'reactive-dict',
-		'convexset:template-helpers@0.1.11'
+		'convexset:template-helpers@0.1.12'
 	], 'client');
 	api.addFiles(['three-way.js']);
 	api.export('ThreeWay');

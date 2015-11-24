@@ -702,6 +702,8 @@ One might find it to be particularly useful.
 
 A tenuous design decision has been made not to phase out helpers. A less tenuous design decision is to not unify helpers with pre-processors based on their different method signatures.
 
+Helpers may be inherited.
+
 #### Multi-variable Display Bindings
 
 Sometimes one variable alone is not enough to determine the state of a DOM property. For example, to determine whether a phone number is valid, might depend both on the number and on the country. On the other hand, that example is faulty since a validation callback can do the relevant computations with full access to the view model.
@@ -739,7 +741,8 @@ eventHandlers: {
 <input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range">
 ```
 
-**Question**: Should these fire before or after the usual `change`-type events? Presently it happens after. (Does it matter? If it does, should it?)
+Event handlers may be inherited.
+
 
 ### View Model to View Only Elements
 
@@ -823,7 +826,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
 
-#### Ancestor Data
+#### Ancestor Data (and other possessions)
 
  - `parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)
 
@@ -834,6 +837,12 @@ The following methods are crammed onto each template instance in an `onCreated` 
  - `parentDataGet_NR(p, levelsUp)`: (non-reactively) returns property `p` from parent instance `levelsUp` levels up (default: 1)
 
  - `parentDataGetAll_NR(levelsUp)`: (non-reactively) returns all data from parent instance `levelsUp` levels up (default: 1)
+
+ - `getInheritedHelper(name)`: seeks out closest ancestor (self included) with helper having name `name` and returns it if available.
+
+ - `getInheritedEventHandler(name)`: seeks out closest ancestor (self included) with event handler having name `name` and returns it if available.
+
+ - `getInheritedPreProcessor(name)`: seeks out closest ancestor (self included) with pre-processor having name `name` and returns it if available.
 
 #### Descendant Data
 
@@ -973,6 +982,8 @@ Pre-processors have method signature `function(value, elem, vmData, dataSourceIn
 ```
 
 Pre-processors are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
+
+Pre-processors may be inherited.
 
 ### Data Validation
 

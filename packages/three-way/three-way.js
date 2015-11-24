@@ -594,6 +594,28 @@ if (Meteor.isClient) {
 				return descendants;
 			};
 
+			threeWayMethods.getInheritedHelper = function _3w_getInheritedHelper(h) {
+				if (typeof options.helpers[h] !== "undefined") {
+					return options.helpers[h];
+				} else if (!!instance.parentTemplate() && !!instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS]) {
+					return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].getInheritedHelper(h);
+				}
+			};
+			threeWayMethods.getInheritedEventHandler = function _3w_getInheritedEventHandler(evt) {
+				if (options.eventHandlers[evt] instanceof Function) {
+					return options.eventHandlers[evt];
+				} else if (!!instance.parentTemplate() && !!instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS]) {
+					return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].getInheritedEventHandler(evt);
+				}
+			};
+			threeWayMethods.getInheritedPreProcessor = function _3w_getInheritedPreProcessor(p) {
+				if (options.preProcessors[p] instanceof Function) {
+					return options.preProcessors[p];
+				} else if (!!instance.parentTemplate() && !!instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS]) {
+					return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].getInheritedPreProcessor(p);
+				}
+			};
+
 			threeWayMethods.siblingDataGet = function _3w_siblingDataGet(p, siblingName) {
 				return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, siblingName);
 			};
@@ -1311,20 +1333,20 @@ if (Meteor.isClient) {
 					var sourceElems = source.split("#").map(x => x.trim()).filter(x => x !== "");
 					value = sourceElems.map(function(src) {
 						var _value;
-						if (useHelpers && !!options.helpers[src]) {
-							_value = options.helpers[src].call(instance);
+						if (useHelpers && (typeof options.helpers[src] !== "undefined")) {
+							_value = (options.helpers[src] instanceof Function) ? options.helpers[src].call(instance) : options.helpers[src];
 							dataSourceInfomation.push({
 								type: 'helper',
 								name: src
 							});
-						} else if (false && useHelpers && !!options.inheritedHelpers(src)) {
-							_value = options.inheritedHelpers(src).call(instance);
+						} else if (useHelpers && (typeof threeWayMethods.getInheritedHelper(src) !== "undefined")) {
+							_value = (threeWayMethods.getInheritedHelper(src) instanceof Function) ? threeWayMethods.getInheritedHelper(src).call(instance) : threeWayMethods.getInheritedHelper(src);
 							dataSourceInfomation.push({
 								type: 'ancestor-helper',
 								name: src
 							});
 						} else if (useHelpers && thisTemplate.__helpers.has(src)) {
-							_value = thisTemplate.__helpers.get(src).call(instance);
+							_value = (thisTemplate.__helpers.get(src) instanceof Function) ? thisTemplate.__helpers.get(src).call(instance) : thisTemplate.__helpers.get(src);
 							dataSourceInfomation.push({
 								type: 'blaze-helper',
 								name: src
@@ -1358,20 +1380,18 @@ if (Meteor.isClient) {
 					}
 
 					_.forEach(mappings, function(m, idx) {
-						if (!(options.preProcessors[m] instanceof Function)) {
+						var preProcessor = threeWayMethods.getInheritedPreProcessor(m);
+						if (!(preProcessor instanceof Function)) {
 							console.error('[ThreeWay] No such pre-processor: ' + m, elem);
 							return;
 						}
 
-						var vmData;
-						Tracker.nonreactive(function() {
-							vmData = _.extend({}, threeWay.data.all());
-						});
+						var vmData = threeWayMethods.getAll_NR();
 
 						if (idx === 0) {
-							mutatedValue = options.preProcessors[m].apply(instance, firstRunArgs.concat([elem, vmData, dataSourceInfomation]));
+							mutatedValue = preProcessor.apply(instance, firstRunArgs.concat([elem, vmData, dataSourceInfomation]));
 						} else {
-							mutatedValue = options.preProcessors[m].call(instance, mutatedValue, elem, vmData, dataSourceInfomation);
+							mutatedValue = preProcessor.call(instance, mutatedValue, elem, vmData, dataSourceInfomation);
 						}
 
 						if (processorsMutateValue) {
@@ -2206,7 +2226,7 @@ if (Meteor.isClient) {
 							}
 
 							handlerNames.forEach(function(m) {
-								var handler = options.eventHandlers[m];
+								var handler = threeWayMethods.getInheritedEventHandler(m);
 								if (!(handler instanceof Function)) {
 									console.error('[ThreeWay] No such event handler: ' + m, elem);
 									return;
@@ -2917,4 +2937,5 @@ if (Meteor.isClient) {
 			};
 		},
 	});
+
 }

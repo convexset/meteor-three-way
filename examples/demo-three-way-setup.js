@@ -162,7 +162,7 @@ if (Meteor.isClient) {
 		// (be aware that arrow functions are lexically scoped)
 		helpers: {
 			altGetId: function() {
-				// console.info('altGetId called!', Template.instance() && Template.instance().view.name);
+				console.info('altGetId called from', Template.instance() && Template.instance().view.name);
 				return this._3w_.getId();
 			},
 		},
