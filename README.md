@@ -137,6 +137,17 @@ instance._3w_setId(_id);
 
 ... and things will happen.
 
+Here is a sample data-binding string:
+```html
+<input data-bind="value: email"></div>
+```
+... and here is one which gives a sense of typical use...
+```html
+<input data-bind="value: email; style: {color: emailValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+<div data-bind="html: emailValidationErrorText; visible: emailValidationErrorText|trueIfNonEmpty" style="color: red;"></div>
+```
+this will be elaborated upon later.
+
 ### "Intermediate-level" Set Up
 
 Now here are more of the settings, including:
@@ -212,6 +223,20 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     },
 });
 ```
+
+Returning to the previous example:
+```html
+<input data-bind="value: email; style: {color: emailValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+<div data-bind="html: emailValidationErrorText; visible: emailValidationErrorText|trueIfNonEmpty" style="color: red;"></div>
+```
+... the "pipes" take data (from helpers or data fields) and pass them through a pipeline of pre-processors. For "display bindings" like `html` and `text`, the final value is displayed.
+
+Suppose `emailValidationErrorText` were `""` then piping it through `trueIfNonEmpty` would lead to `false`, and piping that through `redIfTrue` would return `''`. So in the event of "no validation error", the color of the text would remain the default inherited value.
+
+For "value bindings" like `value` and `checked`, the pipelines are only used to do DOM manipulation. This is useful for custom elements such as [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html).
+
+More on this in a bit.
+
 
 ### Set Up: The Full Parameter Set
 
@@ -386,6 +411,14 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     }
 });
 ```
+
+And we are back to that example:
+```html
+<input data-bind="value: email; style: {color: emailValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+<div data-bind="html: emailValidationErrorText; visible: emailValidationErrorText|trueIfNonEmpty" style="color: red;"></div>
+```
+... the example options above are a little disjoint from this snippet, but it should be clear that defining a validator will inform `ThreeWay` of whether input is valid or not, and then set `emailValidationErrorText` to a non-empty string if there is a validation error. So when there is a validation error, the error message will be displayed and the color of the input field will be set to red.
+
 
 ## Documentation
 
