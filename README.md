@@ -46,11 +46,12 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
   - [Instance Methods](#instance-methods)
     - [Organizing the DOM](#organizing-the-dom)
     - [My Data](#my-data)
-    - [Ancestor Data](#ancestor-data)
+    - [Ancestor Data (and other possessions)](#ancestor-data-and-other-possessions)
     - [Descendant Data](#descendant-data)
     - [Sibling Data](#sibling-data)
   - [Additional Template Helpers](#additional-template-helpers)
   - [Pre-processor Pipelines](#pre-processor-pipelines)
+    - [Pre-processor Pipelines in Blaze](#pre-processor-pipelines-in-blaze)
   - [Data Validation](#data-validation)
   - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
   - [Debug](#debug)
@@ -970,6 +971,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
 
+ - `_3w_display(displayDescription)`: See [Pre-processor Pipelines in Blaze](#pre-processor-pipelines-in-blaze).
+
 
 ### Pre-processor Pipelines
 
@@ -1019,6 +1022,26 @@ Pre-processors have method signature `function(value, elem, vmData, dataSourceIn
 Pre-processors are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
 
 Pre-processors may be inherited.
+
+#### Pre-processor Pipelines in Blaze
+
+Pre-processors may also be used with the `_3w_display` blaze-helper. For example,
+
+```html
+<!-- Maps an array of e-mail preference codes to human readable
+names and wraps with STRONG tags if there are more than one-->
+{{{_3w_display 'emailPrefs|mapToEmailPrefs|boldIfMoreThanOne'}}}
+
+<!-- Spaces out a comma separated list of tags -->
+{{_3w_display 'tags|tagsTextDisplay'}}
+
+<!-- Maps (3) numerical intensity values to a RGB string -->
+{{_3w_display 'colR#colG#colB|makeRGB'}}
+```
+
+This use of Handlebars expressions is an alternative to display bindings in tags. While the two methods are very similar and their use would largely be a matter of preference, it should be noted that: 
+ - Handlebars expressions cannot be styled as straightforwardly as adding `style` and `class` bindings
+ - Ownership of Handlebars expressions to a template (or correspondence with a template instance) is always clear
 
 ### Data Validation
 

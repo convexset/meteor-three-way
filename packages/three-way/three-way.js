@@ -1351,7 +1351,7 @@ if (Meteor.isClient) {
 			////////////////////////////////////////////////////////////
 
 			// Call helpers and pre-processors in template context
-			var processInTemplateContext = function processInTemplateContext(source, mappings, elem, computation, useHelpers, processorsMutateValue, additionalFailureCondition) {
+			var processInTemplateContext = function processInTemplateContext(source, mappings, elem, useHelpers, processorsMutateValue, additionalFailureCondition) {
 				var thisTemplate = instance.view.template;
 
 				if (typeof useHelpers === "undefined") {
@@ -1445,6 +1445,8 @@ if (Meteor.isClient) {
 
 				return value;
 			};
+			threeWayMethods.__processInTemplateContext = processInTemplateContext;
+			
 
 			////////////////////////////////////////////////////////////////
 			////////////////////////////////////////////////////////////////
@@ -1683,7 +1685,7 @@ if (Meteor.isClient) {
 						}
 
 						elemGlobals.suppressChangesToSSOT = true;
-						var value = processInTemplateContext(source, pipeline, elem, c, false, false);
+						var value = processInTemplateContext(source, pipeline, elem, false, false);
 						// (..., false, false): helpers not used and pipelines do not manipulate value
 
 						// Validate here
@@ -1815,7 +1817,7 @@ if (Meteor.isClient) {
 
 						elemGlobals.suppressChangesToSSOT = true;
 						var additionalFailureCondition = (elem.getAttribute('type').toLowerCase() === "radio") ? () => false : v => (typeof v !== "object") || (!(v instanceof Array));
-						var value = processInTemplateContext(source, pipeline, elem, c, false, false, additionalFailureCondition);
+						var value = processInTemplateContext(source, pipeline, elem, false, false, additionalFailureCondition);
 						// (..., false, false): helpers not used and pipelines do not manipulate value
 
 						// Validate here
@@ -1956,7 +1958,7 @@ if (Meteor.isClient) {
 						}
 
 						elemGlobals.suppressChangesToSSOT = true;
-						var focus = !!processInTemplateContext(source, pipeline, elem, c, false, false);
+						var focus = !!processInTemplateContext(source, pipeline, elem, false, false);
 						// (..., false, false): helpers not used and pipelines do not manipulate value
 
 						// Validate here
@@ -2000,7 +2002,7 @@ if (Meteor.isClient) {
 							}
 						}
 
-						var html = processInTemplateContext(source, mappings, elem, c);
+						var html = processInTemplateContext(source, mappings, elem);
 
 						if (elem.innerHTML !== html) {
 							if (IN_DEBUG_MODE_FOR('html-text')) {
@@ -2028,7 +2030,7 @@ if (Meteor.isClient) {
 							}
 						}
 
-						var text = processInTemplateContext(source, mappings, elem, c);
+						var text = processInTemplateContext(source, mappings, elem);
 
 						if ($(elem).text() !== text) {
 							if (IN_DEBUG_MODE_FOR('html-text')) {
@@ -2055,7 +2057,7 @@ if (Meteor.isClient) {
 							}
 						}
 
-						var visible = processInTemplateContext(source, mappings, elem, c);
+						var visible = processInTemplateContext(source, mappings, elem);
 						visible = (!!visible) ? "" : "none";
 
 						if (elem.style.display !== visible) {
@@ -2083,7 +2085,7 @@ if (Meteor.isClient) {
 							}
 						}
 
-						var disabled = processInTemplateContext(source, mappings, elem, c);
+						var disabled = processInTemplateContext(source, mappings, elem);
 						disabled = (!!disabled);
 
 						if (elem.disabled !== disabled) {
@@ -2113,7 +2115,7 @@ if (Meteor.isClient) {
 								}
 							}
 
-							var value = processInTemplateContext(source, mappings, elem, c);
+							var value = processInTemplateContext(source, mappings, elem);
 
 							// Update Style
 							if (elem.style[key] !== value) {
@@ -2144,7 +2146,7 @@ if (Meteor.isClient) {
 								}
 							}
 
-							var value = processInTemplateContext(source, mappings, elem, c);
+							var value = processInTemplateContext(source, mappings, elem);
 
 							// Update Style
 							if ($(elem).attr(key) !== value) {
@@ -2175,7 +2177,7 @@ if (Meteor.isClient) {
 								}
 							}
 
-							var value = processInTemplateContext(source, mappings, elem, c);
+							var value = processInTemplateContext(source, mappings, elem);
 							value = (!!value);
 
 							// Update Style
@@ -2656,6 +2658,13 @@ if (Meteor.isClient) {
 			_3w_hasData: () => Template.instance()[THREE_WAY_NAMESPACE].hasData.get(),
 			_3w_get: (propName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].get(propName),
 			_3w_getAll: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].getAll(),
+
+			_3w_display: function _3w_display(displayDescription) {
+				var pipelineSplit = displayDescription.split('|').map(x => x.trim()).filter(x => x !== "");
+				var source = pipelineSplit[0];
+				var mappings = pipelineSplit.splice(1);
+				return Template.instance()[THREE_WAY_NAMESPACE_METHODS].__processInTemplateContext(source, mappings, null);
+			},
 
 			_3w_focusedField: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].focusedField(),
 			_3w_focusedFieldUpdatedOnServer: p => Template.instance()[THREE_WAY_NAMESPACE_METHODS].focusedFieldUpdatedOnServer(p),
