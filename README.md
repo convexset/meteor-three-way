@@ -1076,7 +1076,9 @@ Extra processors may be accessed via the `ThreeWay.preProcessors` namespace (e.g
  - `isNonEmptyArray`: returns the described true/false value
  - `toUpperCase`: transforms the value to a string (`undefined` to `''`) and returns it in upper case
  - `toLowerCase`: transforms the value to a string (`undefined` to `''`) and returns it in lower case
- - `updateSemanticUIDropdown`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)
+ - `updateSemanticUIDropdown`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html); uses `.dropdown("set exactly", ...)` that triggers value changes and may lead to unnecessary updates
+ - `updateSemanticUIDropdownSingle`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html); uses direct DOM manipulation; value changes not triggered
+ - `updateSemanticUIDropdownMultiple`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) multiple drop down; uses direct DOM manipulation; value changes not triggered
  - `undefinedToEmptyStringFilter`: maps `undefined`'s to empty strings and passes other values
 
 ### Extra Pre-Processor Generators

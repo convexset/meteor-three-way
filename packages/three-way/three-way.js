@@ -2684,6 +2684,105 @@ if (Meteor.isClient) {
 				.dropdown('refresh');
 			return x;
 		},
+		updateSemanticUIDropdownMultiple: function updateSemanticUIDropdownMultiple(x, elem) {
+			if ((typeof x !== "undefined") && (x !== null)) {
+
+				// check for correct element
+				var validElement = !!elem && !!elem.parentElement && !!elem.parentElement.tagName && (elem.parentElement.tagName.toUpperCase() === "DIV");
+				var parentElementClassList;
+				if (validElement) {
+					parentElementClassList = Array.prototype.map.call(elem.parentElement.classList, x => x.toLowerCase());
+					['ui', 'dropdown', 'multiple'].forEach(function(tag) {
+						if (parentElementClassList.indexOf(tag) === -1) {
+							validElement = false;
+						}
+					});
+				}
+				if (!validElement) {
+					console.warn('Unable to find Semantic UI multiple dropdown element.', elem, elem.parentElement);
+					return x;
+				}
+
+				var dropdown = $(elem.parentElement);
+				var selection = (x.toString().trim() === "") ? [] : x.toString().trim().split(',').map(x => x.trim());
+				var theIcon = dropdown.find('i.dropdown.icon');
+
+				// Remove labels
+				dropdown.find('a.ui.label').remove();
+
+				// Reset selection status
+				dropdown.find('div.item').removeClass("selected active filtered");
+
+				var items = "";
+				var genLabel = (id, label) => "<a class=\"ui label transition visible\" data-value=\"" + id + "\" style=\"display: inline-block !important;\">" + label + "<i class=\"delete icon\"></i></a>\n";
+				var selectedItems = selection.map(id => [id, Array.prototype.filter.call(dropdown.find('div.item'), elem => ((elem.getAttribute('data-value') || "").trim() === id))]);
+				selectedItems.forEach(function(item) {
+					var id = item[0];
+					var elems = item[1];
+					elems.forEach(function(elem) {
+						// Set selection status
+						$(elem).addClass("active filtered");
+						// Prepare to create labels
+						items += genLabel(id, elem.innerText);
+					});
+				});
+
+				// Create labels
+				theIcon.after(items);
+			}
+			$(elem.parentElement)
+				.dropdown('refresh');
+			return x;
+		},
+		updateSemanticUIDropdownSingle: function updateSemanticUIDropdownSingle(x, elem) {
+			if ((typeof x !== "undefined") && (x !== null)) {
+				// check for correct element
+				var validElement = !!elem && !!elem.parentElement && !!elem.parentElement.tagName && (elem.parentElement.tagName.toUpperCase() === "DIV");
+				var parentElementClassList;
+				if (validElement) {
+					parentElementClassList = Array.prototype.map.call(elem.parentElement.classList, x => x.toLowerCase());
+					['ui', 'dropdown'].forEach(function(tag) {
+						if (parentElementClassList.indexOf(tag) === -1) {
+							validElement = false;
+						}
+					});
+					if (parentElementClassList.indexOf('multiple') !== -1) {
+						// not a single dropdown
+						validElement = false;
+					}
+				}
+				if (!validElement) {
+					console.warn('Unable to find Semantic UI (single) dropdown element.', elem, elem.parentElement);
+					return x;
+				}
+
+				var selectedItem = x.toString().trim();
+				var dropdown = $(elem.parentElement);
+
+				// Reset selection status
+				dropdown.find('div.item').removeClass("selected active");
+
+				var textValue;
+				var selectedItems = Array.prototype.filter.call(dropdown.find('div.item'), elem => ((elem.getAttribute('data-value') || "").trim() === selectedItem));
+				selectedItems.forEach(function(elem) {
+					// Set selection status
+					$(elem).addClass("selected active");
+					// Get label text
+					textValue = elem.innerText;
+				});
+
+				// Update value
+				if (!!textValue) {
+					dropdown
+						.find('div.text')
+						.removeClass('default')
+						.text(textValue);
+				}
+			}
+			$(elem.parentElement)
+				.dropdown('refresh');
+			return x;
+		},
 		undefinedToEmptyStringFilter: ThreeWay.preProcessorGenerators.undefinedFilterGenerator(""),
 		nullOrUndefinedToEmptyStringFilter: ThreeWay.preProcessorGenerators.nullOrUndefinedFilterGenerator(""),
 	});
