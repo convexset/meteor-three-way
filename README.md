@@ -859,6 +859,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
 
+ - `resetVMOnlyData`: resets view-model only data to initial values (including those from `twdata` tags)
+
 #### Ancestor Data (and other possessions)
 
  - `parentDataGet(p, levelsUp)`: returns property `p` from parent instance `levelsUp` levels up (default: 1)

@@ -599,6 +599,13 @@ if (Meteor.isClient) {
 				return descendants;
 			};
 
+			threeWayMethods.resetVMOnlyData = function _3w_resetVMOnlyData() {
+				// Reset VM Only data to initial values (including those from `twdata` tags)
+				_.forEach(threeWay.vmOnlyData_Initial, function(value, field) {
+					threeWay.data.set(field, value);
+				});
+			};
+
 			threeWayMethods.getInheritedHelper = function _3w_getInheritedHelper(h) {
 				if (typeof options.helpers[h] !== "undefined") {
 					return options.helpers[h];
@@ -856,11 +863,11 @@ if (Meteor.isClient) {
 				}
 			});
 
-			var vmOnlyData = _.extend({}, options.viewModelToViewOnly);
+			threeWay.vmOnlyData_Initial = _.extend({}, options.viewModelToViewOnly);
 			if (!!instance.data && !!instance.data._3w_additionalViewModelOnlyData) {
-				vmOnlyData = _.extend(vmOnlyData, instance.data._3w_additionalViewModelOnlyData);
+				threeWay.vmOnlyData_Initial = _.extend(threeWay.vmOnlyData_Initial, instance.data._3w_additionalViewModelOnlyData);
 			}
-			_.forEach(vmOnlyData, function(value, field) {
+			_.forEach(threeWay.vmOnlyData_Initial, function(value, field) {
 				threeWay.data.set(field, value);
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
 					console.log("[vm-only] Setting up initial value for " + field + " to ", value, " using template-level options.");
@@ -869,6 +876,7 @@ if (Meteor.isClient) {
 				if (matchParamStrings(options.fields, field).length > 0) {
 					// Do not set-up update computation (not an actual vm-only field)
 					console.warn("[vm-only] Not an actual view model only field:", field);
+					delete threeWay.vmOnlyData_Initial[field];
 				} else {
 					// Set up update computation as per normal (honest vm-only field)
 					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
@@ -2421,6 +2429,7 @@ if (Meteor.isClient) {
 						console.log("[vm-only] Processors:", processors, "; Init Value:", initValue, "; Final value:", value);
 					}
 				}
+				threeWay.vmOnlyData_Initial[field] = value;
 				threeWay.data.set(field, value);
 
 				if (typeof threeWay._dataUpdateComputations[field] === "undefined") {
