@@ -223,12 +223,14 @@
 							<strong>Tags</strong>
 							<br>
 							(Valid tags begin with "tag")
+							<br>
+							(... also, Semantic UI dropdowns don't play well with focus)
 						</td>
 						<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
 							<table border=0 style="width: 100%;">
 								<tr>
 									<td style="width: 85%; border: none;">
-										<div class="ui fluid multiple search selection dropdown" data-bind="value: tags" tabindex=0><!-- data binding has no effect, but the binding and tabindex allow the _3w_focusedField to work -->
+										<div class="ui fluid multiple search selection dropdown">
 											<input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
 											<i class="dropdown icon"></i>
 											<div class="default text">Select Tags</div>
