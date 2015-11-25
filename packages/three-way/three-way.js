@@ -2404,10 +2404,9 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			// Say hi to parent now that its rendered
 			//////////////////////////////////////////////////////////////////
-			var myId = 'progenitor_' + Math.floor(Math.random() * 1e15);
+			var myId = instance && instance.data && instance.data._3w_name || 'progenitor_' + Math.floor(Math.random() * 1e15);
 			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
 				var parentThreeWayInstance = instance.parentTemplate()[THREE_WAY_NAMESPACE];
-				myId = instance && instance.data && instance.data._3w_name;
 
 				if (!!myId) {
 					if (!!parentThreeWayInstance.children[myId]) {
