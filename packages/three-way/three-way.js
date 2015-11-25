@@ -1,11 +1,14 @@
 /* global ThreeWay: true */
 /* global PackageUtilities: true */
+/* global Reload: true */
+/* global __meteor_runtime_config__: true */
 
 var __tw = function ThreeWay() {};
 ThreeWay = new __tw();
 
 var THREE_WAY_NAMESPACE = "__three_way__";
 var THREE_WAY_NAMESPACE_METHODS = "_3w_";
+var THREE_WAY_MIGRATION_NAME = "ThreeWay";
 var DATA_BIND_ATTRIBUTE = "data-bind";
 var THREE_WAY_ATTRIBUTE_NAMESPACE = "three-way";
 var THREE_WAY_DATA_BINDING_ID = "three-way-id";
@@ -42,6 +45,7 @@ var DEBUG_MESSAGES = {
 	'vm-only': false,
 	'validation': false,
 	'bind': false,
+	'reload': false,
 };
 
 function IN_DEBUG_MODE_FOR(message_class) {
@@ -432,6 +436,20 @@ if (Meteor.isClient) {
 				return ret;
 			};
 
+			threeWayMethods.isPropVMOnly = function(p) {
+				return matchParamStrings(options.fields, p).length === 0;
+			};
+
+			threeWayMethods.getAll_VMOnly_NR = function() {
+				var vmData = threeWayMethods.getAll_NR();
+				_.forEach(threeWay.fieldMatchParams, function(v, k) {
+					if (!threeWayMethods.isPropVMOnly(k) && vmData.hasOwnProperty(k)) {
+						delete vmData[k];
+					}
+				});
+				return vmData;
+			};
+
 			threeWayMethods.focusedField = () => threeWay._focusedField.get();
 			threeWayMethods.focusedFieldUpdatedOnServer = p => threeWay._focusedFieldUpdatedOnServer.get(p);
 
@@ -583,6 +601,18 @@ if (Meteor.isClient) {
 					}
 				}
 				return null;
+			};
+
+			threeWayMethods.__getUltimateThreeWayAncestor = function _3w_getUltimateThreeWayAncestor() {
+				var candidate = instance;
+				var currentInstance = candidate;
+				while (!!currentInstance.parentTemplate()) {
+					currentInstance = currentInstance.parentTemplate();
+					if (!!currentInstance[THREE_WAY_NAMESPACE]) {
+						candidate = currentInstance;
+					}
+				}
+				return candidate;
 			};
 
 			threeWayMethods.getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth, path) {
@@ -745,7 +775,7 @@ if (Meteor.isClient) {
 						isUpdated = _.isEqual(miniMongoValueTransformed, threeWayMethods.get(fieldName));
 					});
 					threeWay.__serverIsUpdated.set(fieldName, isUpdated);
-				}				
+				}
 			}
 
 
@@ -914,7 +944,7 @@ if (Meteor.isClient) {
 					console.log("[vm-only] Setting up initial value for " + field + " to ", value, " using template-level options.");
 				}
 				// Check vmOnlyData for nonsense that matches fields. Don't set up computation if so
-				if (matchParamStrings(options.fields, field).length > 0) {
+				if (!threeWayMethods.isPropVMOnly(field)) {
 					// Do not set-up update computation (not an actual vm-only field)
 					console.warn("[vm-only] Not an actual view model only field:", field);
 					delete threeWay.vmOnlyData_Initial[field];
@@ -928,6 +958,10 @@ if (Meteor.isClient) {
 					});
 				}
 			});
+
+			// On Reload from Hot Code Push, Refresh View Model Only Data
+			// ... but after name is acquired
+			// ... so not here.
 
 			// For matching fields
 			// item.subitem --> (item.subitem, [])
@@ -1460,7 +1494,7 @@ if (Meteor.isClient) {
 				return value;
 			};
 			threeWayMethods.__processInTemplateContext = processInTemplateContext;
-			
+
 
 			////////////////////////////////////////////////////////////////
 			////////////////////////////////////////////////////////////////
@@ -2420,21 +2454,39 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			var myId = instance && instance.data && instance.data._3w_name;
 			var parentInstance = threeWayMethods.__getNearestThreeWayAncestor();
+			var ultimateAncestor = threeWayMethods.__getUltimateThreeWayAncestor();
+
+			if (!ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers) {
+				// A descendant will have to create this
+				ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers = {};
+			}
+
+			var someToken = 1;
 			if (!!parentInstance) {
 				if (!!myId) {
 					if (!!parentInstance[THREE_WAY_NAMESPACE].children[myId]) {
 						throw new Meteor.Error('three-way-repeated-id', myId);
 					}
+					if (!!ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers[myId]) {
+						console.warn('[ThreeWay] Repeated id: ' + myId + '; this may cause issues with data migration in reloads triggered by hot code pushes');
+					}
 				} else {
-					myId = instance.view.name + '_' + Math.floor(Math.random() * 1e15);
-					while (!!parentInstance[THREE_WAY_NAMESPACE].children[myId]) {
-						myId = instance.view.name + '_' + Math.floor(Math.random() * 1e15);
+					myId = "_3wNode_" + thisTemplateName + '_' + someToken;
+					while (!!ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers[myId]) {
+						someToken += 1;
+						myId = "_3wNode_" + thisTemplateName + '_' + someToken;
 					}
 				}
 				parentInstance[THREE_WAY_NAMESPACE].__hasChild.set(myId, true);
 				parentInstance[THREE_WAY_NAMESPACE].children[myId] = instance;
+				ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers[myId] = instance;
 			} else {
-				myId = '3wRootNode_' + Math.floor(Math.random() * 1e15);
+				myId = '_3wRootNode_' + thisTemplateName;
+				while (!!threeWay.familyTreeMembers[myId]) {
+					someToken += 1;
+					myId = '_3wRootNode_' + thisTemplateName + '_' + someToken;
+				}
+				threeWay.familyTreeMembers[myId] = instance;
 			}
 			threeWay.instanceId.set(myId);
 
@@ -2641,6 +2693,20 @@ if (Meteor.isClient) {
 				threeWayMethods.setId(instance.data._3w_id);
 			}
 
+
+			//////////////////////////////////////////////////////////////////
+			// Restore VM-Only Data after Reload Triggered by Hot Code Push
+			//////////////////////////////////////////////////////////////////
+			var useReloadData = !instance.data || !instance.data._3w_ignoreReloadData;
+			if (useReloadData && ThreeWay.Reload._haveReloadPayload(myId)) {
+				var reloadPayload = ThreeWay.Reload._getReloadPayload(myId);
+				if (!!reloadPayload) {
+					_.forEach(reloadPayload, function(value, field) {
+						threeWay.data.set(field, value);
+					});
+				}
+			}
+			ThreeWay.Reload._registerForReload(myId, instance);
 		});
 
 		tmpl.onDestroyed(function() {
@@ -2666,20 +2732,22 @@ if (Meteor.isClient) {
 				threeWay.mutationObserver.disconnect();
 			}
 
-			// Say bye to parent?
+			// Say bye to parent and ultimate ancestor?
 			var myId;
-			Tracker.nonreactive(function () {
-			 	myId = threeWayMethods.get3wInstanceId();
+			Tracker.nonreactive(function() {
+				myId = threeWayMethods.get3wInstanceId();
 			});
 			var parentInstance = threeWayMethods.__getNearestThreeWayAncestor();
-			if ((!!myId) && (!!parentInstance)) {
-				var parentThreeWayInstance = instance.parentTemplate();
-				if (!!parentInstance[THREE_WAY_NAMESPACE].children[myId]) {
+			var ultimateAncestor = threeWayMethods.__getUltimateThreeWayAncestor();
+			if (!!myId) {
+				if (!!parentInstance) {
 					delete parentInstance[THREE_WAY_NAMESPACE].children[myId];
 					parentInstance[THREE_WAY_NAMESPACE].__hasChild.set(myId, false);
 				}
+				delete ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers[myId];
 			}
 
+			ThreeWay.Reload._deregisterForReload(myId, instance);
 		});
 
 		tmpl.helpers({
@@ -2720,6 +2788,106 @@ if (Meteor.isClient) {
 		});
 	});
 
+	////////////////////////////////////////////////////////////////////////////
+	// Reload Stuff
+	////////////////////////////////////////////////////////////////////////////
+	var ThreeWayReload = {};
+	var _reloadRegistration = {};
+	PackageUtilities.addMutablePropertyObject(ThreeWayReload, '_reloadRegistration', _reloadRegistration);
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayReload, '_registerForReload', function _registerForReload(reloadId, instance) {
+		_reloadRegistration[reloadId] = instance;
+	});
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayReload, '_deregisterForReload', function _deregisterForReload(reloadId) {
+		delete _reloadRegistration[reloadId];
+	});
+	var _reloadStatus = {
+		ready: false
+	};
+	var threeWayMigrationData = Reload._migrationData(THREE_WAY_MIGRATION_NAME) || null;
+	if (!!threeWayMigrationData && !!threeWayMigrationData.data) {
+		threeWayMigrationData._unreadData = _.extend({}, threeWayMigrationData.data);
+	}
+	PackageUtilities.addImmutablePropertyObject(ThreeWayReload, '_migrationData', threeWayMigrationData);
+	PackageUtilities.addMutablePropertyObject(ThreeWayReload, '_reloadStatus', _reloadStatus);
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayReload, '_haveReloadPayload', function _haveReloadPayload(reloadId) {
+		return threeWayMigrationData && threeWayMigrationData._unreadData && (typeof threeWayMigrationData._unreadData[reloadId] !== "undefined");
+	});
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayReload, '_getReloadPayload', function _getReloadPayload(reloadId) {
+		if (IN_DEBUG_MODE_FOR('reload')) {
+			console.info('[ThreeWay|Reload] Getting payload for ' + reloadId + '.');
+		}
+		var ret;
+		if (!!threeWayMigrationData && !!threeWayMigrationData._unreadData && !!threeWayMigrationData._unreadData[reloadId]) {
+			ret = threeWayMigrationData._unreadData[reloadId];
+			delete threeWayMigrationData._unreadData[reloadId];
+		}
+		return ret;
+	});
+
+	var _newThreeWayMigrationData;
+	Reload._onMigrate(THREE_WAY_MIGRATION_NAME, function(retry) {
+		if (_reloadStatus.ready) {
+			if (IN_DEBUG_MODE_FOR('reload')) {
+				console.info('[ThreeWay|Reload] Storing migration data and reloading...');
+			}
+
+			var now = new Date();
+			var history = threeWayMigrationData && threeWayMigrationData.history || [];
+			history.unshift({
+				time: now,
+				autoupdateVersion: __meteor_runtime_config__.autoupdateVersion,
+				autoupdateVersionCordova: __meteor_runtime_config__.autoupdateVersionCordova,
+				autoupdateVersionRefreshable: __meteor_runtime_config__.autoupdateVersionRefreshable,
+				meteorRelease: __meteor_runtime_config__.meteorRelease,
+			});
+
+			return [true, {
+				time: now,
+				history: history,
+				meteorRuntimeConfig: __meteor_runtime_config__,
+				data: _newThreeWayMigrationData,
+			}];
+		} else {
+			if (IN_DEBUG_MODE_FOR('reload')) {
+				console.info('[ThreeWay|Reload] Reload triggered. Preparing...');
+			}
+			_reloadStatus.ready = true;
+			_reloadStatus.reloadRetry = retry;
+
+			setTimeout(function() {
+				// Flush and then do things
+				// Done here so things don't happen within a computation/flush
+				if (IN_DEBUG_MODE_FOR('reload')) {
+					console.info('[ThreeWay|Reload] Flushing...');
+				}
+				Tracker.flush();
+
+				// Populate Migration Data
+				if (IN_DEBUG_MODE_FOR('reload')) {
+					console.info('[ThreeWay|Reload] Preparing migration data...');
+				}
+				_newThreeWayMigrationData = _.object(_.map(_reloadRegistration, (instance, id) => [id, instance[THREE_WAY_NAMESPACE_METHODS].getAll_NR()]));
+
+				// Retry reload
+				if (IN_DEBUG_MODE_FOR('reload')) {
+					console.info('[ThreeWay|Reload] Ready to reload...');
+				}
+
+				if (IN_DEBUG_MODE_FOR('reload')) {
+					setTimeout(_reloadStatus.reloadRetry, 5000);
+				} else {
+					_reloadStatus.reloadRetry();
+				}
+			}, 0);
+			return false;
+		}
+	});
+
+	PackageUtilities.addMutablePropertyObject(ThreeWay, 'Reload', ThreeWayReload);
+
+	////////////////////////////////////////////////////////////////////////////
+	// Extra Content
+	////////////////////////////////////////////////////////////////////////////
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'preProcessorGenerators', {
 		undefinedFilterGenerator: function undefinedFilterGenerator(defaultValue) {
 			return x => (typeof x === "undefined") ? defaultValue : x;

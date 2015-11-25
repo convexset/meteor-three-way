@@ -27,7 +27,7 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
   - [Referring to Fields in Documents](#referring-to-fields-in-documents)
   - [Default Values](#default-values)
   - [Dynamic Data-Binding](#dynamic-data-binding)
-    - [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances)
+    - [Using Dynamic Data Binding with Multiple `ThreeWay` instances](#using-dynamic-data-binding-with-multiple-threeway-instances)
   - [Updaters to the Server](#updaters-to-the-server)
     - [Extended Notation for Updaters](#extended-notation-for-updaters)
   - [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
@@ -54,6 +54,7 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
     - [Pre-processor Pipelines in Blaze](#pre-processor-pipelines-in-blaze)
   - [Data Validation](#data-validation)
   - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
+  - [Data Migration on Hot Code Push](#data-migration-on-hot-code-push)
   - [Debug](#debug)
 - [Extras](#extras)
   - [Extra/Default Pre-processors](#extradefault-pre-processors)
@@ -489,7 +490,7 @@ The data binding responds to changes in the DOM. So Blaze can be used to generat
 
 ... and should a new field be added, data binding will take effect.
 
-#### Using Dynamic Data Bindings with Multiple `ThreeWay` instances
+#### Using Dynamic Data Binding with Multiple `ThreeWay` instances
 
 Dynamic data binding works without a hitch (hopefully) when a template is operating in a vacuum. Multiple `ThreeWay` instances (See: ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data) for more information) work fine in the absence of dynamic data binding. But when DOM elements (to be data bound) are being added and removed dynamically, it is important to create certainty about which `ThreeWay` instance a given DOM element should be bound to.
 
@@ -832,7 +833,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 #### Organizing the DOM
 
- - `setRoots(selectorString)`: selects the root of the `ThreeWay` instance using a selector string (`Template.instance().$` will be used); child nodes of the single node (the method throws an error if more than one node is matched), present and forthcoming, will be watched for changes (and the respective data bindings updated); See [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information
+ - `setRoots(selectorString)`: selects the root of the `ThreeWay` instance using a selector string (`Template.instance().$` will be used); child nodes of the single node (the method throws an error if more than one node is matched), present and forthcoming, will be watched for changes (and the respective data bindings updated); See [Using Dynamic Data Binding with Multiple `ThreeWay` instances](#using-dynamic-data-binding-with-multiple-threeway-instances) for more information
 
 #### My Data
 
@@ -847,6 +848,10 @@ The following methods are crammed onto each template instance in an `onCreated` 
  - `get_NR(prop)`: gets a property "non-reactively"
 
  - `getAll_NR`: gets all the data "non-reactively"
+
+ - `isPropVMOnly(prop)`: gets all view-model only data "non-reactively"
+
+ - `getAll_VMOnly_NR`: gets all view-model only data "non-reactively"
 
  - `isSyncedToServer(prop)`: returns `true` if `ThreeWay` can be sure that data for the field with name `prop` has been received and written by the server.
 
@@ -1111,12 +1116,28 @@ The reasons for having two separate checks is to deal with include the possibili
 
 `ThreeWay`-linked template instances can be connected in parent-child relationships. Data can be accessed across template boundaries in the following ways (and more):
  - ancestor (any number of levels up)
- - descendant (any number of levels down; requires knowledge of the relevant template instance identifiers of successive descendants passed into each template as `_3w_name` in data context)
+ - descendant (any number of levels down; requires knowledge of the relevant template instance identifiers of successive descendants passed into each template as `_3w_name` in the data context)
  - sibling (requires knowledge of the relevant template instance identifier passed into template as `_3w_name` in data context)
 
 In principle, as long at the template instance of the "highest-level" ancestor can be acquired, then any connected instance may be straight-forwardly accessed. "Sibling" data-access is syntactic sugar for this.
 
 See [Instance Methods](#instance-methods) for more information.
+
+### Data Migration on Hot Code Push
+
+`ThreeWay` migrates data between reloads triggered by hot code push (or the `reload` package). To do this properly, instances should not have instance ids that collide.
+
+There are a few sufficient conditions for non-collision such as the following all being true, all `ThreeWay`-enabled template instances are in a common template tree (there is a `ThreeWay`-enabled such that all others are descendants. This may be achieved trivially by calling:
+
+```javascript
+ThreeWay.prepare(Template.BigPapaRootTemplateLayout, {});
+```
+
+... on the root template, which may be a layout that swaps components in and out with `Template.dynamic`. (Do look at [Using Dynamic Data Binding with Multiple `ThreeWay` instances](#using-dynamic-data-binding-with-multiple-threeway-instances) to ensure that this is done properly.)
+
+Recall that one may customize ids manually by passing `_3w_name` into the data context of each template instance. For instances with the same name (instance id), that get created and destroyed dynamically, only the first instance will get the data from the previous migration.
+
+One may pass `_3w_ignoreReloadData` (boolean) into the data context of each template instance to indicate whether to ignore migrated data (`true` to ignore).
 
 
 ### Debug
@@ -1291,7 +1312,7 @@ As of v0.1.20, promise chains/bins were no longer used.
 Pre-v0.1.9, dynamic rebinding was incomplete and carried out by polling the DOM. As of v0.1.9, [Mutation Observers](https://developer.mozilla.org/en/docs/Web/API/MutationObserver) have been used to deal with things in an event-driven manner.
 
 The mixing of dynamic data-binding and the possibility of multiple `ThreeWay` instances poses some challenges with regards to the question of which `ThreeWay` instance a new DOM element should be data bound with.
-See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information.
+See the discussion in [Using Dynamic Data Binding with Multiple `ThreeWay` instances](#using-dynamic-data-binding-with-multiple-threeway-instances) for more information.
 
 Pre-v0.1.20, late creation of child templates posed a problem. They were outside of the normal order of the template life cycle:
  - Parent created
@@ -1300,7 +1321,7 @@ Pre-v0.1.20, late creation of child templates posed a problem. They were outside
  - Grandchild rendered
  - Child rendered
  - Parent rendered
-... which enabled appropriate creation of `MutationObserver`'s in `onRendered` hooks, so the most junior nodes (in order of creation or "age") would get first bite at new nodes, which makes sense by default. (See the discussion in [Using Dynamic Data Bindings with Multiple `ThreeWay` instances](#using-dynamic-data-bindings-with-multiple-threeway-instances) for more information on how to create nodes in a child template but have them bound to a parent.)
+... which enabled appropriate creation of `MutationObserver`'s in `onRendered` hooks, so the most junior nodes (in order of creation or "age") would get first bite at new nodes, which makes sense by default. (See the discussion in [Using Dynamic Data Binding with Multiple `ThreeWay` instances](#using-dynamic-data-binding-with-multiple-threeway-instances) for more information on how to create nodes in a child template but have them bound to a parent.)
 
 The late creation problem was solved by introducing something of a "bind auction" for added and modified nodes. The bid value for each template instance involved being its level of depth in its `ThreeWay` family tree. Ties are broken arbitrarily (actually, on a first created first served basis).
 

@@ -28,3 +28,4 @@ reactive-dict
 
 convexset:template-helpers
 convexset:three-way
+convexset:package-utils

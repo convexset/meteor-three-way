@@ -14,7 +14,7 @@ callback-hook@1.0.4
 check@1.1.0
 convexset:package-utils@0.1.3
 convexset:template-helpers@0.1.13
-convexset:three-way@0.2.7
+convexset:three-way@0.2.8
 ddp@1.2.2
 ddp-client@1.2.1
 ddp-common@1.2.2

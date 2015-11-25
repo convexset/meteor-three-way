@@ -4,6 +4,8 @@
 /* global childTemplate: true */
 /* global grandchildTemplate: true */
 /* global preparationDeficientTemplate: true */
+/* global Fake: true */
+
 
 ////////////////////////////////////////////////////////////
 // Preamble
@@ -94,8 +96,8 @@ if (Meteor.isClient) {
 		"click button#randomize-child-ids": function() {
 			/* global alert: true */
 			Template.instance()._3w_.childDataSetId(randomId(), 'kiddy');
-			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'grandkiddy']);
-			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'other_grandkiddy']);
+			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', '_3wNode_DemoThreeWayGrandChild']);
+			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', '_3wNode_DemoThreeWayGrandChild_2']);
 			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'yet_another_grandkiddy']);
 		},
 		"change input[name=debug-messages]": function(event, template) {
@@ -154,7 +156,7 @@ if (Meteor.isClient) {
 	Template.DemoThreeWayPreparationDeficient.onRendered(function() {
 		preparationDeficientTemplate = this;
 		Template.instance()._3w_.set('title', 'Preparation Deficit: Quick and Dirty View Models');
-		_.range(10).forEach(function (idx) {
+		_.range(5).forEach(function (idx) {
 			Template.instance()._3w_.set('item'+idx, Fake.user().fullname);
 		});
 	});
