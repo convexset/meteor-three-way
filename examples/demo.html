@@ -689,10 +689,19 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 		<p>This was initialized with:</p>
 		<pre>ThreeWay.prepare(Template.DemoThreeWayPreparationDeficient, {});</pre>
 		<p>... and all view model content was created in <code>onRendered</code> with <code>Template.instance()._3w_.set</code>.</p>
+<pre>
+Template.DemoThreeWayPreparationDeficient.onRendered(function() {
+	preparationDeficientTemplate = this;
+	Template.instance()._3w_.set('title', 'Preparation Deficit: Quick and Dirty View Models');
+	_.range(10).forEach(function (idx) {
+		Template.instance()._3w_.set('item'+idx, Fake.user().fullname);
+	});
+});
+</pre>
 		<p>The <code>stringToColor</code> pre-processor was inherited from a parent, the <code>toUpperCase</code> pre-processor is a default pre-processor that may be overwritten.</p>
 		<table border=0>
 			<tr>
-				<td style="min-width: 50px;">Title</td>
+				<td style="min-width: 60px;">Title</td>
 				<td colspan="2" style="width: 100%;">
 					<input data-bind="value: title; style: {color: title|stringToColor}" style="width: 100%;">
 				</td>
@@ -704,6 +713,11 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 					<td><span data-bind="text: item{{this}}|toUpperCase; style: {color: item{{this}}|stringToColor}"></span></td>
 				</tr>
 			{{/each}}
+			<tr>
+				<td>Not&nbsp;Even Initialized</td>
+				<td><input data-bind="value: not_even_initialized" style="width: 100%;"></td>
+				<td><span data-bind="text: not_even_initialized|toUpperCase; style: {color: not_even_initialized|stringToColor}"></span></td>
+			</tr>
 		</table>
 	</div>
 </template>
