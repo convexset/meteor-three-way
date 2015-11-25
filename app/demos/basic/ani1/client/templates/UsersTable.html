@@ -1,0 +1,106 @@
+<template name="UsersTable">
+	<table class="ui celled table form" data-bind="class: {loading: ready|not}">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Tags</th>
+				<th>Edit</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{#each data}}
+				<tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
+					<td>{{name}}</td>
+					<td>
+						{{#each getTags tags}}
+							<span class="ui tag label {{this.color}}">{{this.label}}</span>
+						{{/each}}
+					</td>
+					<td>
+						<button class="ui green inverted button" id="focus-{{_id}}" data-bind="event:{click: selectUser}">
+							<i class="icon pencil" id="alternative-{{_id}}"></i>
+							Edit
+						</button>
+					</td>
+				</tr>
+			{{/each}}
+		</tbody>
+	</table>
+
+	<div data-bind="visible: _3w_hasData">
+
+		<div class="column">
+			&nbsp;
+		</div>
+		<hr/>
+		<div class="column">
+			&nbsp;
+		</div>
+
+		<div class="column">
+			<h3 id='edit-head'>Edit (View Model){{#if _3w_id}} - {{_3w_id}} {{/if}}</h3>
+
+			<table class="ui celled table">
+				<tr>
+					<td>
+						<strong>Name</strong>
+					</td>
+					<td>
+						<input style="border: 0; width: 85%;" data-bind="value: name">
+						&nbsp;&nbsp;&nbsp;
+						{{#if _3w_validValuesNotSynced 'name'}}<i class="repeat loading icon"></i>{{/if}}
+						{{#if _3w_focusedFieldUpdatedOnServer 'name'}}<i class="warning icon"></i>{{/if}}
+					</td>
+				</tr>
+
+				<tr>
+					<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
+						<strong>Tags</strong>
+					</td>
+					<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
+						<table border=0 style="width: 100%;">
+							<tr>
+								<td style="width: 85%; border: none;">
+									<div class="ui fluid multiple search selection dropdown"><!-- data binding has no effect, but the binding and tabindex allow the _3w_focusedField to work -->
+										<input type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
+										<i class="dropdown icon"></i>
+										<div class="default text">Select Tags</div>
+										<div class="menu">
+											{{#each allTags}}
+												<div class="item ui label {{this.color}}" data-value="{{this._id}}">{{this.label}}</div>
+											{{/each}}
+										</div>
+									</div>
+									<div data-bind="text: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+								</td>
+								<td style="border: none;">
+									{{#if _3w_validValuesNotSynced 'tags'}}<i class="repeat loading icon"></i>{{/if}}
+									{{#if _3w_focusedFieldUpdatedOnServer 'tags'}}<i class="warning icon"></i>{{/if}}
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<tr>
+					<td>
+						<strong>Actions</strong>
+					</td>
+					<td>
+						<button class="ui red inverted button" data-bind="event: {click: deleteUser}">
+							<i class="icon remove"></i>
+							Delete
+						</button>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+	{{> TagsManager }}
+
+<!--	HACK: Helper returns an array of 1 object, each it to keep updating the values reactively -->
+	{{#each modalWindowHelper}}
+		{{> _Modal _3w_additionalViewModelOnlyData=this _3w_name='modalChild'}}
+	{{/each}}
+</template>

@@ -1,0 +1,40 @@
+<template name="MainLayout">
+	<div class="ui sidebar inverted vertical menu">
+		<div class="item">
+			<div class="header">Main Pages</div>
+			<div class="menu">
+				<a class="item" href="{{pathFor 'Home'}}">Home</a>
+				<a class="item" href="https://github.com/convexset/meteor-three-way/blob/master/README.md">Docs</a>
+			</div>
+		</div>
+		<div class="item">
+			<div class="header">Demos</div>
+			<div class="menu">
+				<a class="item" href="{{pathFor 'DemoOriginal'}}">Original</a>
+				<a class="item" href="{{pathFor 'DemoAni1'}}">Basic demo</a>
+			</div>
+		</div>
+		<div class="item">
+			<div class="header">Links</div>
+			<div class="menu">
+				<a class="item" href="https://atmospherejs.com/convexset/three-way">Atmosphere.js</a>
+				<a class="item" href="https://github.com/convexset/meteor-three-way/">Github</a>
+				<a class="item" href="https://github.com/convexset/meteor-three-way/issues">Need help?</a>
+			</div>
+		</div>
+	</div>
+	<div class="pusher">
+		<header id="main-layout-header">
+			{{> Template.dynamic template=header data=allParams}}
+		</header>
+		<main class="ui container" style="padding-top:110px;" id="main-layout-content">
+			<div>
+				{{>Template.dynamic template=content data=allParams}}
+			</div>
+		</main>
+
+		<footer id="main-layout-footer">
+			{{>Template.dynamic template=footer data=allParams}}
+		</footer>
+	</div>
+</template>

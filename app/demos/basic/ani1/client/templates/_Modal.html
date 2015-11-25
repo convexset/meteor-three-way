@@ -1,0 +1,35 @@
+<template name="_Modal">
+	<div class="ui modal">
+		<div class="header" data-bind="text: header">Header</div>
+		<div class="content">
+			{{{_3w_display "content"}}}
+			{{#if hasDynamicTemplate}}
+				<p class="dev note">Showing dynamic template</p>
+				{{> Template.dynamic template=tName data=tData}}
+			{{/if}}
+		</div>
+		<div class="actions">
+			<div class="ui approve green button">
+				<i class="icon checkmark"></i>
+				<span data-bind="text: textOk">
+					Ok
+				</span>
+			</div>
+			<div class="ui cancel red button">
+				<i class="icon remove"></i>
+				<span data-bind="text: textCancel">
+					Cancel
+				</span>
+			</div>
+		</div>
+	</div>
+</template>
+
+
+<template name="WhatName">
+	<div class="ui form">
+		<label for="">Enter your name so {{kitty}} can get to know you!</label>
+		<input type="text" data-bind="value: myName" placeholder="What is your name darjeerling?">
+		<strong>Hello {{myName}}</strong>
+	</div>
+</template>

@@ -1,0 +1,697 @@
+
+<template name="OriginalDemo">
+	{{> DemoThreeWay _3w_name='big_daddy_has_an_optional_name'}}
+</template>
+
+<template name="DemoThreeWay">
+
+	<div class="ui container">
+
+		<div class="column">
+			&nbsp;
+		</div>
+
+
+
+		<div class="column">
+			&nbsp;
+		</div>
+
+		<div class="column">
+			<h3>The Architecture of <code>ThreeWay</code> in Bad Drawings</h3>
+
+			<p>
+				<img style="width: 100%;" src="https://s3-ap-southeast-1.amazonaws.com/convexset/development/three-way/overview_3.jpg">
+			</p>
+
+			<p>
+				Without further ado (and details on setting up; see the <a href="https://github.com/convexset/meteor-three-way" target="_blank">documentation</a> for that), let's get to the demo.
+			</p>
+		</div>
+
+		<div class="column">
+			&nbsp;
+		</div>
+
+		<div class="column">
+			<h3>Debug Messages (Look in the console!)</h3>
+			<div class="ui form">
+				{{#each clump allDebugMessages 4}}
+					<div class="fields">
+						{{#each this}}
+							<div class="four wide field">
+								<div class="ui checkbox">
+									<input type="checkbox" value="{{this}}" data-bind="checked: debugMessages" name="debug-messages">
+									<label><code>{{this}}</code></label>
+								</div>
+							</div>
+						{{/each}}
+					</div>
+				{{/each}}
+			</div>
+		</div>
+
+		<div class="column">
+			&nbsp;
+		</div>
+
+		<div class="column">
+			<h3>Show Me the Data (via a <code>#each</code> block iterating over a cursor)</h3>
+
+			<p>Naturally, changes will be propagated to client-side elements before stuff on the "server-side" (or "server's side"). When your changes appear here, it means that data has made its way to the database, has been saved to the database, and has been sent back and stored in the MiniMongo local cache.</p>
+
+			<p>If you do not like what you see, simply enter the following into the console:</p>
+			<pre>Meteor.call('regenerate-data');</pre>
+
+			<table class="ui celled table form" data-bind="class: {loading: ready|not}">
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>e-mail Preferences</th>
+						<th>Age</th>
+						<th>Notes</th>
+						<th>Tags</th>
+						<th>Some Array</th>
+						<th style="width: 150px;">Other Array</th>
+						<th><button class="talk" data-bind="disabled: _3w_haveData|not">Disabled without Data</button></th>
+					</tr>
+				</thead>
+				<tbody>
+					{{#each data}}
+						<tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
+							<td>{{name}}</td>
+							<td>{{emailPrefsToCSL emailPrefs}}</td>
+							<td>{{getProperty personal.particulars.age ageRanges}}</td>
+							<td>{{notes}}</td>
+							<td>{{join tags ', '}}</td>
+							<td>
+								<ol start="0">
+									{{#each personal.someArr}}
+										<li>{{this}}</li>
+									{{/each}}
+								</ol>
+							</td>
+							<td>
+								<ol start="0">
+									{{#each personal.otherArr}}
+										<li>a: {{a}}; b: {{b}}</li>
+									{{/each}}
+								</ol>
+							</td>
+							<td>
+								<button class="select-data" id="focus-{{_id}}">Edit</button>
+							</td>
+						</tr>
+					{{/each}}
+				</tbody>
+			</table>
+		</div>
+
+		<div data-bind="visible: _3w_hasData">
+
+			<div class="column">
+				&nbsp;
+			</div>
+			<hr/>
+			<div class="column">
+				&nbsp;
+			</div>
+
+			<div class="column">
+				<h3 id='edit-head'>Edit (View Model){{#if _3w_id}} - {{_3w_id}} {{#if _3w_focusedField}}(Focused: {{_3w_focusedField}}){{/if}}{{/if}}</h3>
+
+				<p>
+					Requires <a href="https://atmospherejs.com/semantic/ui" target=_blank><code>semantic:ui</code></a> for the multi-select dropdown. (Start Meteor, do a trivial edit of <code>client/lib/semantic-ui/custom.semantic.json</code>, and save it to generate <a href="semantic-ui.com" target=_blank>Semantic UI</a>.)
+				</p>
+
+				<table class="ui celled table">
+					<tr>
+						<td>
+							<strong data-bind="class: {classy: nameHasFocus}">Name</strong>
+							<span data-bind="visible: nameHasFocus">(has focus)</span>
+
+							&nbsp;<a href="#" id="focus-name"><i class="pointing right icon"></i></a>
+						</td>
+						<td>
+							<input name="name" style="border: 0; width: 85%;" data-bind="value: name; focus: nameHasFocus">
+							&nbsp;&nbsp;&nbsp;
+							{{#if _3w_validValuesNotSynced 'name'}}<i class="notched circle loading icon"></i>{{/if}}
+							{{#if _3w_focusedFieldUpdatedOnServer 'name'}}<i class="warning icon"></i>{{/if}}
+							<p style="font-size: 80%">Element updates the view model on <code>input</code> via <code>data-bind="value: name"</code>.</p>
+
+						</td>
+					</tr>
+					<tr>
+						<td><strong>e-mail Preferences</strong></td>
+						<td>
+							{{#each repackageDictionaryAsArray emailPrefsAll}}
+								<div class="ui checkbox">
+									<input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
+									<label>{{value}}</label>
+								</div>
+							{{/each}}
+							&nbsp;&nbsp;&nbsp;
+							{{#if _3w_validValuesNotSynced 'emailPrefs'}}<i class="notched circle loading icon"></i>{{/if}}
+							{{#if _3w_focusedFieldUpdatedOnServer 'emailPrefs'}}<i class="warning icon"></i>{{/if}}
+						</td>
+					</tr>
+					<tr>
+						<td><strong>Age (<code>personal.particulars.age</code>)</strong></td>
+						<td>
+							<div class="inline fields">
+								{{#each repackageDictionaryAsArray ageRanges}}
+									<div class="ui radio checkbox">
+										<input type="radio" name="age" value="{{key}}" data-bind="checked: personal.particulars.age">
+										<label>{{value}}</label>
+									</div>
+								{{/each}}
+								&nbsp;&nbsp;&nbsp;
+								{{#if _3w_validValuesNotSynced 'personal.particulars.age'}}<i class="notched circle loading icon"></i>{{/if}}
+								{{#if _3w_focusedFieldUpdatedOnServer 'personal.particulars.age'}}<i class="warning icon"></i>{{/if}}
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td><strong>Notes</strong></td>
+						<td>
+							<table border=0 style="width: 100%;">
+								<tr>
+									<td style="width: 85%; border: none;">
+										<textarea data-bind="value#donotupdateon-input: notes" style="border: 0; width: 100%;"></textarea>
+									</td>
+									<td style="border: none;">
+										{{#if _3w_validValuesNotSynced 'notes'}}<i class="notched circle loading icon"></i>{{/if}}
+										{{#if _3w_focusedFieldUpdatedOnServer 'notes'}}<i class="warning icon"></i>{{/if}}
+									</td>
+								</tr>
+								<tr>
+									<td colspan=2>
+										<p style="font-size: 80%">Element updates the view model only at the usual change handler (via <code>data-bind="value#donotupdateon-input: notes"</code>)</p>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
+							<strong>Tags</strong>
+							<br>
+							(Valid tags begin with "tag")
+							<br>
+							(... also, Semantic UI dropdowns don't play well with focus)
+						</td>
+						<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
+							<table border=0 style="width: 100%;">
+								<tr>
+									<td style="width: 85%; border: none;">
+										<div class="ui fluid multiple search selection dropdown">
+											<input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
+											<i class="dropdown icon"></i>
+											<div class="default text">Select Tags</div>
+											<div class="menu">
+												{{#each allTags}}
+													<div class="item" data-value="{{this}}">{{this}}</div>
+												{{/each}}
+											</div>
+										</div>
+										<div data-bind="text: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
+									</td>
+									<td style="border: none;">
+										{{#if _3w_validValuesNotSynced 'tags'}}<i class="notched circle loading icon"></i>{{/if}}
+										{{#if _3w_focusedFieldUpdatedOnServer 'tags'}}<i class="warning icon"></i>{{/if}}
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<strong><code>personal.someArr</code></strong>
+							<br>
+							(#0 takes only numbers; #2 forbids "!")
+						</td>
+						<td>
+							<div>
+								{{#each range num}}
+									<strong
+									data-bind="style: {color: someArrValidationErrorText.{{this}}|trueIfNonEmpty|redIfTrue}"
+									>
+									#{{this}}:
+									</strong>
+									<input
+									name="personal.someArr.{{this}}"
+									style="width: 20%;" data-bind="value: personal.someArr.{{this}}; style: {color: someArrValidationErrorText.{{this}}|trueIfNonEmpty|redIfTrue}"
+									>
+									{{#if _3w_validValuesNotSynced (_3w_expandParams "personal.someArr.*" this)}}<i class="notched circle loading icon"></i>{{/if}}
+									{{#if _3w_focusedFieldUpdatedOnServer (_3w_expandParams "personal.someArr.*" this)}}<i class="warning icon"></i>{{/if}}
+									&nbsp;&nbsp;&nbsp;
+								{{/each}}
+							</div>
+							<div style="color: blue; font-size: 0.8em; max-width: 95%;">
+								Note that on selecting an item #1 and #2 are created later (via <code>setTimeout</code>) and are soon data bound via dynamic data binding.
+							</div>
+							<div style="color: brown; font-size: 0.8em; max-width: 95%;">
+								Note also that sub-objects can be challenging. Because, <a href="http://docs.meteor.com/#/full/observe_changes" target="_blank"><code>cursor.observeChanges</code></a> sends entire sub-objects even if there was a small change to a primitive deeply nested within.
+							</div>
+							<div style="color: brown; font-size: 0.8em; max-width: 95%;">
+								<strong>As such, large sub-documents and data-binding are not an ideal implementation pattern.</strong>
+							</div>
+							<div style="color: brown; font-size: 0.8em; max-width: 95%;">
+								There are some little tricks in <code>ThreeWay</code> such as "expecting data sent out to come back eventually". But still, don't do "large sub-documents" if it can be helped.
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td><strong><code>personal.otherArr[0]</code></strong></td>
+						<td>
+							<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.a">
+							{{#if _3w_validValuesNotSynced 'personal.otherArr.0.a'}}<i class="notched circle loading icon"></i>{{/if}}
+							{{#if _3w_focusedFieldUpdatedOnServer 'personal.otherArr.0.a'}}<i class="warning icon"></i>{{/if}}
+							&nbsp;&nbsp;&nbsp;
+
+							<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.0.b">
+							{{#if _3w_validValuesNotSynced 'personal.otherArr.0.b'}}<i class="notched circle loading icon"></i>{{/if}}
+							{{#if _3w_focusedFieldUpdatedOnServer 'personal.otherArr.0.b'}}<i class="warning icon"></i>{{/if}}
+							&nbsp;&nbsp;&nbsp;
+						</td>
+					</tr>
+					<tr>
+						<td><strong><code>personal.otherArr[1]</code></strong></td>
+						<td>
+							<strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.a">
+							{{#if _3w_validValuesNotSynced 'personal.otherArr.1.a'}}<i class="notched circle loading icon"></i>{{/if}}
+							{{#if _3w_focusedFieldUpdatedOnServer 'personal.otherArr.1.a'}}<i class="warning icon"></i>{{/if}}
+							&nbsp;&nbsp;&nbsp;
+
+							<strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.1.b">
+							{{#if _3w_validValuesNotSynced 'personal.otherArr.1.b'}}<i class="notched circle loading icon"></i>{{/if}}
+							{{#if _3w_focusedFieldUpdatedOnServer 'personal.otherArr.1.b'}}<i class="warning icon"></i>{{/if}}
+							&nbsp;&nbsp;&nbsp;
+						</td>
+					</tr>
+				</table>
+
+				<div>
+					Incidentally, here is the current id via a helper and an upper case pre-processor (colour based on id via a style binding): <span data-bind="html: _3w_id|toUpperCase; style: {color: altGetId|stringToColor}"></span>.
+				</div>
+
+				<div>
+					<p>If you are feeling frisky, try manually manipulating the DOM to see if the data binding responds:</p>
+					<pre>$("input[name='personal.someArr.2']").attr('data-bind', 'value: personal.someArr.0')</pre>
+					<p>should link "#2" of the <code>personal.someArr</code> data-entry row with the value of "#0"...</p>
+					<p>Alternatively, try adding a nodes below like so:</p>
+<pre>
+$(&#039;#below-me&#039;).append(&#039;&lt;h3&gt;Multivariable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h3&gt;&#039;);
+$(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.0&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+$(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.1&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+$(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.2&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+$(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-color: personal.someArr.0#personal.someArr.1#personal.someArr.2|makeRGB}&#039;);
+</pre>
+				</div>
+
+				<div id="below-me" style="text-align: center; padding: 20px; border-radius: 5px;">
+				</div>
+
+			</div>
+
+			<div class="column">
+				&nbsp;
+			</div>
+			<hr/>
+			<div class="column">
+				&nbsp;
+			</div>
+
+
+			<div class="column">
+				<h3>Display (View Model){{#if _3w_id}} - {{_3w_id}}{{/if}}</h3>
+
+				<table class="ui celled table">
+					<tr>
+						<td><strong>Name</strong></td>
+						<td><span data-bind="html: name"></span></td>
+					</tr>
+					<tr>
+						<td><strong>e-mail Preferences</strong> (bold if more than one)</td>
+						<td>{{{_3w_display 'emailPrefs|mapToEmailPrefs|boldIfMoreThanOne'}}}</td>
+					</tr>
+					<tr>
+						<td><strong>Age</strong> (color coded)</td>
+						<td><span data-bind="html: personal.particulars.age|mapToAgeDisplay; style: {color: personal.particulars.age|colorCodeAge}"></span></td>
+					</tr>
+					<tr>
+						<td><strong>Notes</strong></td>
+						<td><span data-bind="html: notes"></span></td>
+					</tr>
+					<tr>
+						<td><strong>Tags</strong></td>
+						<td>{{_3w_display 'tags|tagsTextDisplay'}}</td>
+					</tr>
+					<tr>
+						<td><strong>personal.someArr</strong></td>
+						<td>
+							<ol start="0">
+								{{#each range 3}}
+									<li><span data-bind="html: personal.someArr.{{this}}"></span></li>
+								{{/each}}
+							</ol>
+						</td>
+					</tr>
+					<tr>
+						<td><strong>personal.otherArr</strong></td>
+						<td>
+							<ol start="0">
+								{{#each range 2}}
+									<li>
+										<ul>
+											<li>
+												a: <span data-bind="html: personal.otherArr.{{this}}.a"></span>&nbsp;&nbsp;
+											</li>
+											<li>
+												b: <span data-bind="html: personal.otherArr.{{this}}.b"></span>
+											</li>
+										</ul>
+										<br/>
+									</li>
+								{{/each}}
+							</ol>
+						</td>
+					</tr>
+				</table>
+			</div>
+
+		</div>
+
+		<div class="column">
+			&nbsp;
+		</div>
+		<hr/>
+		<div class="column">
+			&nbsp;
+		</div>
+
+		<div class="column">
+			<h1>View Model Only Stuff</h1>
+
+			<h3>Hide?</h3>
+			<div class="ui form">
+				<div class="field">
+					<label>[value binding] hide (VM Only) | value in view model: <span style="color: blue;" data-bind="html: hide"></span></label>
+					<input data-bind="value#throttle-2000: hide; event: {keyup: ctrlReturnKey|shiftReturnKey|backspaceKey, keyup_leftArrowKey: leftArrowKey, upArrowKey: upArrowKey, keydown_rightArrowKey: rightArrowKey, downArrowKey: downArrowKey, f1Key: f1Key}">
+					<p style="font-size: 80%">Element updates the view model on <code>input</code> and has a 2 sec throttle modifier via <code>value#throttle-2000: hide</code>.</p>
+					<p style="font-size: 80%">The following key-bindings are also in place: <code>event: {keyup: ctrlReturnKey|shiftReturnKey|backspaceKey, keyup_leftArrowKey: leftArrowKey, upArrowKey: upArrowKey, keydown_rightArrowKey: rightArrowKey, downArrowKey: downArrowKey, f1Key: f1Key}</code> (look in the console).</p>
+
+					<div style="min-height: 20px;"></div>
+
+					<div style="background-color: red; width: 100%; line-height: 60px; text-align: center; border-radius: 15px;" data-bind="visible: hide|sayHideToHide">
+						<span style="vertical-align: middle; display: inline-block; line-height: 14px; "><strong>Set the value of <code>hide</code> to "hide" (via the above text input) to make this disappear </strong></span>
+					</div>
+
+					<div style="min-height: 20px;" data-bind="visible: hide|sayHideToHide"></div>
+
+					<div>
+						<strong>The {{#if (equalTo (toLowerCase (_3w_get 'hide')) 'hide')}}now hidden thing{{else}}above{{/if}} has a <code>style.display</code> binding... Anything other than "hide" will show the annoying <span style="color: red;">red</span> <code>div</code>.</strong>
+					</div>
+
+					<div>
+					Initialized (at Template-level) via:
+	<pre>viewModelToViewOnly: {
+		"hide": "Set to \"hide\" to hide",
+		...
+	}</pre>
+					</div>
+				</div>
+			</div>
+
+
+			<h3 data-bind="style: {color: fieldNameColor, font-size: fieldNameFontSize}">Heading Info</h3>
+
+			<div data-bind="class: {ui: semanticUIStyling|noIsFalse, form: semanticUIStyling|noIsFalse}">
+				<div class="field">
+					<label>[Style binding] fieldNameColor (VM Only)</label>
+					<input data-bind="value: fieldNameColor">
+					<twdata field="fieldNameColor" initial-value="#0000FF"></twdata>
+
+					Initialized via:
+					<pre>&lt;twdata field=&quot;fieldNameColor&quot; initial-value=&quot;#0000FF&quot;&gt;&lt;/twdata&gt;</pre>
+				</div>
+				<div class="field">
+					<label>[Style binding] fieldNameFontSize (VM Only)</label>
+					<input data-bind="value: fieldNameFontSize">
+					<twdata field="fieldNameFontSize" initial-value="200%"></twdata>
+
+					Initialized via:
+					<pre>&lt;twdata field=&quot;fieldNameFontSize&quot; initial-value=&quot;200%&quot;&gt;&lt;/twdata&gt;</pre>
+				</div>
+				<div class="field">
+					<label>[Attribute binding] imgAltText (VM Only)</label>
+					<input data-bind="value: imgAltText">
+					<twdata field="imgAltText" initial-value="Not Found ('not shouting; blame the processor)" processors="appendTimeStamp"></twdata>
+
+					Initialized via:
+					<pre>&lt;twdata field=&quot;imgAltText&quot; initial-value=&quot;Not Found (&#039;not shouting; blame the processor)&quot; processors=&quot;appendTimeStamp&quot;&gt;&lt;/twdata&gt;</pre>
+				</div>
+				<img src="no-such-image.jpg" data-bind="attr: {alt: imgAltText|toUpperCase}">
+				<div class="field">
+					<label>[Class binding] semanticUIStyling (VM Only; no means false) <code>semanticUIStyling|noIsFalse</code> --> <span data-bind="html: semanticUIStyling|noIsFalse"></span></label>
+					<input data-bind="value: semanticUIStyling">
+					<twdata field="semanticUIStyling" initial-value="yes"></twdata>
+
+					Initialized via:
+					<pre>&lt;twdata field=&quot;semanticUIStyling&quot; initial-value=&quot;yes&quot;&gt;&lt;/twdata&gt;</pre>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="column">
+			&nbsp;
+		</div>
+		<hr/>
+		<div class="column">
+			&nbsp;
+		</div>
+
+		<div class="column">
+			<h1>Parent-Child-Sibling Data Access</h1>
+
+			<div>
+				The following may look somewhat confused.
+				But to summarize things, <code>ThreeWay</code>-linked template instances connected in parent-child relationships are able to access data from each other and the instances that are connected in the following way:
+				<ul>
+					<li>ancestor (any number of levels up)</li>
+					<li>descendant (any number of levels down; requires knowledge of the relevant template instance identifiers of successive descendants passed into each template as <code>_3w_name</code> in data context)</li>
+					<li>sibling (requires knowledge of the relevant template instance identifier passed into template as <code>_3w_name</code> in data context)</li>
+				</ul>
+				The order of "all data" display is out of order, with illustrations of instances accessing data from each other.
+			</div>
+
+			<div style="min-height: 10px;"></div>
+
+			<table style="width: 100%;">
+				<tr>
+					<td>The descendant nodes are linked to the same collection. The linked <code>_id</code>'s can be controlled from the parent.</td>
+					<td style="text-align: right;"><button id="randomize-child-ids">Randomize Child (Data) Ids</button></td>
+				</tr>
+			</table>
+
+			<div style="min-height: 30px;"></div>
+
+			<div class="ui form">
+				<div>Here is something to play with on the parent template that may be accessed from descendant instances.</div>
+				<div class="field">
+					<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze: <code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code></label>
+					<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=1000 min=0>
+					<twdata field="sliderValue" initial-value="50"></twdata>
+
+					Initialized via:
+					<pre>&lt;twdata field=&quot;sliderValue&quot; initial-value=&quot;50&quot;&gt;&lt;/twdata&gt;</pre>
+				</div>
+			</div>
+
+			<h3>Descendant Data</h3>
+			<ul>
+				<li><strong>Child Data <code>childData</code></strong>: {{_3w_childDataGet 'childData' 'kiddy'}}</li>
+				<li><strong>Grandchild Data <code>grandchildData</code></strong>: {{_3w_childDataGet 'grandchildData' (arrayify2Args 'kiddy' 'grandkiddy')}}</li>
+				<li><strong>Child Id</strong>: {{_3w_childDataGetId 'kiddy'}}</li>
+				<li><strong>Grand Child One Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'grandkiddy')}}</li>
+				<li><strong>Grand Child Two Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'other_grandkiddy')}}</li>
+				<li><strong>Grand Child Three Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'yet_another_grandkiddy')}}</li>
+			</ul>
+
+		</div>
+
+		{{> DemoThreeWayChild _3w_name='kiddy' _3w_rootElementSelector='.DemoThreeWayChild' _3w_id="__last_id__" _3w_additionalViewModelOnlyData=additionalVMOnlyData}}
+
+		<div class="column">
+			&nbsp;
+		</div>
+		<hr/>
+		<div class="column">
+			&nbsp;
+		</div>
+
+		<div class="column">
+			<h1>Data Dump</h1>
+
+			<table class="ui table celled">
+				<thead>
+					<tr><th>Field (this instance, autonamed: <code>{{_3w_3wInstanceId}}</code>)</th>
+					<th>Value</th></tr>
+				</thead>
+				<tbody>
+					{{#each repackageDictionaryAsArray _3w_getAll}}
+						<tr>
+							<td>{{key}}</td>
+							<td>{{value}}</td>
+						</tr>
+					{{/each}}
+				</tbody>
+			</table>
+
+			<table class="ui table celled">
+				<thead>
+					<tr><th>Field (in <code>kiddy</code>)</th>
+					<th>Value</th></tr>
+				</thead>
+				<tbody>
+					{{#each repackageDictionaryAsArray (_3w_childDataGetAll 'kiddy')}}
+						<tr>
+							<td>{{key}}</td>
+							<td>{{value}}</td>
+						</tr>
+					{{/each}}
+				</tbody>
+			</table>
+
+			<table class="ui table celled">
+				<thead>
+					<tr><th>Field (in <code>grandkiddy</code>)</th>
+					<th>Value</th></tr>
+				</thead>
+				<tbody>
+					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'grandkiddy'))}}
+						<tr>
+							<td>{{key}}</td>
+							<td>{{value}}</td>
+						</tr>
+					{{/each}}
+				</tbody>
+			</table>
+
+			<table class="ui table celled">
+				<thead>
+					<tr><th>Field (in <code>other_grandkiddy</code>)</th>
+					<th>Value</th></tr>
+				</thead>
+				<tbody>
+					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'other_grandkiddy'))}}
+						<tr>
+							<td>{{key}}</td>
+							<td>{{value}}</td>
+						</tr>
+					{{/each}}
+				</tbody>
+			</table>
+
+			<table class="ui table celled">
+				<thead>
+					<tr><th>Field (in <code>yet_another_grandkiddy</code>)</th>
+					<th>Value</th></tr>
+				</thead>
+				<tbody>
+					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'yet_another_grandkiddy'))}}
+						<tr>
+							<td>{{key}}</td>
+							<td>{{value}}</td>
+						</tr>
+					{{/each}}
+				</tbody>
+			</table>
+		</div>
+
+		<div class="column">
+			&nbsp;
+		</div>
+
+		{{> DemoThreeWayPreparationDeficient}}
+
+	</div>
+
+</template>
+
+<template name="DemoThreeWayChild">
+	<div class="DemoThreeWayChild">
+		<h3>Child Template (Data Id: {{_3w_id}})</h3>
+		<ul>
+			<li><strong>Parent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 1}}</li>
+			<li><strong>My Data <code>childData</code></strong>: <input data-bind="value: childData">&nbsp;&nbsp; {{_3w_get 'childData'}}</li>
+			<li><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
+		</ul>
+
+		{{> DemoThreeWayGrandChild _3w_name='grandkiddy' initData="grandkiddy one" siblingName="other_grandkiddy" _3w_rootElementSelector=".DemoThreeWayGrandChild"}}
+
+
+		{{> DemoThreeWayGrandChild _3w_name='other_grandkiddy' initData="grandkiddy two" siblingName="grandkiddy" _3w_rootElementSelector=".DemoThreeWayGrandChild" _3w_rootElementSelector=".sneaky-li"}}
+		<p style="font-size: 80%">The above instance has a different root selector ".sneaky-li" (classes wrapped around the first and last list items). So items within elements in that selector will be bound to the above "grand child template", and those outside, but still within the template's bounds, would be associated with the "child template" instance.</p>
+
+		{{#if allowThirdGrandchild}}
+			{{> DemoThreeWayGrandChild _3w_name='yet_another_grandkiddy' initData="grandkiddy three" siblingName="grandkiddy"}}
+		{{/if}}
+	</div>
+</template>
+
+<template name="DemoThreeWayGrandChild">
+	<div class="DemoThreeWayGrandChild">
+		<h3>Grandchild Template: <code>{{_3w_name}}</code> (Data Id: {{_3w_id}})</h3>
+		<twdata field="grandchildData" initial-value="{{initData}}" restrict-template-type="DemoThreeWayGrandChild"></twdata>
+		<twdata field="sharedBetweenParentAndGrandChild" initial-value="init sharedBetweenParentAndGrandChild" restrict-template-type="DemoThreeWay, DemoThreeWayGrandChild"></twdata>
+		<twdata field="sharedBetweenChildAndGrandChild" initial-value="init sharedBetweenChildAndGrandChild" restrict-template-type="DemoThreeWayChild, DemoThreeWayGrandChild"></twdata>
+		<ul>
+			<li class='sneaky-li'><strong>Grandparent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 2}}</li>
+			<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>
+			<li><strong>Sibling Data <code>{{siblingName}}.grandchildData</code></strong>: {{_3w_siblingDataGet 'grandchildData' siblingName}}</li>
+			<li class='sneaky-li'><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
+			<li><strong>id via ancestor method</strong>: <span data-bind="text: altGetId"></span></li>
+		</ul>
+	</div>
+</template>
+
+<template name="DemoThreeWayPreparationDeficient">
+	<div style="background-color: #ccf; padding: 15px;">
+		<h1 data-bind="text: title"></h1>
+		<p>This was initialized with:</p>
+		<pre>ThreeWay.prepare(Template.DemoThreeWayPreparationDeficient, {});</pre>
+		<p>... and all view model content was created in <code>onRendered</code> with <code>Template.instance()._3w_.set</code>.</p>
+<pre>
+Template.DemoThreeWayPreparationDeficient.onRendered(function() {
+		preparationDeficientTemplate = this;
+		Template.instance()._3w_.set('title', 'Preparation Deficit: Quick and Dirty View Models');
+		_.range(10).forEach(function (idx) {
+				Template.instance()._3w_.set('item'+idx, Fake.user().fullname);
+		});
+});
+</pre>
+		<p>The <code>stringToColor</code> pre-processor was inherited from a parent, the <code>toUpperCase</code> pre-processor is a default pre-processor that may be overwritten.</p>
+		<table border=0>
+			<tr>
+				<td style="min-width: 60px;">Title</td>
+				<td colspan="2" style="width: 100%;">
+					<input data-bind="value: title; style: {color: title|stringToColor}" style="width: 100%;">
+				</td>
+			</tr>
+			{{#each range 5}}
+				<tr>
+					<td>Item&nbsp;{{this}}</td>
+					<td><input data-bind="value: item{{this}}" style="width: 100%;"></td>
+					<td><span data-bind="text: item{{this}}|toUpperCase; style: {color: item{{this}}|stringToColor}"></span></td>
+				</tr>
+			{{/each}}
+			<tr>
+				<td>Not&nbsp;Even Initialized</td>
+				<td><input data-bind="value: not_even_initialized" style="width: 100%;"></td>
+				<td><span data-bind="text: not_even_initialized|toUpperCase; style: {color: not_even_initialized|stringToColor}"></span></td>
+			</tr>
+		</table>
+	</div>
+</template>

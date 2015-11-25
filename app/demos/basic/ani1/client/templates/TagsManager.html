@@ -1,0 +1,42 @@
+<template name="TagsManager">
+	<div class="ui segment" data-bind="class: {loading: ready|not}">
+		<h2>Manage tags</h2>
+		<div class="ui form">
+			<div class="inline fields">
+				<div class="ten wide field">
+					<input placeholder="Label text" data-bind="value: label" />
+				</div>
+				<div class="three wide field">
+					<div class="ui fluid selection dropdown">
+						<input type="hidden" data-bind="value: color|updateSemanticUIDropdown">
+						<i class="dropdown icon"></i>
+						<div class="default text">Select Color</div>
+						<div class="menu">
+							{{#each allColors}}
+								<div class="item ui label {{this}}" data-value="{{this}}">{{this}}</div>
+							{{/each}}
+						</div>
+					</div>
+				</div>
+				<div class="three wide field">
+					<button class="ui green inverted button" data-bind="event: {click: addTag}; class: {disabled: canSaveTag|not}">
+						<i class="icon save"></i>
+						Save
+					</button>
+				</div>
+			</div>
+		</div>
+
+		<div class="ui message {{msg_type}}" data-bind="visible: showMsg">
+			<i class="close icon" data-bind="event: {click: closeMsg}"></i>
+			<div class="header" data-bind="html: msg_header"></div>
+			<div data-bind="html: msg_content"></div>
+		</div>
+	<ul>
+		{{#each data}}
+			<span class="ui tag label {{this.color}}">{{this.label}}</span>
+		{{/each}}
+	</ul>
+<!--		<div data-bind="text: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>-->
+	</div>
+</template>

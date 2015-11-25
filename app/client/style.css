@@ -1,0 +1,21 @@
+#logo{
+	color:yellowgreen;
+}
+#logo:hover i{
+	text-shadow: 0 0 3px green;
+}
+#logo strong{
+	font-size: 2rem;
+	color: dimgray;
+}
+
+.pseudo-input{
+	width: 100%;
+	font-family: "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", Monaco, monospace;
+	font-weight: 400;
+	color: #279286;
+	cursor: text;
+	text-align: left;
+	font-size: 13px;
+	padding: .5em 1em;
+}

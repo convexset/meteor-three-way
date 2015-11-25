@@ -9,7 +9,7 @@ DataThing.prototype = {
 	someMethod: () => "lalalala"
 };
 
-Demo = {
+var myDemo = {
 	collection: new Mongo.Collection('data', {
 		transform: (doc) => new DataThing(doc)
 	}),
@@ -36,3 +36,6 @@ Demo = {
 		'opt3': 'XYZ',
 	},
 };
+
+Demo = Demo || {};
+Demo = _.extend(Demo,myDemo);
