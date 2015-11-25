@@ -2,7 +2,7 @@
 	<title>ThreeWay Demo</title>
 </head>
 <body>
-	{{> DemoThreeWay}}
+	{{> DemoThreeWay _3w_name='big_daddy_has_an_optional_name'}}
 </body>
 
 <template name="DemoThreeWay">
@@ -640,6 +640,8 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 			&nbsp;
 		</div>
 
+		{{> DemoThreeWayPreparationDeficient}}
+
 	</div>
 
 </template>
@@ -678,5 +680,30 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 			<li class='sneaky-li'><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
 			<li><strong>id via ancestor method</strong>: <span data-bind="text: altGetId"></span></li>
 		</ul>
+	</div>
+</template>
+
+<template name="DemoThreeWayPreparationDeficient">
+	<div style="background-color: #ccf; padding: 15px;">
+		<h1 data-bind="text: title"></h1>
+		<p>This was initialized with:</p>
+		<pre>ThreeWay.prepare(Template.DemoThreeWayPreparationDeficient, {});</pre>
+		<p>... and all view model content was created in <code>onRendered</code> with <code>Template.instance()._3w_.set</code>.</p>
+		<p>The <code>stringToColor</code> pre-processor was inherited from a parent, the <code>toUpperCase</code> pre-processor is a default pre-processor that may be overwritten.</p>
+		<table border=0>
+			<tr>
+				<td style="min-width: 50px;">Title</td>
+				<td colspan="2" style="width: 100%;">
+					<input data-bind="value: title; style: {color: title|stringToColor}" style="width: 100%;">
+				</td>
+			</tr>
+			{{#each range 5}}
+				<tr>
+					<td>Item&nbsp;{{this}}</td>
+					<td><input data-bind="value: item{{this}}" style="width: 100%;"></td>
+					<td><span data-bind="text: item{{this}}|toUpperCase; style: {color: item{{this}}|stringToColor}"></span></td>
+				</tr>
+			{{/each}}
+		</table>
 	</div>
 </template>

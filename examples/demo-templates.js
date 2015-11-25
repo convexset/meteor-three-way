@@ -3,6 +3,7 @@
 /* global parentTemplate: true */
 /* global childTemplate: true */
 /* global grandchildTemplate: true */
+/* global preparationDeficientTemplate: true */
 
 ////////////////////////////////////////////////////////////
 // Preamble
@@ -141,6 +142,20 @@ if (Meteor.isClient) {
 			if (sub.ready()) {
 				instance._3w_.setId(randomId());
 			}
+		});
+	});
+}
+
+
+////////////////////////////////////////////////////////////
+// Preparation Deficient Template
+////////////////////////////////////////////////////////////
+if (Meteor.isClient) {
+	Template.DemoThreeWayPreparationDeficient.onRendered(function() {
+		preparationDeficientTemplate = this;
+		Template.instance()._3w_.set('title', 'Preparation Deficit: Quick and Dirty View Models');
+		_.range(10).forEach(function (idx) {
+			Template.instance()._3w_.set('item'+idx, Fake.user().fullname);
 		});
 	});
 }

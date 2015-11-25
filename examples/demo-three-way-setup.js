@@ -313,3 +313,11 @@ if (Meteor.isClient) {
 		},
 	});
 }
+
+
+////////////////////////////////////////////////////////////
+// Grand Child Template
+////////////////////////////////////////////////////////////
+if (Meteor.isClient) {
+	ThreeWay.prepare(Template.DemoThreeWayPreparationDeficient, {});
+}
