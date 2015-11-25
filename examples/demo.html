@@ -538,9 +538,9 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 			<h3>Descendant Data</h3>
 			<ul>
 				<li><strong>Child Data <code>childData</code></strong>: {{_3w_childDataGet 'childData' 'kiddy'}}</li>
-				<li><strong>Grandchild Data <code>grandchildData</code></strong>: {{_3w_childDataGet 'grandchildData' (arrayify2Args 'kiddy' 'DemoThreeWayGrandChild')}}</li>
+				<li><strong>Grandchild Data <code>_3wNode_DemoThreeWayGrandChild_1.grandchildData</code></strong>: {{_3w_childDataGet 'grandchildData' (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_1')}}</li>
 				<li><strong>Child Id</strong>: {{_3w_childDataGetId 'kiddy'}}</li>
-				<li><strong>Grand Child One Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild')}}</li>
+				<li><strong>Grand Child One Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_1')}}</li>
 				<li><strong>Grand Child Two Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_2')}}</li>
 				<li><strong>Grand Child Three Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'yet_another_grandkiddy')}}</li>
 			</ul>
@@ -596,7 +596,7 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 					<th>Value</th></tr>
 				</thead>
 				<tbody>
-					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild'))}}
+					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_1'))}}
 						<tr>
 							<td>{{key}}</td>
 							<td>{{value}}</td>

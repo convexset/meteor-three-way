@@ -459,11 +459,11 @@ if (Meteor.isClient) {
 			};
 			threeWayMethods.isNotInvalid = p => !!threeWay.__dataIsNotInvalid.get(p);
 
-			threeWayMethods.parentDataGet = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE_METHODS].get(p);
-			threeWayMethods.parentDataGetAll = (levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE_METHODS].getAll();
-			threeWayMethods.parentDataSet = (p, v, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE_METHODS].set(p, v);
-			threeWayMethods.parentDataGet_NR = (p, levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE_METHODS].get_NR(p);
-			threeWayMethods.parentDataGetAll_NR = (levelsUp) => instance.parentTemplate((!!levelsUp) ? levelsUp : 1)[THREE_WAY_NAMESPACE_METHODS].getAll_NR();
+			threeWayMethods.parentDataGet = (p, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get(p);
+			threeWayMethods.parentDataGetAll = (levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll();
+			threeWayMethods.parentDataSet = (p, v, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].set(p, v);
+			threeWayMethods.parentDataGet_NR = (p, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get_NR(p);
+			threeWayMethods.parentDataGetAll_NR = (levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll_NR();
 
 			threeWayMethods.childDataGetId = function _3w_childDataGetId(childNameArray) {
 				if (childNameArray instanceof Array) {
@@ -589,21 +589,24 @@ if (Meteor.isClient) {
 				return value;
 			};
 
-			threeWayMethods.__getNearestThreeWayAncestor = function _3w_getNearestThreeWayAncestor() {
-				if (!instance.parentTemplate()) {
-					return null;
+			threeWayMethods.__getNearestThreeWayAncestor = function _3w_getNearestThreeWayAncestor(levelsUp) {
+				if (typeof levelsUp === "undefined") {
+					levelsUp = 1;
 				}
 				var currentInstance = instance;
 				while (!!currentInstance.parentTemplate()) {
 					currentInstance = currentInstance.parentTemplate();
 					if (!!currentInstance[THREE_WAY_NAMESPACE]) {
-						return currentInstance;
+						levelsUp -= 1;
+						if (levelsUp === 0) {
+							return currentInstance;
+						}
 					}
 				}
 				return null;
 			};
 
-			threeWayMethods.__getUltimateThreeWayAncestor = function _3w_getUltimateThreeWayAncestor() {
+			threeWayMethods.__getUltimateThreeWayAncestorInTree = function _3w_getUltimateThreeWayAncestor() {
 				var candidate = instance;
 				var currentInstance = candidate;
 				while (!!currentInstance.parentTemplate()) {
@@ -659,22 +662,22 @@ if (Meteor.isClient) {
 			threeWayMethods.getInheritedHelper = function _3w_getInheritedHelper(h) {
 				if (typeof options.helpers[h] !== "undefined") {
 					return options.helpers[h];
-				} else if (!!instance.parentTemplate() && !!instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS]) {
-					return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].getInheritedHelper(h);
+				} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedHelper(h);
 				}
 			};
 			threeWayMethods.getInheritedEventHandler = function _3w_getInheritedEventHandler(evt) {
 				if (options.eventHandlers[evt] instanceof Function) {
 					return options.eventHandlers[evt];
-				} else if (!!instance.parentTemplate() && !!instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS]) {
-					return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].getInheritedEventHandler(evt);
+				} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedEventHandler(evt);
 				}
 			};
 			threeWayMethods.getInheritedPreProcessor = function _3w_getInheritedPreProcessor(p) {
 				if (options.preProcessors[p] instanceof Function) {
 					return options.preProcessors[p];
-				} else if (!!instance.parentTemplate() && !!instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS]) {
-					return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].getInheritedPreProcessor(p);
+				} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedPreProcessor(p);
 				}
 			};
 
@@ -688,20 +691,20 @@ if (Meteor.isClient) {
 						bundle[h] = fn;
 					}
 				});
-				if (!!instance.parentTemplate() && !!instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS]) {
-					bundle = instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].__getFamilyHeritageHelperBundle(bundle);
+				if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+					bundle = threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].__getFamilyHeritageHelperBundle(bundle);
 				}
 				return bundle;
 			};
 
 			threeWayMethods.siblingDataGet = function _3w_siblingDataGet(p, siblingName) {
-				return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, siblingName);
+				return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, siblingName);
 			};
 			threeWayMethods.siblingDataGetAll = function _3w_siblingDataGet(siblingName) {
-				return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].childDataGetAll(siblingName);
+				return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataGetAll(siblingName);
 			};
 			threeWayMethods.siblingDataSet = function _3w_siblingDataSet(p, v, siblingName) {
-				return instance.parentTemplate()[THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, siblingName);
+				return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, siblingName);
 			};
 			threeWayMethods.siblingDataGet_NR = function _3w_siblingDataGet_NR(p, siblingName) {
 				var value;
@@ -2366,8 +2369,8 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			// Peek upwards to determine level
 			//////////////////////////////////////////////////////////////////
-			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
-				threeWay.__level = instance.parentTemplate()[THREE_WAY_NAMESPACE].__level + 1;
+			if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+				threeWay.__level = threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE].__level + 1;
 			}
 
 
@@ -2395,6 +2398,7 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			// Set initial values for data (in particular, VM-only fields)
 			//////////////////////////////////////////////////////////////////
+			// TODO: Will be removed soon in view of: _3w_additionalViewModelOnlyData input to data-context
 			Array.prototype.forEach.call(instance.$("twdata[field]"), function(elem) {
 				var field = elem.getAttribute('field');
 				var initValue = elem.getAttribute('initial-value') || null;
@@ -2420,11 +2424,12 @@ if (Meteor.isClient) {
 				instance.callFunctionWithTemplateContext(function() {
 					processors.forEach(function(m) {
 						// processors here do not provide view model data as an argument
-						if (!(options.preProcessors[m] instanceof Function)) {
+						var preProcessor = threeWayMethods.getInheritedPreProcessor(m);
+						if (!(preProcessor instanceof Function)) {
 							console.error('[ThreeWay] No such pre-processor: ' + m, elem);
 							return;
 						}
-						value = options.preProcessors[m](value, elem, {});
+						value = preProcessor(value, elem, {});
 					});
 				}, this);
 
@@ -2436,7 +2441,9 @@ if (Meteor.isClient) {
 						console.log("[vm-only] Processors:", processors, "; Init Value:", initValue, "; Final value:", value);
 					}
 				}
-				threeWay.vmOnlyData_Initial[field] = value;
+				if (threeWayMethods.isPropVMOnly(field)) {					
+					threeWay.vmOnlyData_Initial[field] = value;
+				}
 				threeWay.data.set(field, value);
 
 				if (typeof threeWay._dataUpdateComputations[field] === "undefined") {
@@ -2454,7 +2461,7 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			var myId = instance && instance.data && instance.data._3w_name;
 			var parentInstance = threeWayMethods.__getNearestThreeWayAncestor();
-			var ultimateAncestor = threeWayMethods.__getUltimateThreeWayAncestor();
+			var ultimateAncestor = threeWayMethods.__getUltimateThreeWayAncestorInTree();
 
 			if (!ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers) {
 				// A descendant will have to create this
@@ -2738,7 +2745,7 @@ if (Meteor.isClient) {
 				myId = threeWayMethods.get3wInstanceId();
 			});
 			var parentInstance = threeWayMethods.__getNearestThreeWayAncestor();
-			var ultimateAncestor = threeWayMethods.__getUltimateThreeWayAncestor();
+			var ultimateAncestor = threeWayMethods.__getUltimateThreeWayAncestorInTree();
 			if (!!myId) {
 				if (!!parentInstance) {
 					delete parentInstance[THREE_WAY_NAMESPACE].children[myId];
