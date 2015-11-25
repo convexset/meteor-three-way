@@ -571,6 +571,20 @@ if (Meteor.isClient) {
 				return value;
 			};
 
+			threeWayMethods.__getNearestThreeWayAncestor = function _3w_getNearestThreeWayAncestor() {
+				if (!instance.parentTemplate()) {
+					return null;
+				}
+				var currentInstance = instance;
+				while (!!currentInstance.parentTemplate()) {
+					currentInstance = currentInstance.parentTemplate();
+					if (!!currentInstance[THREE_WAY_NAMESPACE]) {
+						return currentInstance;
+					}
+				}
+				return null;
+			};
+
 			threeWayMethods.getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth, path) {
 				if (typeof levels === "undefined") {
 					levels = Number.MAX_SAFE_INTEGER;
@@ -2404,22 +2418,23 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			// Say hi to parent now that its rendered
 			//////////////////////////////////////////////////////////////////
-			var myId = instance && instance.data && instance.data._3w_name || 'root_' + Math.floor(Math.random() * 1e15);
-			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
-				var parentThreeWayInstance = instance.parentTemplate()[THREE_WAY_NAMESPACE];
-
+			var myId = instance && instance.data && instance.data._3w_name;
+			var parentInstance = threeWayMethods.__getNearestThreeWayAncestor();
+			if (!!parentInstance) {
 				if (!!myId) {
-					if (!!parentThreeWayInstance.children[myId]) {
-						throw new Meteor.Error('three-way-repeated-id', instance.data._3w_instanceId);
+					if (!!parentInstance[THREE_WAY_NAMESPACE].children[myId]) {
+						throw new Meteor.Error('three-way-repeated-id', myId);
 					}
 				} else {
 					myId = instance.view.name + '_' + Math.floor(Math.random() * 1e15);
-					while (!!parentThreeWayInstance.children[myId]) {
+					while (!!parentInstance[THREE_WAY_NAMESPACE].children[myId]) {
 						myId = instance.view.name + '_' + Math.floor(Math.random() * 1e15);
 					}
 				}
-				parentThreeWayInstance.__hasChild.set(myId, true);
-				parentThreeWayInstance.children[myId] = instance;
+				parentInstance[THREE_WAY_NAMESPACE].__hasChild.set(myId, true);
+				parentInstance[THREE_WAY_NAMESPACE].children[myId] = instance;
+			} else {
+				myId = '3wRootNode_' + Math.floor(Math.random() * 1e15);
 			}
 			threeWay.instanceId.set(myId);
 
@@ -2656,10 +2671,12 @@ if (Meteor.isClient) {
 			Tracker.nonreactive(function () {
 			 	myId = threeWayMethods.get3wInstanceId();
 			});
-			if ((!!myId) && (!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
-				var parentThreeWayInstance = instance.parentTemplate()[THREE_WAY_NAMESPACE];
-				if (!!parentThreeWayInstance.children[myId]) {
-					delete parentThreeWayInstance.children[myId];
+			var parentInstance = threeWayMethods.__getNearestThreeWayAncestor();
+			if ((!!myId) && (!!parentInstance)) {
+				var parentThreeWayInstance = instance.parentTemplate();
+				if (!!parentInstance[THREE_WAY_NAMESPACE].children[myId]) {
+					delete parentInstance[THREE_WAY_NAMESPACE].children[myId];
+					parentInstance[THREE_WAY_NAMESPACE].__hasChild.set(myId, false);
 				}
 			}
 
