@@ -2404,7 +2404,7 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			// Say hi to parent now that its rendered
 			//////////////////////////////////////////////////////////////////
-			var myId = instance && instance.data && instance.data._3w_name || 'progenitor_' + Math.floor(Math.random() * 1e15);
+			var myId = instance && instance.data && instance.data._3w_name || 'root_' + Math.floor(Math.random() * 1e15);
 			if ((!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
 				var parentThreeWayInstance = instance.parentTemplate()[THREE_WAY_NAMESPACE];
 
@@ -2631,6 +2631,7 @@ if (Meteor.isClient) {
 		tmpl.onDestroyed(function() {
 			var instance = this;
 			var threeWay = instance[THREE_WAY_NAMESPACE];
+			var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
 			threeWay.doRebindOperations = false;
 
 			if (IN_DEBUG_MODE_FOR('tracker')) {
@@ -2649,6 +2650,19 @@ if (Meteor.isClient) {
 			if (!!threeWay.mutationObserver) {
 				threeWay.mutationObserver.disconnect();
 			}
+
+			// Say bye to parent?
+			var myId;
+			Tracker.nonreactive(function () {
+			 	myId = threeWayMethods.get3wInstanceId();
+			});
+			if ((!!myId) && (!!instance.parentTemplate()) && (!!instance.parentTemplate()[THREE_WAY_NAMESPACE])) {
+				var parentThreeWayInstance = instance.parentTemplate()[THREE_WAY_NAMESPACE];
+				if (!!parentThreeWayInstance.children[myId]) {
+					delete parentThreeWayInstance.children[myId];
+				}
+			}
+
 		});
 
 		tmpl.helpers({
