@@ -456,35 +456,19 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 				<div class="field">
 					<label>[Style binding] fieldNameColor (VM Only)</label>
 					<input data-bind="value: fieldNameColor">
-					<twdata field="fieldNameColor" initial-value="#0000FF"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;fieldNameColor&quot; initial-value=&quot;#0000FF&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 				<div class="field">
 					<label>[Style binding] fieldNameFontSize (VM Only)</label>
 					<input data-bind="value: fieldNameFontSize">
-					<twdata field="fieldNameFontSize" initial-value="200%"></twdata>
-					
-					Initialized via:
-					<pre>&lt;twdata field=&quot;fieldNameFontSize&quot; initial-value=&quot;200%&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 				<div class="field">
 					<label>[Attribute binding] imgAltText (VM Only)</label>
 					<input data-bind="value: imgAltText">
-					<twdata field="imgAltText" initial-value="Not Found ('not shouting; blame the processor)" processors="appendTimeStamp"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;imgAltText&quot; initial-value=&quot;Not Found (&#039;not shouting; blame the processor)&quot; processors=&quot;appendTimeStamp&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 				<img src="no-such-image.jpg" data-bind="attr: {alt: imgAltText|toUpperCase}">
 				<div class="field">
 					<label>[Class binding] semanticUIStyling (VM Only; no means false) <code>semanticUIStyling|noIsFalse</code> --> <span data-bind="html: semanticUIStyling|noIsFalse"></span></label>
 					<input data-bind="value: semanticUIStyling">
-					<twdata field="semanticUIStyling" initial-value="yes"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;semanticUIStyling&quot; initial-value=&quot;yes&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 			</div>
 			
@@ -528,10 +512,6 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 				<div class="field">
 					<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze: <code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code></label>
 					<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=1000 min=0>
-					<twdata field="sliderValue" initial-value="50"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;sliderValue&quot; initial-value=&quot;50&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 			</div>		
 			
@@ -655,14 +635,14 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 			<li><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
 		</ul>
 		
-		{{> DemoThreeWayGrandChild initData="grandkiddy one" siblingName="_3wNode_DemoThreeWayGrandChild_2"}}
+		{{> DemoThreeWayGrandChild _3w_additionalViewModelOnlyData=(vmDataGrandChild "grandkiddy one") siblingName="_3wNode_DemoThreeWayGrandChild_2"}}
 
 
-		{{> DemoThreeWayGrandChild initData="grandkiddy two" siblingName="_3wNode_DemoThreeWayGrandChild" _3w_rootElementSelector=".sneaky-li"}}
+		{{> DemoThreeWayGrandChild _3w_additionalViewModelOnlyData=(vmDataGrandChild "grandkiddy two") siblingName="_3wNode_DemoThreeWayGrandChild" _3w_rootElementSelector=".sneaky-li"}}
 		<p style="font-size: 80%">The above instance has a different root selector ".sneaky-li" (classes wrapped around the first and last list items). So items within elements in that selector will be bound to the above "grand child template", and those outside, but still within the template's bounds, would be associated with the "child template" instance.</p>
 
 		{{#if allowThirdGrandchild}}
-			{{> DemoThreeWayGrandChild _3w_name='yet_another_grandkiddy' initData="grandkiddy three" siblingName="grandkiddy"}}
+			{{> DemoThreeWayGrandChild _3w_name='yet_another_grandkiddy' _3w_additionalViewModelOnlyData=(vmDataGrandChild "grandkiddy three") siblingName="grandkiddy"}}
 		{{/if}}
 	</div>
 </template>
@@ -670,9 +650,6 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 <template name="DemoThreeWayGrandChild">
 	<div class="DemoThreeWayGrandChild">
 		<h3>Grandchild Template: <code>{{_3w_3wInstanceId}}</code> (Data Id: {{_3w_id}})</h3>
-		<twdata field="grandchildData" initial-value="{{initData}}" restrict-template-type="DemoThreeWayGrandChild"></twdata>
-		<twdata field="sharedBetweenParentAndGrandChild" initial-value="init sharedBetweenParentAndGrandChild" restrict-template-type="DemoThreeWay, DemoThreeWayGrandChild"></twdata>
-		<twdata field="sharedBetweenChildAndGrandChild" initial-value="init sharedBetweenChildAndGrandChild" restrict-template-type="DemoThreeWayChild, DemoThreeWayGrandChild"></twdata>
 		<ul>
 			<li class='sneaky-li'><strong>Grandparent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 2}}</li>
 			<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>

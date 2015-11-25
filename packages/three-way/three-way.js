@@ -24,15 +24,23 @@ var AGE_THRESHOLD_OLD_ITEM = 10000;
 var DEBUG_MODE = false;
 var DEBUG_MODE_ALL = false;
 var DEBUG_MESSAGES = {
+	// DOM Observation
 	'parse': false,
-	'bindings': false,
-	'data-mirror': false,
-	'observer': false,
+	'bind': false,
+	// Computations
 	'tracker': false,
 	'new-id': false,
+	// DB and Updates
+	'observer': false,
 	'db': false,
+	// Data Related
 	'default-values': false,
-	'methods': false,
+	'validation': false,
+	'data-mirror': false,
+	'vm-only': false,
+	'reload': false,
+	// Binding Related
+	'bindings': false,
 	'value': false,
 	'checked': false,
 	'focus': false,
@@ -42,10 +50,6 @@ var DEBUG_MESSAGES = {
 	'attr': false,
 	'class': false,
 	'event': false,
-	'vm-only': false,
-	'validation': false,
-	'bind': false,
-	'reload': false,
 };
 
 function IN_DEBUG_MODE_FOR(message_class) {
@@ -168,17 +172,22 @@ function pushToEndOfEventQueue(fn, context) {
 
 
 if (Meteor.isClient) {
-	PackageUtilities.addImmutablePropertyArray(ThreeWay, 'DEBUG_MESSAGE_HEADINGS', _.map(DEBUG_MESSAGES, (v, k) => k));
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setDebugModeOn', function setDebugModeOn() {
-		DEBUG_MODE = true;
+
+	//////////////////////////////////////////////////////////////////////
+	// Debug Mode
+	//////////////////////////////////////////////////////////////////////
+	var ThreeWayDebug = {};
+	PackageUtilities.addImmutablePropertyArray(ThreeWayDebug, 'MESSAGE_HEADINGS', _.map(DEBUG_MESSAGES, (v, k) => k));
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayDebug, 'set', function debugModeStatusSet(v) {
+		DEBUG_MODE = !!v;
 	});
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'setDebugModeOff', function setDebugModeOff() {
-		DEBUG_MODE = false;
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayDebug, 'get', function debugModeStatus() {
+		return DEBUG_MODE;
 	});
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'debugModeSelectAll', function debugModeSelectAll() {
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayDebug, 'selectAll', function debugModeSelectAll() {
 		DEBUG_MODE_ALL = true;
 	});
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'debugModeSelectNone', function debugModeSelectNone() {
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayDebug, 'selectNone', function debugModeSelectNone() {
 		DEBUG_MODE_ALL = false;
 		for (var k in DEBUG_MESSAGES) {
 			if (DEBUG_MESSAGES.hasOwnProperty(k)) {
@@ -186,13 +195,18 @@ if (Meteor.isClient) {
 			}
 		}
 	});
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'debugModeSelect', function debugModeSelect(k) {
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayDebug, 'select', function debugModeSelect(k) {
 		if (DEBUG_MESSAGES.hasOwnProperty(k)) {
 			DEBUG_MESSAGES[k] = true;
 		}
 	});
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'DEBUG_MODE', ThreeWayDebug);
 
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'expandParams', function expandParams(fieldSpec, params) {
+	//////////////////////////////////////////////////////////////////////
+	// Utilities
+	//////////////////////////////////////////////////////////////////////
+	var ThreeWayUtils = {};
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayUtils, 'expandParams', function expandParams(fieldSpec, params) {
 		if (!(params instanceof Array)) {
 			params = [params];
 		}
@@ -206,9 +220,8 @@ if (Meteor.isClient) {
 		});
 		return fldSplit.join('.');
 	});
-
 	var idIndices = [0];
-	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'getNewId', function getNewId() {
+	PackageUtilities.addImmutablePropertyFunction(ThreeWayUtils, 'getNewId', function getNewId() {
 		function padLeft(s, num, char) {
 			var res = s.toString();
 			while (res.length < num) {
@@ -229,7 +242,11 @@ if (Meteor.isClient) {
 		}
 		return 'tw-' + idIndices.map(x => padLeft(x, 4, '0')).join('-');
 	});
+	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'utils', ThreeWayUtils);
 
+	//////////////////////////////////////////////////////////////////////
+	// Stuff Proper
+	//////////////////////////////////////////////////////////////////////
 	PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'prepare', function prepare(tmpl, options) {
 		if (typeof tmpl === "undefined") {
 			throw new Meteor.Error('missing-argument', 'template required');
@@ -365,7 +382,6 @@ if (Meteor.isClient) {
 				__serverIsUpdated: new ReactiveDict(),
 				__dataIsNotInvalid: new ReactiveDict(),
 				_focusedFieldUpdatedOnServer: new ReactiveDict(),
-				viewModelOnlyData: {},
 				dataMirror: {},
 				fieldMatchParams: {}, // No need to re-create
 				_fieldPseudoMatched: [], // No need to re-create
@@ -399,327 +415,335 @@ if (Meteor.isClient) {
 			instance[THREE_WAY_NAMESPACE] = threeWay;
 			instance[THREE_WAY_NAMESPACE_METHODS] = threeWayMethods;
 
-			var __rootChanges = 0;
-			threeWayMethods.setRoots = function(selectorString) {
-				var nodes = instance.$(selectorString);
-				__rootChanges += 1;
-				threeWay.rootNodes = Array.prototype.map.call(nodes, x => x);
-				threeWay._rootNodes.set(selectorString + "|" + __rootChanges);
-			};
-			threeWayMethods.setId = function(id) {
-				threeWay.id.set(id);
-			};
-			threeWayMethods.getId = function() {
-				return threeWay.id.get();
-			};
-			threeWayMethods.get3wInstanceId = function() {
-				return threeWay.instanceId.get();
-			};
-			threeWayMethods.get = p => threeWay.data.get(p);
-			threeWayMethods.set = function(p, v) {
-				threeWay.data.set(p, v);
-				updateRelatedFields(p, v);
-			};
-			threeWayMethods.get_NR = function(p) {
-				var ret;
-				Tracker.nonreactive(function() {
-					ret = threeWayMethods.get(p);
-				});
-				return ret;
-			};
-			threeWayMethods.getAll = () => threeWay.data.all();
-			threeWayMethods.getAll_NR = function() {
-				var ret;
-				Tracker.nonreactive(function() {
-					ret = threeWayMethods.getAll();
-				});
-				return ret;
-			};
-
-			threeWayMethods.isPropVMOnly = function(p) {
-				return matchParamStrings(options.fields, p).length === 0;
-			};
-
-			threeWayMethods.getAll_VMOnly_NR = function() {
-				var vmData = threeWayMethods.getAll_NR();
-				_.forEach(threeWay.fieldMatchParams, function(v, k) {
-					if (!threeWayMethods.isPropVMOnly(k) && vmData.hasOwnProperty(k)) {
-						delete vmData[k];
-					}
-				});
-				return vmData;
-			};
-
-			threeWayMethods.focusedField = () => threeWay._focusedField.get();
-			threeWayMethods.focusedFieldUpdatedOnServer = p => threeWay._focusedFieldUpdatedOnServer.get(p);
-
-			threeWayMethods.isSyncedToServer = p => !!threeWay.__serverIsUpdated.get(p);
-			threeWayMethods.allSyncedToServer = function() {
-				return _.reduce(threeWay.__serverIsUpdated.all(), (m, v) => !!m && !!v, true);
-			};
-			threeWayMethods.isNotInvalid = p => !!threeWay.__dataIsNotInvalid.get(p);
-
-			threeWayMethods.parentDataGet = (p, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get(p);
-			threeWayMethods.parentDataGetAll = (levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll();
-			threeWayMethods.parentDataSet = (p, v, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].set(p, v);
-			threeWayMethods.parentDataGet_NR = (p, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get_NR(p);
-			threeWayMethods.parentDataGetAll_NR = (levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll_NR();
-
-			threeWayMethods.childDataGetId = function _3w_childDataGetId(childNameArray) {
-				if (childNameArray instanceof Array) {
-					if (childNameArray.length === 0) {
-						return;
-					}
-					var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
-					if (!hasChildData) {
-						return;
-					}
-					if (childNameArray.length === 1) {
-						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].getId();
-					} else {
-						var cn = childNameArray.map(x => x);
-						cn.shift();
-						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGetId(cn);
-					}
-				} else {
-					return threeWayMethods.childDataGetId([childNameArray]);
-				}
-			};
-			threeWayMethods.childDataSetId = function _3w_childDataSetId(id, childNameArray) {
-				if (childNameArray instanceof Array) {
-					if (childNameArray.length === 0) {
-						return;
-					}
-					var hasChildData;
+			// Set up methods in threeWayMethods
+			(function() {
+				var __rootChanges = 0;
+				threeWayMethods.setRoots = function(selectorString) {
+					var nodes = instance.$(selectorString);
+					__rootChanges += 1;
+					threeWay.rootNodes = Array.prototype.map.call(nodes, x => x);
+					threeWay._rootNodes.set(selectorString + "|" + __rootChanges);
+				};
+				threeWayMethods.setId = function(id) {
+					threeWay.id.set(id);
+				};
+				threeWayMethods.getId = function() {
+					return threeWay.id.get();
+				};
+				threeWayMethods.get3wInstanceId = function() {
+					return threeWay.instanceId.get();
+				};
+				threeWayMethods.get = p => threeWay.data.get(p);
+				threeWayMethods.set = function(p, v) {
+					threeWay.data.set(p, v);
+					updateRelatedFields(p, v);
+				};
+				threeWayMethods.get_NR = function(p) {
+					var ret;
 					Tracker.nonreactive(function() {
-						hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+						ret = threeWayMethods.get(p);
 					});
-					if (!hasChildData) {
-						return;
-					}
-					if (childNameArray.length === 1) {
-						threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].setId(id);
-					} else {
-						var cn = childNameArray.map(x => x);
-						cn.shift();
-						threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataSetId(id, cn);
-					}
-				} else {
-					threeWayMethods.childDataSetId(id, [childNameArray]);
-				}
-			};
-			threeWayMethods.childDataGet = function _3w_childDataGet(p, childNameArray) {
-				if (childNameArray instanceof Array) {
-					if (childNameArray.length === 0) {
-						return;
-					}
-					var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
-					if (!hasChildData) {
-						return;
-					}
-					if (childNameArray.length === 1) {
-						var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.get(p);
-						return value;
-					} else {
-						var cn = childNameArray.map(x => x);
-						cn.shift();
-						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGet(p, cn);
-					}
-				} else {
-					return threeWayMethods.childDataGet(p, [childNameArray]);
-				}
-			};
-			threeWayMethods.childDataGetAll = function _3w_childDataGetAll(childNameArray) {
-				if (childNameArray instanceof Array) {
-					if (childNameArray.length === 0) {
-						return;
-					}
-					var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
-					if (!hasChildData) {
-						return;
-					}
-					if (childNameArray.length === 1) {
-						var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.all();
-						return value;
-					} else {
-						var cn = childNameArray.map(x => x);
-						cn.shift();
-						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGetAll(cn);
-					}
-				} else {
-					return threeWayMethods.childDataGetAll([childNameArray]);
-				}
-			};
-			threeWayMethods.childDataSet = function _3w_childDataSet(p, v, childNameArray) {
-				if (childNameArray instanceof Array) {
-					if (childNameArray.length === 0) {
-						return;
-					}
-					var hasChildData;
+					return ret;
+				};
+				threeWayMethods.getAll = () => threeWay.data.all();
+				threeWayMethods.getAll_NR = function() {
+					var ret;
 					Tracker.nonreactive(function() {
-						hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+						ret = threeWayMethods.getAll();
 					});
-					if (!hasChildData) {
-						throw new Meteor.Error('child-does-not-exist', childNameArray[0]);
-					}
-					if (childNameArray.length === 1) {
-						var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.set(p, v);
-						return value;
-					} else {
-						var cn = childNameArray.map(x => x);
-						cn.shift();
-						return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, cn);
-					}
-				} else {
-					return threeWayMethods.childDataSet(p, v, [childNameArray]);
-				}
-			};
-			threeWayMethods.childDataGet_NR = function _3w_childDataGet_NR(p, childNameArray) {
-				var value;
-				Tracker.nonreactive(function() {
-					value = threeWayMethods.childDataGet(p, childNameArray);
-				});
-				return value;
-			};
-			threeWayMethods.childDataGetAll_NR = function _3w_childDataGetAll_NR(childNameArray) {
-				var value;
-				Tracker.nonreactive(function() {
-					value = threeWayMethods.childDataGetAll(childNameArray);
-				});
-				return value;
-			};
+					return ret;
+				};
 
-			threeWayMethods.__getNearestThreeWayAncestor = function _3w_getNearestThreeWayAncestor(levelsUp) {
-				if (typeof levelsUp === "undefined") {
-					levelsUp = 1;
-				}
-				var currentInstance = instance;
-				while (!!currentInstance.parentTemplate()) {
-					currentInstance = currentInstance.parentTemplate();
-					if (!!currentInstance[THREE_WAY_NAMESPACE]) {
-						levelsUp -= 1;
-						if (levelsUp === 0) {
-							return currentInstance;
+				threeWayMethods.isPropVMOnly = function(p) {
+					return matchParamStrings(options.fields, p).length === 0;
+				};
+
+				threeWayMethods.getAll_VMOnly_NR = function() {
+					var vmData = threeWayMethods.getAll_NR();
+					_.forEach(threeWay.fieldMatchParams, function(v, k) {
+						if (!threeWayMethods.isPropVMOnly(k) && vmData.hasOwnProperty(k)) {
+							delete vmData[k];
+						}
+					});
+					return vmData;
+				};
+
+				threeWayMethods.focusedField = () => threeWay._focusedField.get();
+				threeWayMethods.focusedFieldUpdatedOnServer = p => threeWay._focusedFieldUpdatedOnServer.get(p);
+
+				threeWayMethods.isSyncedToServer = p => !!threeWay.__serverIsUpdated.get(p);
+				threeWayMethods.allSyncedToServer = function() {
+					return _.reduce(threeWay.__serverIsUpdated.all(), (m, v) => !!m && !!v, true);
+				};
+				threeWayMethods.isNotInvalid = p => !!threeWay.__dataIsNotInvalid.get(p);
+
+				threeWayMethods.parentDataGet = (p, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get(p);
+				threeWayMethods.parentDataGetAll = (levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll();
+				threeWayMethods.parentDataSet = (p, v, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].set(p, v);
+				threeWayMethods.parentDataGet_NR = (p, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get_NR(p);
+				threeWayMethods.parentDataGetAll_NR = (levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll_NR();
+
+				threeWayMethods.childDataGetId = function _3w_childDataGetId(childNameArray) {
+					if (childNameArray instanceof Array) {
+						if (childNameArray.length === 0) {
+							return;
+						}
+						var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+						if (!hasChildData) {
+							return;
+						}
+						if (childNameArray.length === 1) {
+							return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].getId();
+						} else {
+							var cn = childNameArray.map(x => x);
+							cn.shift();
+							return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGetId(cn);
+						}
+					} else {
+						return threeWayMethods.childDataGetId([childNameArray]);
+					}
+				};
+				threeWayMethods.childDataSetId = function _3w_childDataSetId(id, childNameArray) {
+					if (childNameArray instanceof Array) {
+						if (childNameArray.length === 0) {
+							return;
+						}
+						var hasChildData;
+						Tracker.nonreactive(function() {
+							hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+						});
+						if (!hasChildData) {
+							return;
+						}
+						if (childNameArray.length === 1) {
+							threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].setId(id);
+						} else {
+							var cn = childNameArray.map(x => x);
+							cn.shift();
+							threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataSetId(id, cn);
+						}
+					} else {
+						threeWayMethods.childDataSetId(id, [childNameArray]);
+					}
+				};
+				threeWayMethods.childDataGet = function _3w_childDataGet(p, childNameArray) {
+					if (childNameArray instanceof Array) {
+						if (childNameArray.length === 0) {
+							return;
+						}
+						var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+						if (!hasChildData) {
+							return;
+						}
+						if (childNameArray.length === 1) {
+							var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.get(p);
+							return value;
+						} else {
+							var cn = childNameArray.map(x => x);
+							cn.shift();
+							return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGet(p, cn);
+						}
+					} else {
+						return threeWayMethods.childDataGet(p, [childNameArray]);
+					}
+				};
+				threeWayMethods.childDataGetAll = function _3w_childDataGetAll(childNameArray) {
+					if (childNameArray instanceof Array) {
+						if (childNameArray.length === 0) {
+							return;
+						}
+						var hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+						if (!hasChildData) {
+							return;
+						}
+						if (childNameArray.length === 1) {
+							var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.all();
+							return value;
+						} else {
+							var cn = childNameArray.map(x => x);
+							cn.shift();
+							return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataGetAll(cn);
+						}
+					} else {
+						return threeWayMethods.childDataGetAll([childNameArray]);
+					}
+				};
+				threeWayMethods.childDataSet = function _3w_childDataSet(p, v, childNameArray) {
+					if (childNameArray instanceof Array) {
+						if (childNameArray.length === 0) {
+							return;
+						}
+						var hasChildData;
+						Tracker.nonreactive(function() {
+							hasChildData = !!threeWay.__hasChild.get(childNameArray[0]);
+						});
+						if (!hasChildData) {
+							throw new Meteor.Error('child-does-not-exist', childNameArray[0]);
+						}
+						if (childNameArray.length === 1) {
+							var value = threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE].data.set(p, v);
+							return value;
+						} else {
+							var cn = childNameArray.map(x => x);
+							cn.shift();
+							return threeWay.children[childNameArray[0]][THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, cn);
+						}
+					} else {
+						return threeWayMethods.childDataSet(p, v, [childNameArray]);
+					}
+				};
+				threeWayMethods.childDataGet_NR = function _3w_childDataGet_NR(p, childNameArray) {
+					var value;
+					Tracker.nonreactive(function() {
+						value = threeWayMethods.childDataGet(p, childNameArray);
+					});
+					return value;
+				};
+				threeWayMethods.childDataGetAll_NR = function _3w_childDataGetAll_NR(childNameArray) {
+					var value;
+					Tracker.nonreactive(function() {
+						value = threeWayMethods.childDataGetAll(childNameArray);
+					});
+					return value;
+				};
+
+				threeWayMethods.__getNearestThreeWayAncestor = function _3w_getNearestThreeWayAncestor(levelsUp) {
+					if (typeof levelsUp === "undefined") {
+						levelsUp = 1;
+					}
+					var currentInstance = instance;
+					while (!!currentInstance.parentTemplate()) {
+						currentInstance = currentInstance.parentTemplate();
+						if (!!currentInstance[THREE_WAY_NAMESPACE]) {
+							levelsUp -= 1;
+							if (levelsUp === 0) {
+								return currentInstance;
+							}
 						}
 					}
-				}
-				return null;
-			};
+					return null;
+				};
 
-			threeWayMethods.__getUltimateThreeWayAncestorInTree = function _3w_getUltimateThreeWayAncestor() {
-				var candidate = instance;
-				var currentInstance = candidate;
-				while (!!currentInstance.parentTemplate()) {
-					currentInstance = currentInstance.parentTemplate();
-					if (!!currentInstance[THREE_WAY_NAMESPACE]) {
-						candidate = currentInstance;
+				threeWayMethods.__getUltimateThreeWayAncestorInTree = function _3w_getUltimateThreeWayAncestor() {
+					var candidate = instance;
+					var currentInstance = candidate;
+					while (!!currentInstance.parentTemplate()) {
+						currentInstance = currentInstance.parentTemplate();
+						if (!!currentInstance[THREE_WAY_NAMESPACE]) {
+							candidate = currentInstance;
+						}
 					}
-				}
-				return candidate;
-			};
+					return candidate;
+				};
 
-			threeWayMethods.getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth, path) {
-				if (typeof levels === "undefined") {
-					levels = Number.MAX_SAFE_INTEGER;
-				}
-				if (typeof currDepth === "undefined") {
-					currDepth = 1;
-				}
-				if (typeof path === "undefined") {
-					path = [];
-				}
-				if (levels === 0) {
-					return [];
-				}
-				var __hasChild;
-				Tracker.nonreactive(function() {
-					__hasChild = threeWay.__hasChild.all();
-				});
-				var descendants = [];
-				_.forEach(__hasChild, function(hasChild, id) {
-					if (hasChild) {
-						var thisPath = path.concat([id]);
-						descendants.push({
-							id: id,
-							level: currDepth,
-							path: thisPath,
-							instance: threeWay.children[id],
-							templateType: threeWay.children[id].view.name
-						});
-						Array.prototype.push.apply(descendants, threeWay.children[id][THREE_WAY_NAMESPACE_METHODS].getAllDescendants_NR(levels - 1, currDepth + 1, thisPath));
+				threeWayMethods.getAllDescendants_NR = function _3w_getAllDescendants_NR(levels, currDepth, path) {
+					if (typeof levels === "undefined") {
+						levels = Number.MAX_SAFE_INTEGER;
 					}
-				});
-				return descendants;
-			};
-
-			threeWayMethods.resetVMOnlyData = function _3w_resetVMOnlyData() {
-				// Reset VM Only data to initial values (including those from `twdata` tags)
-				_.forEach(threeWay.vmOnlyData_Initial, function(value, field) {
-					threeWay.data.set(field, value);
-				});
-			};
-
-			threeWayMethods.getInheritedHelper = function _3w_getInheritedHelper(h) {
-				if (typeof options.helpers[h] !== "undefined") {
-					return options.helpers[h];
-				} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
-					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedHelper(h);
-				}
-			};
-			threeWayMethods.getInheritedEventHandler = function _3w_getInheritedEventHandler(evt) {
-				if (options.eventHandlers[evt] instanceof Function) {
-					return options.eventHandlers[evt];
-				} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
-					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedEventHandler(evt);
-				}
-			};
-			threeWayMethods.getInheritedPreProcessor = function _3w_getInheritedPreProcessor(p) {
-				if (options.preProcessors[p] instanceof Function) {
-					return options.preProcessors[p];
-				} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
-					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedPreProcessor(p);
-				}
-			};
-
-			threeWayMethods.__getFamilyHeritageHelperBundle = function _3w_getFamilyHeritageHelperBundle(bundle) {
-				// Returns all helpers than can be accessed via getInheritedHelper (i.e.: own, and from ancestors)
-				if (typeof bundle === "undefined") {
-					bundle = {};
-				}
-				_.forEach(options.helpers, function(fn, h) {
-					if (!bundle.hasOwnProperty(h)) {
-						bundle[h] = fn;
+					if (typeof currDepth === "undefined") {
+						currDepth = 1;
 					}
-				});
-				if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
-					bundle = threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].__getFamilyHeritageHelperBundle(bundle);
-				}
-				return bundle;
-			};
+					if (typeof path === "undefined") {
+						path = [];
+					}
+					if (levels === 0) {
+						return [];
+					}
+					var __hasChild;
+					Tracker.nonreactive(function() {
+						__hasChild = threeWay.__hasChild.all();
+					});
+					var descendants = [];
+					_.forEach(__hasChild, function(hasChild, id) {
+						if (hasChild) {
+							var thisPath = path.concat([id]);
+							descendants.push({
+								id: id,
+								level: currDepth,
+								path: thisPath,
+								instance: threeWay.children[id],
+								templateType: threeWay.children[id].view.name
+							});
+							Array.prototype.push.apply(descendants, threeWay.children[id][THREE_WAY_NAMESPACE_METHODS].getAllDescendants_NR(levels - 1, currDepth + 1, thisPath));
+						}
+					});
+					return descendants;
+				};
 
-			threeWayMethods.siblingDataGet = function _3w_siblingDataGet(p, siblingName) {
-				return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, siblingName);
-			};
-			threeWayMethods.siblingDataGetAll = function _3w_siblingDataGet(siblingName) {
-				return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataGetAll(siblingName);
-			};
-			threeWayMethods.siblingDataSet = function _3w_siblingDataSet(p, v, siblingName) {
-				return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, siblingName);
-			};
-			threeWayMethods.siblingDataGet_NR = function _3w_siblingDataGet_NR(p, siblingName) {
-				var value;
-				Tracker.nonreactive(function() {
-					value = threeWayMethods.siblingDataGet(p, siblingName);
-				});
-				return value;
-			};
-			threeWayMethods.siblingDataGetAll_NR = function _3w_siblingDataGetAll_NR(siblingName) {
-				var value;
-				Tracker.nonreactive(function() {
-					value = threeWayMethods.siblingDataGetAll(siblingName);
-				});
-				return value;
-			};
+				threeWayMethods.resetVMOnlyData = function _3w_resetVMOnlyData() {
+					// Reset VM Only data to initial values
+					// (including those from the optional field
+					// `_3w_additionalViewModelOnlyData` of the data context)
+					if (IN_DEBUG_MODE_FOR('vm-only')) {
+						console.log("[vm-only] Resetting view model only values to initial values.", threeWay.vmOnlyData_Initial);
+					}
+					_.forEach(threeWay.vmOnlyData_Initial, function(value, field) {
+						threeWayMethods.set(field, value);
+					});
+				};
+
+				threeWayMethods.getInheritedHelper = function _3w_getInheritedHelper(h) {
+					if (typeof options.helpers[h] !== "undefined") {
+						return options.helpers[h];
+					} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+						return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedHelper(h);
+					}
+				};
+				threeWayMethods.getInheritedEventHandler = function _3w_getInheritedEventHandler(evt) {
+					if (options.eventHandlers[evt] instanceof Function) {
+						return options.eventHandlers[evt];
+					} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+						return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedEventHandler(evt);
+					}
+				};
+				threeWayMethods.getInheritedPreProcessor = function _3w_getInheritedPreProcessor(p) {
+					if (options.preProcessors[p] instanceof Function) {
+						return options.preProcessors[p];
+					} else if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+						return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].getInheritedPreProcessor(p);
+					}
+				};
+
+				threeWayMethods.__getFamilyHeritageHelperBundle = function _3w_getFamilyHeritageHelperBundle(bundle) {
+					// Returns all helpers than can be accessed via getInheritedHelper (i.e.: own, and from ancestors)
+					if (typeof bundle === "undefined") {
+						bundle = {};
+					}
+					_.forEach(options.helpers, function(fn, h) {
+						if (!bundle.hasOwnProperty(h)) {
+							bundle[h] = fn;
+						}
+					});
+					if (!!threeWayMethods.__getNearestThreeWayAncestor()) {
+						bundle = threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].__getFamilyHeritageHelperBundle(bundle);
+					}
+					return bundle;
+				};
+
+				threeWayMethods.siblingDataGet = function _3w_siblingDataGet(p, siblingName) {
+					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataGet(p, siblingName);
+				};
+				threeWayMethods.siblingDataGetAll = function _3w_siblingDataGet(siblingName) {
+					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataGetAll(siblingName);
+				};
+				threeWayMethods.siblingDataSet = function _3w_siblingDataSet(p, v, siblingName) {
+					return threeWayMethods.__getNearestThreeWayAncestor()[THREE_WAY_NAMESPACE_METHODS].childDataSet(p, v, siblingName);
+				};
+				threeWayMethods.siblingDataGet_NR = function _3w_siblingDataGet_NR(p, siblingName) {
+					var value;
+					Tracker.nonreactive(function() {
+						value = threeWayMethods.siblingDataGet(p, siblingName);
+					});
+					return value;
+				};
+				threeWayMethods.siblingDataGetAll_NR = function _3w_siblingDataGetAll_NR(siblingName) {
+					var value;
+					Tracker.nonreactive(function() {
+						value = threeWayMethods.siblingDataGetAll(siblingName);
+					});
+					return value;
+				};
+			})();
 
 			////////////////////////////////////////////////////////////////
 			// For VM-DB binding set-up
@@ -736,25 +760,26 @@ if (Meteor.isClient) {
 					for (var k = fieldSplit.length; k < matchSplit.length; k++) {
 						curr_v = curr_v[matchSplit[k]];
 						if (typeof curr_v === "undefined") {
+							noTraversalError = false;
 							break;
 						}
 					}
 					if (noTraversalError) {
+						// Don't use threeWayMethods.set because it calls this method
 						threeWay.data.set(match.fieldPath, curr_v);
 						threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
 					}
 				});
 				parentFields.forEach(function(match) {
 					var matchSplit = match.fieldPath.split('.');
-					var parentValue;
-					Tracker.nonreactive(function() {
-						parentValue = threeWay.data.get(match.fieldPath);
-					});
+					var parentValue = threeWayMethods.get_NR(match.fieldPath);
 					var thisSubValue = parentValue;
 					for (var k = matchSplit.length; k < fieldSplit.length - 1; k++) {
 						thisSubValue = thisSubValue[fieldSplit[k]];
 					}
 					thisSubValue[fieldSplit[fieldSplit.length - 1]] = value;
+
+					// Don't use threeWayMethods.set because it calls this method
 					threeWay.data.set(match.fieldPath, parentValue);
 					threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
 				});
@@ -941,8 +966,11 @@ if (Meteor.isClient) {
 			if (!!instance.data && !!instance.data._3w_additionalViewModelOnlyData) {
 				threeWay.vmOnlyData_Initial = _.extend(threeWay.vmOnlyData_Initial, instance.data._3w_additionalViewModelOnlyData);
 			}
+			if (IN_DEBUG_MODE_FOR('vm-only')) {
+				console.log("[vm-only] Initial values for view model only data ready.", threeWay.vmOnlyData_Initial);
+			}
 			_.forEach(threeWay.vmOnlyData_Initial, function(value, field) {
-				threeWay.data.set(field, value);
+				threeWayMethods.set(field, value);
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
 					console.log("[vm-only] Setting up initial value for " + field + " to ", value, " using template-level options.");
 				}
@@ -951,14 +979,6 @@ if (Meteor.isClient) {
 					// Do not set-up update computation (not an actual vm-only field)
 					console.warn("[vm-only] Not an actual view model only field:", field);
 					delete threeWay.vmOnlyData_Initial[field];
-				} else {
-					// Set up update computation as per normal (honest vm-only field)
-					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
-						threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
-						if (IN_DEBUG_MODE_FOR('vm-only')) {
-							console.log("[vm-only] Updating vm-only data:", threeWay.viewModelOnlyData);
-						}
-					});
 				}
 			});
 
@@ -1011,9 +1031,32 @@ if (Meteor.isClient) {
 					console.log("[data-mirror] Clearing threeWay.data");
 				}
 
+				// Store View Model Only Data
+				var viewModelOnlyData = (function() {
+					var data = threeWayMethods.getAll_NR();
+					_.forEach(data, function (v, f) {
+						if (!threeWayMethods.isPropVMOnly(f)) {
+							delete data[f];
+						}
+					});
+					return data;
+				})();
+				if (IN_DEBUG_MODE_FOR('vm-only')) {
+					console.log("[vm-only] Storing current view model only data prior to clearing view model.", viewModelOnlyData);
+				}
+
+				// Clear data
 				// TODO: Replace with .clear() when possible
 				clearReactiveDictSafely(threeWay.data); // threeWay.data.clear();
 				clearReactiveDictSafely(threeWay._focusedFieldUpdatedOnServer); // threeWay._focusedFieldUpdatedOnServer.clear();
+
+				// Replace ViewModel only data
+				if (IN_DEBUG_MODE_FOR('vm-only')) {
+					console.log("[vm-only] Restoring current view model only data.", viewModelOnlyData);
+				}
+				_.forEach(viewModelOnlyData, function(value, field) {
+					threeWayMethods.set(field, value);
+				});
 
 				// Check if focused field is data bound
 				(function() {
@@ -1024,20 +1067,6 @@ if (Meteor.isClient) {
 						$(elem).trigger('focus');
 					}, instance);
 				})();
-
-				// Replace ViewModel only data and set-up mirroring again
-				_.forEach(threeWay.viewModelOnlyData, function(value, field) {
-					threeWay.data.set(field, threeWay.viewModelOnlyData[field]);
-					if (IN_DEBUG_MODE_FOR('vm-only')) {
-						console.log("[vm-only] Restoring value for " + field + " to ", threeWay.viewModelOnlyData[field], ".");
-					}
-					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
-						threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
-						if (IN_DEBUG_MODE_FOR('vm-only')) {
-							console.log("[vm-only] Updating vm-only data:", threeWay.viewModelOnlyData);
-						}
-					});
-				});
 
 				threeWay.__mostRecentDatabaseEntry = {};
 				threeWay.__mostRecentValidationValueVM = {};
@@ -1064,7 +1093,6 @@ if (Meteor.isClient) {
 
 					//////////////////////////////////////////////////// 
 					// Descend into objects and arrays
-					//
 					var descendInto = function descendInto(fields, doc, addedRun, fieldPrefix) {
 						if (typeof fieldPrefix === "undefined") {
 							fieldPrefix = '';
@@ -1132,6 +1160,7 @@ if (Meteor.isClient) {
 											threeWay._focusedFieldUpdatedOnServer.set(curr_f, true);
 											options.updateOfFocusedFieldCallback(threeWay.fieldMatchParams[focusedField], newValue, currentValue);
 										} else {
+											// not using threeWayMethods.set to avoid redundancy
 											threeWay.data.set(curr_f, newValue);
 											threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 										}
@@ -1168,7 +1197,6 @@ if (Meteor.isClient) {
 							}
 						});
 					};
-					//
 					// End Descend Into
 					//////////////////////////////////////////////////// 
 
@@ -1214,7 +1242,7 @@ if (Meteor.isClient) {
 					// End getFieldsWhereDefaultRequired 
 					//////////////////////////////////////////////////// 
 
-
+					//////////////////////////////////////////////////// 
 					// Setting Up Observers
 					var injectDefaultValues = function injectDefaultValues() {
 						// Inject default fields
@@ -1225,10 +1253,13 @@ if (Meteor.isClient) {
 								}
 								doFieldMatch(new_f);
 								setUpBinding(new_f);
-								threeWay.data.set(new_f, v);
+								threeWayMethods.set(new_f, v);
 							});
 						});
 					};
+					// End Setting Up Observers
+					//////////////////////////////////////////////////// 
+
 					threeWay.observer = cursor.observeChanges({
 						added: function(id, fields) {
 							var doc = threeWay.collection.findOne(id, {
@@ -1269,6 +1300,7 @@ if (Meteor.isClient) {
 			threeWay.fieldMatchParamsForValidationServer = {};
 			var validatorFieldsVM = _.map(options.validatorsVM, (v, k) => k);
 			var validatorFieldsServer = _.map(options.validatorsServer, (v, k) => k);
+
 			threeWay.validateInput = function validateVMThenServer(field, value, validateForServer) {
 				if (typeof validateForServer === "undefined") {
 					validateForServer = true;
@@ -1401,6 +1433,7 @@ if (Meteor.isClient) {
 			////////////////////////////////////////////////////////////
 			////////////////////////////////////////////////////////////
 
+			////////////////////////////////////////////////////////////
 			// Call helpers and pre-processors in template context
 			var processInTemplateContext = function processInTemplateContext(source, mappings, elem, useHelpers, processorsMutateValue, additionalFailureCondition) {
 				var thisTemplate = instance.view.template;
@@ -1497,6 +1530,8 @@ if (Meteor.isClient) {
 				return value;
 			};
 			threeWayMethods.__processInTemplateContext = processInTemplateContext;
+			// End Call helpers and pre-processors in template context
+			////////////////////////////////////////////////////////////
 
 
 			////////////////////////////////////////////////////////////////
@@ -1676,7 +1711,7 @@ if (Meteor.isClient) {
 								if (IN_DEBUG_MODE_FOR('value')) {
 									console.log('[.value] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
 								}
-								threeWay.data.set(fieldName, value);
+								threeWayMethods.set(fieldName, value);
 								updateRelatedFields(fieldName, value);
 								updateServerUpdatedStatus(fieldName);
 							} else {
@@ -1813,7 +1848,7 @@ if (Meteor.isClient) {
 								if (IN_DEBUG_MODE_FOR('checked')) {
 									console.log('[.checked] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 								}
-								threeWay.data.set(fieldName, new_value);
+								threeWayMethods.set(fieldName, new_value);
 								updateRelatedFields(fieldName, new_value);
 								updateServerUpdatedStatus(fieldName);
 							} else {
@@ -1983,7 +2018,7 @@ if (Meteor.isClient) {
 								if (IN_DEBUG_MODE_FOR('focus')) {
 									console.log('[.focus] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
 								}
-								threeWay.data.set(fieldName, focus);
+								threeWayMethods.set(fieldName, focus);
 								updateRelatedFields(fieldName, focus);
 								updateServerUpdatedStatus(fieldName);
 							} else {
@@ -2341,7 +2376,7 @@ if (Meteor.isClient) {
 				//////////////////////////////////////////////////////
 
 
-				var thisElemId = ThreeWay.getNewId();
+				var thisElemId = ThreeWay.utils.getNewId();
 				elem.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID, thisElemId);
 				Tracker.autorun(function(c) {
 					var instanceId = threeWay.instanceId.get();
@@ -2394,67 +2429,6 @@ if (Meteor.isClient) {
 			var thisTemplateName = instance.view.name.split('.').pop().trim();
 			var threeWay = instance[THREE_WAY_NAMESPACE];
 			var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
-
-			//////////////////////////////////////////////////////////////////
-			// Set initial values for data (in particular, VM-only fields)
-			//////////////////////////////////////////////////////////////////
-			// TODO: Will be removed soon in view of: _3w_additionalViewModelOnlyData input to data-context
-			Array.prototype.forEach.call(instance.$("twdata[field]"), function(elem) {
-				var field = elem.getAttribute('field');
-				var initValue = elem.getAttribute('initial-value') || null;
-				var processorString = elem.getAttribute('processors') || "";
-				var templateRestrictionString = elem.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE) || "";
-				var templateRestrictions = (templateRestrictionString === "") ? [] : templateRestrictionString.split(',').map(x => x.trim()).filter(x => x !== "");
-
-				if (IN_DEBUG_MODE_FOR('vm-only')) {
-					console.log("[vm-only] Initialization for " + field + " with", elem);
-				}
-
-				if ((templateRestrictions.length > 0) && (templateRestrictions.indexOf(thisTemplateName) === -1)) {
-					// Skip if restricted to other template type
-					if (IN_DEBUG_MODE_FOR('vm-only')) {
-						console.log("[vm-only] Skipping initialization: restricted to", templateRestrictions, "; Template Type: " + thisTemplateName);
-					}
-					return;
-				}
-
-				var processors = (processorString === "") ? [] : processorString.split('|').map(x => x.trim()).filter(x => x !== "");
-				var value = initValue;
-
-				instance.callFunctionWithTemplateContext(function() {
-					processors.forEach(function(m) {
-						// processors here do not provide view model data as an argument
-						var preProcessor = threeWayMethods.getInheritedPreProcessor(m);
-						if (!(preProcessor instanceof Function)) {
-							console.error('[ThreeWay] No such pre-processor: ' + m, elem);
-							return;
-						}
-						value = preProcessor(value, elem, {});
-					});
-				}, this);
-
-				if (IN_DEBUG_MODE_FOR('vm-only')) {
-					if (processors.length === 0) {
-						console.log("[vm-only] Setting up initial value for " + field + " to ", initValue, " using ", elem);
-					} else {
-						console.log("[vm-only] Setting up initial value for " + field + " using ", elem);
-						console.log("[vm-only] Processors:", processors, "; Init Value:", initValue, "; Final value:", value);
-					}
-				}
-				if (threeWayMethods.isPropVMOnly(field)) {					
-					threeWay.vmOnlyData_Initial[field] = value;
-				}
-				threeWay.data.set(field, value);
-
-				if (typeof threeWay._dataUpdateComputations[field] === "undefined") {
-					threeWay._dataUpdateComputations[field] = Tracker.autorun(function() {
-						threeWay.viewModelOnlyData[field] = threeWay.data.get(field);
-						if (IN_DEBUG_MODE_FOR('vm-only')) {
-							console.log("[vm-only] vm-only data:", threeWay.viewModelOnlyData);
-						}
-					});
-				}
-			});
 
 			//////////////////////////////////////////////////////////////////
 			// Say hi to parent now that its rendered
@@ -2705,15 +2679,15 @@ if (Meteor.isClient) {
 			// Restore VM-Only Data after Reload Triggered by Hot Code Push
 			//////////////////////////////////////////////////////////////////
 			var useReloadData = !instance.data || !instance.data._3w_ignoreReloadData;
-			if (useReloadData && ThreeWay.Reload._haveReloadPayload(myId)) {
-				var reloadPayload = ThreeWay.Reload._getReloadPayload(myId);
+			if (useReloadData && ThreeWay.reload._haveReloadPayload(myId)) {
+				var reloadPayload = ThreeWay.reload._getReloadPayload(myId);
 				if (!!reloadPayload) {
 					_.forEach(reloadPayload, function(value, field) {
-						threeWay.data.set(field, value);
+						threeWayMethods.set(field, value);
 					});
 				}
 			}
-			ThreeWay.Reload._registerForReload(myId, instance);
+			ThreeWay.reload._registerForReload(myId, instance);
 		});
 
 		tmpl.onDestroyed(function() {
@@ -2754,7 +2728,7 @@ if (Meteor.isClient) {
 				delete ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers[myId];
 			}
 
-			ThreeWay.Reload._deregisterForReload(myId, instance);
+			ThreeWay.reload._deregisterForReload(myId, instance);
 		});
 
 		tmpl.helpers({
@@ -2781,7 +2755,7 @@ if (Meteor.isClient) {
 			_3w_isInvalid: (propName) => !Template.instance()[THREE_WAY_NAMESPACE_METHODS].isNotInvalid(propName),
 			_3w_validValuesSynced: (propName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].isSyncedToServer(propName) || (!Template.instance()[THREE_WAY_NAMESPACE_METHODS].isNotInvalid(propName)),
 			_3w_validValuesNotSynced: (propName) => (!Template.instance()[THREE_WAY_NAMESPACE_METHODS].isSyncedToServer(propName)) && Template.instance()[THREE_WAY_NAMESPACE_METHODS].isNotInvalid(propName),
-			_3w_expandParams: ThreeWay.expandParams,
+			_3w_expandParams: ThreeWay.utils.expandParams,
 
 			_3w_parentDataGet: (p, levelsUp) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].parentDataGet(p, levelsUp),
 			_3w_parentDataGetAll: (levelsUp) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].parentDataGetAll(levelsUp),
@@ -2795,9 +2769,9 @@ if (Meteor.isClient) {
 		});
 	});
 
-	////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	// Reload Stuff
-	////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	var ThreeWayReload = {};
 	var _reloadRegistration = {};
 	PackageUtilities.addMutablePropertyObject(ThreeWayReload, '_reloadRegistration', _reloadRegistration);
@@ -2881,6 +2855,7 @@ if (Meteor.isClient) {
 				}
 
 				if (IN_DEBUG_MODE_FOR('reload')) {
+					console.info('[ThreeWay|Reload] Waiting 5 sec...');
 					setTimeout(_reloadStatus.reloadRetry, 5000);
 				} else {
 					_reloadStatus.reloadRetry();
@@ -2890,11 +2865,11 @@ if (Meteor.isClient) {
 		}
 	});
 
-	PackageUtilities.addMutablePropertyObject(ThreeWay, 'Reload', ThreeWayReload);
+	PackageUtilities.addMutablePropertyObject(ThreeWay, 'reload', ThreeWayReload);
 
-	////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	// Extra Content
-	////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////
 	PackageUtilities.addImmutablePropertyObject(ThreeWay, 'preProcessorGenerators', {
 		undefinedFilterGenerator: function undefinedFilterGenerator(defaultValue) {
 			return x => (typeof x === "undefined") ? defaultValue : x;

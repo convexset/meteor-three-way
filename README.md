@@ -781,50 +781,20 @@ Event handlers may be inherited.
 
 ### View Model to View Only Elements
 
-However, since those are "template-level defaults" that are copied to all template instances, it may be useful at times to customize (update) them at instantiation. There are a few ways to do so. The first is through template instance data:
+Template-level defaults may be specified in the configuration like so:
+
+```javascript
+// (Global) initial values for fields that feature only in the local view model
+// and are not used to update the database
+viewModelToViewOnly: {
+    'vmOnlyValue': 'something',
+},
+```
+
+However, since those are "template-level defaults" that are copied to all template instances, it may be useful at times to customize (update) them at instantiation. This may be achieved through template instance data:
 
 ```html
 {{> DemoThreeWay _3w_additionalViewModelOnlyData=helperWithAdditionalData}}
-```
-
-Alternatively, it can be done via HTML:
-
-```html
-<twdata field="additional" initial-value="view model to view only"></twdata>
-<div>
-    Additional (View Model Only): <input data-bind="value: additional">
-</div>
-<div>
-    Additional: <span data-bind="html: additional"></span>
-</div>
-```
-
-Note that "view model only" tag-based initializers applied only `onRendered` and that tag-based initializers will overwrite the values in the "Template-level" options (`options.viewModelToViewOnly`).
-
-Note also that tag-based initializers take an optional `processors` attribute, which is a pipe separated string of transformations that are applied sequentially to what is found in the `initial-value` attribute. This is useful for transforming serialized values into objects. For example:
-
-```html
-<twdata field="something" initial-value="will become uppercase and then have date appended" processors="toUpperCase|appendTimestamp"></twdata>
-```
-
-```javascript
-// In the config...
-preProcessors: {
-    toUpperCase: function(v) {
-        return v.toUpperCase();
-    },
-    appendTimeStamp: function(v) {
-        return v + ' (' + (new Date()) + ')';
-    },
-}
-```
-
-See [Pre-processor Pipelines](#pre-processor-pipelines) below for more information.
-
-Due to the nature of jQuery selectors, a selector at a parent template might select such nodes in child templates and inadvertently pollute the local view model. One way of dealing with the problem is to add a `restrict-template-type` attribute indicating the names of applicable templates as a comma separated list. Omission makes the initialization applicable to all.
-
-```html
-<twdata field="somethingElse" initial-value="value" restrict-template-type="MyTemplate, MyOtherTemplate"></twdata>
 ```
 
 ### Instance Methods
@@ -865,7 +835,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `focusedFieldUpdatedOnServer(prop)`: indicates whether field `prop` was updated on the server while the relevant field was in focus (and a `updateOfFocusedFieldCallback` callback was defined in `options`) and hence the field is out of sync
 
- - `resetVMOnlyData`: resets view-model only data to initial values (including those from `twdata` tags)
+ - `resetVMOnlyData`: resets view-model only data to initial values (including those from the optional field `_3w_additionalViewModelOnlyData` of the data context)
 
 #### Ancestor Data (and other possessions)
 
@@ -1140,38 +1110,39 @@ Recall that one may customize ids manually by passing `_3w_name` into the data c
 One may pass `_3w_ignoreReloadData` (boolean) into the data context of each template instance to indicate whether to ignore migrated data (`true` to ignore).
 
 
-### Debug
+### Debug Mode
 
-`ThreeWay.setDebugModeOn()` - Turns on debug mode
+`ThreeWay.DEBUG_MODE.set(v)` - Turns on debug mode if `v` is `true` and turns it off otherwise 
 
-`ThreeWay.debugModeSelectAll()` - Show all debug messages (initially none)
+`ThreeWay.DEBUG_MODE.selectAll()` - Show all debug messages (initially none)
 
-`ThreeWay.debugModeSelectNone()` - Reset selection of debug message classes to none
+`ThreeWay.DEBUG_MODE.selectNone()` - Reset selection of debug message classes to none
 
-`ThreeWay.debugModeSelect(aspect)` - More granular control of debug messages, debug messages fall into the following classes:
+`ThreeWay.DEBUG_MODE.select(aspect)` - More granular control of debug messages, debug messages fall into the following classes:
  - `'parse'`
- - `'bindings'`
- - `'data-mirror'`
- - `'observer'`
+ - `'bind'`
  - `'tracker'`
- - `'new-id'`
+ - `'new'`
+ - `'observer'`
  - `'db'`
- - `'default-values'`
- - `'methods'`
+ - `'default'`
+ - `'validation'`
+ - `'data'`
+ - `'vm'`
+ - `'reload'`
+ - `'bindings'`
  - `'value'`
  - `'checked'`
  - `'focus'`
- - `'html-text'`
- - `'visible-and-disabled'`
+ - `'html'`
+ - `'visible'`
  - `'style'`
  - `'attr'`
  - `'class'`
  - `'event'`
- - `'vm-only'`
- - `'validation'`
- - `'bind'`
 
-The above is obtainable from `ThreeWay.DEBUG_MESSAGE_HEADINGS`.
+
+The above is obtainable from `ThreeWay.DEBUG_MODE.MESSAGE_HEADINGS`.
 
 ## Extras
 

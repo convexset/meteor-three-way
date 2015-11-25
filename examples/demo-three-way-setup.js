@@ -223,6 +223,11 @@ if (Meteor.isClient) {
 			"someArrValidationErrorText.0": "",
 			"someArrValidationErrorText.2": "",
 			"nameHasFocus": false,
+			"fieldNameColor": "#0000FF",
+			"fieldNameFontSize": "200%",
+			"imgAltText": "Not Found (\'not shouting; blame the pre-processor)",
+			"semanticUIStyling": "yes",
+			"sliderValue": "50",
 		},
 
 		// Event Handlers for binding
