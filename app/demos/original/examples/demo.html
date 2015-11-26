@@ -11,7 +11,31 @@
 			&nbsp;
 		</div>
 
+		<h1>ThreeWay Demo</h1>
 
+		<div class="column" style="text-align: justify;">
+			<p>
+				<a href="https://github.com/convexset/meteor-three-way" target="_blank"><code>ThreeWay</code></a> is a <a href="https://www.meteor.com" target="_blank">Meteor</a> package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package was to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: data transformations, vertical/lateral data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package).
+			</p>
+
+			<p>
+				Database to view model connectivity is provided by Meteor methods (with signatures <code>function(id, value)</code>), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature <code>function(id, value, param1, param2, ...)</code>). The user is responsible for ensuring the right subscriptions are in place so <code>ThreeWay</code> can retrieve records from the local database cache.
+			</p>
+
+			<p>
+				The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
+			</p>
+
+			<p>
+				Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
+			</p>
+
+			<p>
+				Documentation is available on <a href="https://github.com/convexset/meteor-three-way" target="_blank">GitHub</a> and <a href="https://atmospherejs.com/convexset/three-way" target="_blank">Atmosphere</a>.
+			</p>
+
+			<p></p>
+		</div>
 
 		<div class="column">
 			&nbsp;
@@ -430,35 +454,19 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 				<div class="field">
 					<label>[Style binding] fieldNameColor (VM Only)</label>
 					<input data-bind="value: fieldNameColor">
-					<twdata field="fieldNameColor" initial-value="#0000FF"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;fieldNameColor&quot; initial-value=&quot;#0000FF&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 				<div class="field">
 					<label>[Style binding] fieldNameFontSize (VM Only)</label>
 					<input data-bind="value: fieldNameFontSize">
-					<twdata field="fieldNameFontSize" initial-value="200%"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;fieldNameFontSize&quot; initial-value=&quot;200%&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 				<div class="field">
 					<label>[Attribute binding] imgAltText (VM Only)</label>
 					<input data-bind="value: imgAltText">
-					<twdata field="imgAltText" initial-value="Not Found ('not shouting; blame the processor)" processors="appendTimeStamp"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;imgAltText&quot; initial-value=&quot;Not Found (&#039;not shouting; blame the processor)&quot; processors=&quot;appendTimeStamp&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 				<img src="no-such-image.jpg" data-bind="attr: {alt: imgAltText|toUpperCase}">
 				<div class="field">
 					<label>[Class binding] semanticUIStyling (VM Only; no means false) <code>semanticUIStyling|noIsFalse</code> --> <span data-bind="html: semanticUIStyling|noIsFalse"></span></label>
 					<input data-bind="value: semanticUIStyling">
-					<twdata field="semanticUIStyling" initial-value="yes"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;semanticUIStyling&quot; initial-value=&quot;yes&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 			</div>
 
@@ -502,20 +510,16 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 				<div class="field">
 					<label>[Value binding] sliderValue (VM Only); Drag to fire events; {{_3w_get 'sliderValue'}} &lt;-- via Blaze: <code>&#123;&#123;_3w_get 'sliderValue'&#125;&#125;</code></label>
 					<input data-bind="value: sliderValue; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=1000 min=0>
-					<twdata field="sliderValue" initial-value="50"></twdata>
-
-					Initialized via:
-					<pre>&lt;twdata field=&quot;sliderValue&quot; initial-value=&quot;50&quot;&gt;&lt;/twdata&gt;</pre>
 				</div>
 			</div>
 
 			<h3>Descendant Data</h3>
 			<ul>
 				<li><strong>Child Data <code>childData</code></strong>: {{_3w_childDataGet 'childData' 'kiddy'}}</li>
-				<li><strong>Grandchild Data <code>grandchildData</code></strong>: {{_3w_childDataGet 'grandchildData' (arrayify2Args 'kiddy' 'grandkiddy')}}</li>
+				<li><strong>Grandchild Data <code>_3wNode_DemoThreeWayGrandChild_1.grandchildData</code></strong>: {{_3w_childDataGet 'grandchildData' (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_1')}}</li>
 				<li><strong>Child Id</strong>: {{_3w_childDataGetId 'kiddy'}}</li>
-				<li><strong>Grand Child One Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'grandkiddy')}}</li>
-				<li><strong>Grand Child Two Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'other_grandkiddy')}}</li>
+				<li><strong>Grand Child One Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_1')}}</li>
+				<li><strong>Grand Child Two Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_2')}}</li>
 				<li><strong>Grand Child Three Id</strong>: {{_3w_childDataGetId (arrayify2Args 'kiddy' 'yet_another_grandkiddy')}}</li>
 			</ul>
 
@@ -536,7 +540,7 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 
 			<table class="ui table celled">
 				<thead>
-					<tr><th>Field (this instance, autonamed: <code>{{_3w_3wInstanceId}}</code>)</th>
+					<tr><th>Field (this instance: <code>{{_3w_3wInstanceId}}</code>)</th>
 					<th>Value</th></tr>
 				</thead>
 				<tbody>
@@ -566,11 +570,11 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 
 			<table class="ui table celled">
 				<thead>
-					<tr><th>Field (in <code>grandkiddy</code>)</th>
+					<tr><th>Field (in <code>_3wNode_DemoThreeWayGrandChild</code>)</th>
 					<th>Value</th></tr>
 				</thead>
 				<tbody>
-					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'grandkiddy'))}}
+					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_1'))}}
 						<tr>
 							<td>{{key}}</td>
 							<td>{{value}}</td>
@@ -581,11 +585,11 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 
 			<table class="ui table celled">
 				<thead>
-					<tr><th>Field (in <code>other_grandkiddy</code>)</th>
+					<tr><th>Field (in <code>_3wNode_DemoThreeWayGrandChild_2</code>)</th>
 					<th>Value</th></tr>
 				</thead>
 				<tbody>
-					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' 'other_grandkiddy'))}}
+					{{#each repackageDictionaryAsArray (_3w_childDataGetAll (arrayify2Args 'kiddy' '_3wNode_DemoThreeWayGrandChild_2'))}}
 						<tr>
 							<td>{{key}}</td>
 							<td>{{value}}</td>
@@ -622,37 +626,34 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 
 <template name="DemoThreeWayChild">
 	<div class="DemoThreeWayChild">
-		<h3>Child Template (Data Id: {{_3w_id}})</h3>
+		<h3>Child Template: <code>{{_3w_3wInstanceId}}</code> (Data Id: {{_3w_id}})</h3>
 		<ul>
 			<li><strong>Parent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 1}}</li>
 			<li><strong>My Data <code>childData</code></strong>: <input data-bind="value: childData">&nbsp;&nbsp; {{_3w_get 'childData'}}</li>
 			<li><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
 		</ul>
 
-		{{> DemoThreeWayGrandChild _3w_name='grandkiddy' initData="grandkiddy one" siblingName="other_grandkiddy" _3w_rootElementSelector=".DemoThreeWayGrandChild"}}
+		{{> DemoThreeWayGrandChild _3w_additionalViewModelOnlyData=(vmDataGrandChild "grandkiddy one") siblingName="_3wNode_DemoThreeWayGrandChild_2"}}
 
 
-		{{> DemoThreeWayGrandChild _3w_name='other_grandkiddy' initData="grandkiddy two" siblingName="grandkiddy" _3w_rootElementSelector=".DemoThreeWayGrandChild" _3w_rootElementSelector=".sneaky-li"}}
+		{{> DemoThreeWayGrandChild _3w_additionalViewModelOnlyData=(vmDataGrandChild "grandkiddy two") siblingName="_3wNode_DemoThreeWayGrandChild" _3w_rootElementSelector=".sneaky-li"}}
 		<p style="font-size: 80%">The above instance has a different root selector ".sneaky-li" (classes wrapped around the first and last list items). So items within elements in that selector will be bound to the above "grand child template", and those outside, but still within the template's bounds, would be associated with the "child template" instance.</p>
 
 		{{#if allowThirdGrandchild}}
-			{{> DemoThreeWayGrandChild _3w_name='yet_another_grandkiddy' initData="grandkiddy three" siblingName="grandkiddy"}}
+			{{> DemoThreeWayGrandChild _3w_name='yet_another_grandkiddy' _3w_additionalViewModelOnlyData=(vmDataGrandChild "grandkiddy three") siblingName="grandkiddy"}}
 		{{/if}}
 	</div>
 </template>
 
 <template name="DemoThreeWayGrandChild">
 	<div class="DemoThreeWayGrandChild">
-		<h3>Grandchild Template: <code>{{_3w_name}}</code> (Data Id: {{_3w_id}})</h3>
-		<twdata field="grandchildData" initial-value="{{initData}}" restrict-template-type="DemoThreeWayGrandChild"></twdata>
-		<twdata field="sharedBetweenParentAndGrandChild" initial-value="init sharedBetweenParentAndGrandChild" restrict-template-type="DemoThreeWay, DemoThreeWayGrandChild"></twdata>
-		<twdata field="sharedBetweenChildAndGrandChild" initial-value="init sharedBetweenChildAndGrandChild" restrict-template-type="DemoThreeWayChild, DemoThreeWayGrandChild"></twdata>
+		<h3>Grandchild Template: <code>{{_3w_3wInstanceId}}</code> (Data Id: {{_3w_id}})</h3>
 		<ul>
 			<li class='sneaky-li'><strong>Grandparent Data <code>sliderValue</code></strong>: {{_3w_parentDataGet 'sliderValue' 2}}</li>
 			<li><strong>My Data <code>grandchildData</code></strong>: <input data-bind="value: grandchildData">&nbsp;&nbsp; {{_3w_get 'grandchildData'}}</li>
 			<li><strong>Sibling Data <code>{{siblingName}}.grandchildData</code></strong>: {{_3w_siblingDataGet 'grandchildData' siblingName}}</li>
-			<li class='sneaky-li'><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
-			<li><strong>id via ancestor method</strong>: <span data-bind="text: altGetId"></span></li>
+			<li><strong><code>name</code> (from data)</strong>: {{_3w_get 'name'}}</li>
+			<li class='sneaky-li'><strong>id via ancestor method</strong>: <span data-bind="text: altGetId"></span></li>
 		</ul>
 	</div>
 </template>

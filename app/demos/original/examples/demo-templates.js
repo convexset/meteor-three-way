@@ -2,8 +2,10 @@
 /* global Demo: true */
 /* global parentTemplate: true */
 /* global childTemplate: true */
-/* global grandchildTemplate: true */
+/* global grandchildTemplates: true */
 /* global preparationDeficientTemplate: true */
+/* global Fake: true */
+
 
 ////////////////////////////////////////////////////////////
 // Preamble
@@ -11,9 +13,9 @@
 function setUpDebugMessages(template) {
 	var _selectedDebugMessages = template && template._3w_.get_NR('debugMessages') || [];
 	console.info('Selected Debug Messages:', _selectedDebugMessages);
-	ThreeWay.setDebugModeOn();
-	ThreeWay.debugModeSelectNone();
-	_selectedDebugMessages.forEach(x => ThreeWay.debugModeSelect(x));
+	ThreeWay.DEBUG_MODE.set(true);
+	ThreeWay.DEBUG_MODE.selectNone();
+	_selectedDebugMessages.forEach(x => ThreeWay.DEBUG_MODE.select(x));
 }
 
 
@@ -55,7 +57,7 @@ if (Meteor.isClient) {
 			return arr.map(x => Demo.emailPrefsAll[x]).join(", ");
 		},
 		num: () => Template.instance().num.get(),
-		allDebugMessages: () => ThreeWay.DEBUG_MESSAGE_HEADINGS,
+		allDebugMessages: () => ThreeWay.DEBUG_MODE.MESSAGE_HEADINGS,
 		toLowerCase: x => x.toLowerCase && x.toLowerCase(),
 		additionalVMOnlyData: function() {
 			return _.object(_.range(5).map(idx => ['idx_' + idx, Math.floor(Math.random() * 10000)]));
@@ -94,8 +96,8 @@ if (Meteor.isClient) {
 		"click button#randomize-child-ids": function() {
 			/* global alert: true */
 			Template.instance()._3w_.childDataSetId(randomId(), 'kiddy');
-			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'grandkiddy']);
-			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'other_grandkiddy']);
+			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', '_3wNode_DemoThreeWayGrandChild_1']);
+			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', '_3wNode_DemoThreeWayGrandChild_2']);
 			Template.instance()._3w_.childDataSetId(randomId(), ['kiddy', 'yet_another_grandkiddy']);
 		},
 		"change input[name=debug-messages]": function(event, template) {
@@ -124,6 +126,7 @@ if (Meteor.isClient) {
 	});
 	Template.DemoThreeWayChild.helpers({
 		allowThirdGrandchild: () => Template.instance().allowThirdGrandchild.get(),
+		vmDataGrandChild: (x) => _.object([['grandchildData', x]]),
 	});
 }
 
@@ -132,12 +135,13 @@ if (Meteor.isClient) {
 // Grand Child Template
 ////////////////////////////////////////////////////////////
 if (Meteor.isClient) {
+	grandchildTemplates = [];
 	Template.DemoThreeWayGrandChild.onCreated(function() {
-		grandchildTemplate = this;
+		grandchildTemplates.push(this);
 	});
 	Template.DemoThreeWayGrandChild.onRendered(function() {
 		var instance = this;
-		Tracker.autorun(function() {
+		instance.autorun(function() {
 			// sub.ready changes once... supposedly...
 			if (sub.ready()) {
 				instance._3w_.setId(randomId());
@@ -154,7 +158,7 @@ if (Meteor.isClient) {
 	Template.DemoThreeWayPreparationDeficient.onRendered(function() {
 		preparationDeficientTemplate = this;
 		Template.instance()._3w_.set('title', 'Preparation Deficit: Quick and Dirty View Models');
-		_.range(10).forEach(function (idx) {
+		_.range(5).forEach(function (idx) {
 			Template.instance()._3w_.set('item'+idx, Fake.user().fullname);
 		});
 	});

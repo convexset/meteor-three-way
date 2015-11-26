@@ -19,3 +19,9 @@
 	font-size: 13px;
 	padding: .5em 1em;
 }
+
+div[class="pseudo-input"]{
+	border-radius: 3px;
+	box-shadow: #cccccc 0 0 0 1px inset;
+	box-sizing: border-box;
+}

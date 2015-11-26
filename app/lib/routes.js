@@ -42,6 +42,19 @@ var home = FlowRouterTree.createNode({
 	}
 });
 
+var docs = FlowRouterTree.createNode({
+	parent: root,
+	name: 'Docs',
+	description: 'The documentation',
+	path: 'docs',
+	params: {
+		content: 'Docs'
+	}
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// DEMO
+///////////////////////////////////////////////////////////////////////////////
 var demo = FlowRouterTree.createNode({
 	parent: root,
 	name: 'DemoList',

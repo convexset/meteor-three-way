@@ -179,7 +179,7 @@ if (Meteor.isClient) {
 					onApprove : function() {
 //						window.alert('Approved!');
 						console.log('id',instance._3w_.getId());
-						console.log('the name', instance._3w_.childDataGet('myName', 'modalChild'));
+//						console.log('the name', instance._3w_.childDataGet('myName', 'modalChild'));
 						console.log('the descendants', instance._3w_.getAllDescendants_NR());
 						var myWhatName = _.filter(instance._3w_.getAllDescendants_NR(), function (child) {
 							return child.templateType === "Template.WhatName";
