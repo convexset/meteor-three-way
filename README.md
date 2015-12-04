@@ -807,6 +807,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
 #### My Data
 
+ - `get3wInstanceId()`: gets the instance id of the `ThreeWay` instance
+
  - `getId()`: gets the id of the document bound to
 
  - `setId(id)`: sets the id of the document to bind to
@@ -903,6 +905,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
  - `siblingDataGetAll_NR(siblingName)`: (non-reactively) returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
 
 ### Additional Template Helpers
+
+ - `_3w_3wInstanceId`: returns the instance id of the `ThreeWay` instance
 
  - `_3w_id`: returns the `_id` of the document selected (if any)
 
