@@ -26,11 +26,15 @@ anti:fake
 reactive-var
 reactive-dict
 
+kadira:blaze-layout
+kadira:flow-router
+arillo:flow-router-helpers
+
+mrt:githubreadme
+
 convexset:template-helpers
 convexset:three-way
 convexset:package-utils
 convexset:flow-router-tree
-kadira:blaze-layout
-arillo:flow-router-helpers
-kadira:flow-router
-mrt:githubreadme
+anima-t3d:3w-demo-ani-1
+anima-t3d:3w-demo-ani-2

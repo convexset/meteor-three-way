@@ -1,25 +1,28 @@
-<template name="Docs">
-	{{getGithubReadme name="meteor-three-way" owner="convexset"}}
-	{{#if githubReadme}}
-		{{{githubReadme}}}
-	{{else}}
-		<div class="ui icon message">
-			<i class="repeat loading icon"></i>
-			<div class="content">
-				<div class="header">
-					Just one second
-				</div>
-				<p>We're fetching that content for you.</p>
-				<p>
-					Alternatively you can view it at <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md">Github</a>
-				</p>
+<template name="Demo_Ani_1">
+	<div class="ui container">
+		<h1>Welcome to a ThreeWay Demo! <span>Made for <em>v0.2.9</em></span></h1>
+		<div class="ui message">
+			<div class="header">
+				Demo Features
 			</div>
+			<ul class="list">
+				<li>Basic edit/update/delete and overview</li>
+				<li>Support for Semantic UI: dropdown, tags and a basic implementation of messages and modals</li>
+			</ul>
 		</div>
-	{{/if}}
-</template>
 
-<template name="CreateOwnDemo">
-{{#markdown}}
+		{{> UsersTable }}
+
+		{{#markdown}}
+# Basic demo 1
+Uses `convexset:three-way` and `semantic:ui`.
+
+## Features
+
+* Edit and delete users
+* Add tags
+* SemanticUI: dropdown binding, tags, modal and basic implementation of messages
+
 ## Create your own demo
 If you want to add a demo to the three-way documentation you can do so by creating your own package with the demo code inside.
 More info on [writing and testing your own package](https://themeteorchef.com/recipes/writing-a-package/)
@@ -45,5 +48,8 @@ After creating the main template for your demo, add a route to app/lib/routes.js
 
 ### Naming conventions
 When creating a demo template, make sure you namespace it in order to avoid any conflicts. The start template should follow the form of `Demo_Username_YourDemoCount`
-{{/markdown}}
+
+		{{/markdown}}
+
+	</div>
 </template>

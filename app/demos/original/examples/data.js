@@ -37,5 +37,5 @@ var myDemo = {
 	},
 };
 
-Demo = Demo || {};
+Demo = {};
 Demo = _.extend(Demo,myDemo);

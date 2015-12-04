@@ -25,13 +25,13 @@ if (Meteor.isClient) {
 
 	Template.TagsManager.helpers({
 		ready: () => subTags.ready(),
-		data: () => Demo.animat3d[DEMO_KEY].tagCollection.find().fetch().sort(
+		data: () => Demo.tagCollection.find().fetch().sort(
 			function (a, b) {
 				return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
 			}
 		),
 		allColors: function () {
-			var options = Demo.animat3d[DEMO_KEY].allColors.map(x => x);
+			var options = Demo.allColors.map(x => x);
 			options.unshift('None');
 			return options;
 		}
@@ -43,7 +43,7 @@ if (Meteor.isClient) {
 
 	ThreeWay.prepare(Template.TagsManager, {
 		// The relevant Mongo.Collection
-		collection: Demo.animat3d[DEMO_KEY].tagCollection,
+		collection: Demo.tagCollection,
 
 		// Meteor methods for updating the database
 		// The keys being the respective fields/field selectors for the database
@@ -53,9 +53,8 @@ if (Meteor.isClient) {
 		},
 
 		// Inject default values if not in database record
-//		injectDefaultValues: {
-//			label: 'Untitled Tag'
-//		},
+		injectDefaultValues: {
+		},
 
 		// Transformations from the server to the view model
 		// In this example, "tags" are stored in the view model as a comma
@@ -78,26 +77,12 @@ if (Meteor.isClient) {
 		// Useful for making sure that transformations to server values do not fail
 		// Arguments: (value, vmData, wildCardParams)
 		validatorsVM: {
-
 		},
 
 		// Validators under validatorsServer consider transformed values
 		// (no additional view-model data, work with that somewhere else)
 		// Arguments: (value, wildCardParams)
 		validatorsServer: {
-//			tags: {
-//				validator: function(value) {
-//					return true;//value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
-//				},
-//				success: function(template, value, vmData, field, params) {
-//					console.info('[Validated!] tags:', value, field, params);
-//					template._3w_.set('tagsValidationErrorText', '');
-//				},
-//				failure: function(template, value, vmData, field, params) {
-//					console.warn('[Validation Failed] tags:', value, field, params);
-//					template._3w_.set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
-//				},
-//			}
 		},
 
 		// Helper functions that may be used as input for display-type bindings
@@ -125,7 +110,6 @@ if (Meteor.isClient) {
 			msg_header: 'This is the header',
 			msg_content: '',
 			canSaveTag: true
-			//"tagsValidationErrorText": ""
 		},
 
 		eventHandlers: {
@@ -153,7 +137,6 @@ if (Meteor.isClient) {
 						};
 						console.log(msg.header, msg.content);
 						updateMsg(msg);
-						instance._3w_.resetVMOnlyData();
 					}
 				});
 			},

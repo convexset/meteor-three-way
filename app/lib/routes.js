@@ -49,6 +49,17 @@ var docs = FlowRouterTree.createNode({
 	path: 'docs',
 	params: {
 		content: 'Docs'
+	},
+	providesParentRoutePrefix: true
+});
+
+FlowRouterTree.createNode({
+	parent: docs,
+	name: 'CreateDemo',
+	description: 'The documentation on how to create your own demo',
+	path: 'createDemo',
+	params: {
+		content: 'CreateOwnDemo'
 	}
 });
 
@@ -82,7 +93,17 @@ FlowRouterTree.createNode({
 	description: 'Basic Demo',
 	path: 'Ani1',
 	params: {
-		content: 'ani1'
+		content: 'Demo_Ani_1'
+	},
+});
+
+FlowRouterTree.createNode({
+	parent: demo,
+	name: 'DemoAni2',
+	description: 'Basic modal Demo',
+	path: 'Ani2',
+	params: {
+		content: 'Demo_Ani_2'
 	},
 });
 

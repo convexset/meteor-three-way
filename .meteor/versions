@@ -1,3 +1,6 @@
+anima-t3d:3w-demo-ani-1@1.0.0
+anima-t3d:3w-demo-ani-2@1.0.0
+anima-t3d:3w-ui-modal@1.0.0
 anti:fake@0.4.1
 arillo:flow-router-helpers@0.4.6
 autoupdate@1.2.4
@@ -70,8 +73,8 @@ reactive-var@1.0.6
 reload@1.1.4
 retry@1.0.4
 routepolicy@1.0.6
-semantic:ui@2.1.4_5
-semantic:ui-data@2.1.4_5
+semantic:ui@2.1.6
+semantic:ui-data@2.1.6
 session@1.1.1
 showdown@1.0.5
 spacebars@1.0.7

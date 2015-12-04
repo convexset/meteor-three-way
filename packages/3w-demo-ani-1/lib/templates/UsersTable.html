@@ -17,8 +17,8 @@
 						{{/each}}
 					</td>
 					<td>
-						<button class="ui green inverted button" id="focus-{{_id}}" data-bind="event:{click: selectUser}">
-							<i class="icon pencil" id="alternative-{{_id}}"></i>
+						<button class="ui green inverted button" data-user-id="{{_id}}" data-bind="event:{click: selectUser}">
+							<i class="icon pencil" data-user-id="{{_id}}"></i>
 							Edit
 						</button>
 					</td>
@@ -54,14 +54,14 @@
 				</tr>
 
 				<tr>
-					<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
+					<td>
 						<strong>Tags</strong>
 					</td>
-					<td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
+					<td>
 						<table border=0 style="width: 100%;">
 							<tr>
 								<td style="width: 85%; border: none;">
-									<div class="ui fluid multiple search selection dropdown"><!-- data binding has no effect, but the binding and tabindex allow the _3w_focusedField to work -->
+									<div class="ui fluid multiple search selection dropdown">
 										<input type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
 										<i class="dropdown icon"></i>
 										<div class="default text">Select Tags</div>
@@ -71,7 +71,6 @@
 											{{/each}}
 										</div>
 									</div>
-									<div data-bind="text: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
 								</td>
 								<td style="border: none;">
 									{{#if _3w_validValuesNotSynced 'tags'}}<i class="repeat loading icon"></i>{{/if}}

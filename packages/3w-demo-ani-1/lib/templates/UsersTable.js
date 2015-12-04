@@ -1,5 +1,10 @@
 /*global Demo:true */
 /*global ThreeWay:true */
+/*global Meteor:true */
+/*global Template:true */
+/*global $:true */
+/*global _:true */
+
 
 if (Meteor.isClient) {
 	var sub = Meteor.subscribe('demo-data');
@@ -9,7 +14,7 @@ if (Meteor.isClient) {
 	});
 
 	Template.UsersTable.onRendered(function() {
-		TEMPLATE_USERSTABLE = Template.instance();
+		//TEMPLATE_USERSTABLE = Template.instance();
 		(function createDropdown() {
 			if (!selectCreated) {
 				var selector = $('.ui.dropdown');
@@ -25,17 +30,21 @@ if (Meteor.isClient) {
 		})();
 	});
 
+	Template.UsersTable.onDestroyed(function () {
+		$('.ui.modal').remove();
+	});
+
 	Template.UsersTable.helpers({
 		ready: () => sub.ready(),
-		data: () => Demo.animat3d[DEMO_KEY].collection.find(),
-		allTags: () => Demo.animat3d[DEMO_KEY].tagCollection.find().fetch().sort(
+		data: () => Demo.collection.find(),
+		allTags: () => Demo.tagCollection.find().fetch().sort(
 			function (a, b) {
 				return a.label.toLowerCase().localeCompare(b.label.toLowerCase());
 			}
 		),
 		getTags: function (tags) {
 			var output = _.map(tags, function (tag) {
-				return Demo.animat3d[DEMO_KEY].tagCollection.findOne(tag);
+				return Demo.tagCollection.findOne(tag);
 			});
 			return output.sort(
 				function (a, b) {
@@ -49,7 +58,7 @@ if (Meteor.isClient) {
 
 	ThreeWay.prepare(Template.UsersTable, {
 		// The relevant Mongo.Collection
-		collection: Demo.animat3d[DEMO_KEY].collection,
+		collection: Demo.collection,
 
 		// Meteor methods for updating the database
 		// The keys being the respective fields/field selectors for the database
@@ -77,8 +86,6 @@ if (Meteor.isClient) {
 		// an array
 		dataTransformToServer: {
 			tags: function(value, vmData) {
-//				console.log('value',value);
-//				console.log('vmData',vmData);
 				var output = (!!value) && value.split(',') || [];
 //				console.log('output', output);
 				return output;
@@ -92,7 +99,6 @@ if (Meteor.isClient) {
 		// an array
 		dataTransformFromServer: {
 			tags: function(arr, doc) {
-//				console.log('arr and doc',arr,doc);
 				var output = arr.join(',');
 //				console.log('output',output);
 				return output;
@@ -124,12 +130,7 @@ if (Meteor.isClient) {
 					'header': 'Delete user ' + name + '?',
 					'content': '<p>You are about to <strong>delete</strong> a wonderful user! Are you sure you want to delete?</p>',
 					'textOk': 'Confirm',
-					'textCancel': 'Cancel',
-					'templateName': 'WhatName',
-					'templateData': {
-						kitty: 'Cathy',
-						hello: 'howdy?'
-					}
+					'textCancel': 'Cancel'
 				}];
 			}
 		},
@@ -138,10 +139,9 @@ if (Meteor.isClient) {
 		preProcessors: {
 			// this takes a string of comma separated tags, splits, trims then
 			// joins them to make the result "more presentable"
-			tagsTextDisplay: x => x,//x => (!x) ? "" : x.split(',').map(x => x.trim()).join(', '),
-			trueIfNonEmpty: x => (!!x) && x.length > 0,
-			grayIfTrue: x => (!!x) ? "#ccc" : "",
-			redIfTrue: x => (!!x) ? "red" : ""
+//			trueIfNonEmpty: x => (!!x) && x.length > 0,
+//			grayIfTrue: x => (!!x) ? "#ccc" : "",
+//			redIfTrue: x => (!!x) ? "red" : ""
 		},
 
 		// (Global) initial values for fields that feature only in the local view
@@ -149,12 +149,11 @@ if (Meteor.isClient) {
 		// Will be overridden by value tags in the rendered template of the form:
 		// <data field="additional" initial-value="view model to view only"></data>
 		viewModelToViewOnly: {
-			"tagsValidationErrorText": ""
 		},
 
 		eventHandlers: {
 			selectUser: function(event, template) {
-				var id = event.target.getAttribute('id').split('-')[1];
+				var id = event.target.getAttribute('data-user-id');
 				console.info('Setting ID to: ' + id);
 
 				// Set time out to allow the effects of setting num to 1 to set in
@@ -173,20 +172,10 @@ if (Meteor.isClient) {
 				$('.ui.modal').modal({
 					closable  : false,
 					onDeny    : function(){
-//						window.alert('Wait not yet!');
 						return true;
 					},
 					onApprove : function() {
-//						window.alert('Approved!');
-						console.log('id',instance._3w_.getId());
-//						console.log('the name', instance._3w_.childDataGet('myName', 'modalChild'));
-						console.log('the descendants', instance._3w_.getAllDescendants_NR());
-						var myWhatName = _.filter(instance._3w_.getAllDescendants_NR(), function (child) {
-							return child.templateType === "Template.WhatName";
-						});
-						console.log('the descendants', myWhatName);
-						console.log('the name', myWhatName[0].instance._3w_.get('myName'));
-						/*var updateMsg = function (msg) {
+						var updateMsg = function (msg) {
 							instance._3w_.set('msg_header',msg.header);
 							instance._3w_.set('msg_content',msg.content);
 						};
@@ -200,22 +189,18 @@ if (Meteor.isClient) {
 									header: 'An error has happened: ',
 									content: error.reason
 								};
-								console.log(msg.header, msg.content);
 								updateMsg(msg);
 							} else {
 								msg = {
 									header: 'Succesfully deleted: ',
 									content: value
 								};
-								console.log(msg.header, msg.content);
-//								instance._3w_.setId('');
 								updateMsg(msg);
 							}
-						});*/
+						});
 					}
 				})
 				.modal('show');
-				/**/
 			}
 		}
 	});

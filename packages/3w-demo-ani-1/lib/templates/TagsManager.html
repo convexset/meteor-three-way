@@ -32,11 +32,10 @@
 			<div class="header" data-bind="html: msg_header"></div>
 			<div data-bind="html: msg_content"></div>
 		</div>
-	<ul>
-		{{#each data}}
-			<span class="ui tag label {{this.color}}">{{this.label}}</span>
-		{{/each}}
-	</ul>
-<!--		<div data-bind="text: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>-->
+		<ul>
+			{{#each data}}
+				<span class="ui tag label {{this.color}}">{{this.label}}</span>
+			{{/each}}
+		</ul>
 	</div>
 </template>
