@@ -1,0 +1,9 @@
+/* CSS declarations go here */
+.ui:not(.tag).label:first-child{
+	margin-left: 2px;
+}
+
+.dev.note{
+	color:darkgray;
+	font-style: oblique;
+}

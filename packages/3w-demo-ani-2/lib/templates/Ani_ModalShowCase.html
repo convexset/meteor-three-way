@@ -1,0 +1,28 @@
+<template name="Ani_ModalShowCase">
+	<table class="ui celled table form">
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>
+					<input style="border: 0; width: 85%;" readonly data-bind="value: modal_name" placeholder="No modal data yet, please click modal button!">
+				</td>
+				<td>
+					<button class="ui orange inverted button" data-bind="event: {click: showModal}">
+						<i class="icon warning"></i>
+						Use modal
+					</button>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+
+<!--	HACK: Helper returns an array of 1 object, each it to keep updating the values reactively -->
+	{{#each modalWindowHelper}}
+		{{> _Modal _3w_additionalViewModelOnlyData=this _3w_name='modalChild'}}
+	{{/each}}
+</template>
