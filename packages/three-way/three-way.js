@@ -2694,7 +2694,13 @@ if (Meteor.isClient) {
 			var instance = this;
 			var threeWay = instance[THREE_WAY_NAMESPACE];
 			var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
-			threeWay.doRebindOperations = false;
+
+			if (IN_DEBUG_MODE_FOR('observer')) {
+				console.log('[ThreeWay] onDestroy: Stopping current observer', instance);
+			}
+			if (!!threeWay.observer) {
+				threeWay.observer.stop();
+			}
 
 			if (IN_DEBUG_MODE_FOR('tracker')) {
 				console.log('[ThreeWay] onDestroy: Stopping computations', instance);
