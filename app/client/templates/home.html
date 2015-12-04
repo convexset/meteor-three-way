@@ -1,0 +1,30 @@
+<template name="Home">
+	<h1>ThreeWay Demo</h1>
+
+	<div class="pseudo-input">
+		<code>meteor add convexset:three-way</code>
+	</div>
+
+
+	<div class="column" style="text-align: justify;">
+		<p>
+			<a href="https://github.com/convexset/meteor-three-way" target="_blank"><code>ThreeWay</code></a> is a <a href="https://www.meteor.com" target="_blank">Meteor</a> package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package was to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: data transformations, vertical/lateral data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package).
+		</p>
+
+		<p>
+			Database to view model connectivity is provided by Meteor methods (with signatures <code>function(id, value)</code>), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature <code>function(id, value, param1, param2, ...)</code>). The user is responsible for ensuring the right subscriptions are in place so <code>ThreeWay</code> can retrieve records from the local database cache.
+		</p>
+
+		<p>
+			The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
+		</p>
+
+		<p>
+			Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html)). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
+		</p>
+
+		<p>
+			Documentation is available on <a href="https://github.com/convexset/meteor-three-way" target="_blank">GitHub</a> and <a href="https://atmospherejs.com/convexset/three-way" target="_blank">Atmosphere</a>.
+		</p>
+	</div>
+</template>
