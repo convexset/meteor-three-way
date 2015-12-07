@@ -2667,11 +2667,12 @@ if (Meteor.isClient) {
 			//////////////////////////////////////////////////////////////////
 			// Set initial data source
 			//////////////////////////////////////////////////////////////////
-			if (!!instance.data && !!instance.data._3w_id) {
+			if (!!instance.data && (!!instance.data._3w_id || !!instance.data._id)) {
+				var _id_fromDataContext = instance.data._3w_id || instance.data._id;
 				if (IN_DEBUG_MODE_FOR('new-id')) {
-					console.log("[new-id] Setting initial id for instance of " + thisTemplateName + " to " + instance.data._3w_id);
+					console.log("[new-id] Setting initial id for instance of " + thisTemplateName + " to " + _id_fromDataContext);
 				}
-				threeWayMethods.setId(instance.data._3w_id);
+				threeWayMethods.setId(_id_fromDataContext);
 			}
 
 

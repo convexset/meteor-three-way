@@ -136,8 +136,19 @@ instance._3w_setId(_id);
 ```html
 {{> DemoThreeWay _3w_id="the-relevant-item-id"}}
 ```
+or
+```html
+{{> DemoThreeWay _id=this._id}}
+```
+or 
+```html
+<!-- assuming this is an object with an _id property -->
+{{> DemoThreeWay this}}
+```
 
 ... and things will happen.
+
+**Note:** When a document `_id` is passed in through the data context, `_3w_id` takes precedence over `_id`.
 
 Here is a sample data-binding string:
 ```html
