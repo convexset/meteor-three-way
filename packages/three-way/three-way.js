@@ -768,6 +768,10 @@ if (Meteor.isClient) {
 						// Don't use threeWayMethods.set because it calls this method
 						threeWay.data.set(match.fieldPath, curr_v);
 						threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
+					} else {
+						// Reasonably decent garbage collection
+						threeWay.data.set(match.fieldPath, undefined);
+						threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
 					}
 				});
 				parentFields.forEach(function(match) {
@@ -775,6 +779,9 @@ if (Meteor.isClient) {
 					var parentValue = threeWayMethods.get_NR(match.fieldPath);
 					var thisSubValue = parentValue;
 					for (var k = matchSplit.length; k < fieldSplit.length - 1; k++) {
+						if (typeof thisSubValue[fieldSplit[k]] === "undefined") {
+							thisSubValue[fieldSplit[k]] = {};
+						}
 						thisSubValue = thisSubValue[fieldSplit[k]];
 					}
 					thisSubValue[fieldSplit[fieldSplit.length - 1]] = value;
@@ -796,11 +803,23 @@ if (Meteor.isClient) {
 						var doc = threeWay.collection.findOne(threeWay.id.get());
 						var miniMongoValue = doc;
 						var fieldNameSplit = fieldName.split('.');
+
+						var success = true;
+						var f;
 						while (fieldNameSplit.length > 0) {
-							miniMongoValue = miniMongoValue[fieldNameSplit.shift()];
+							f = fieldNameSplit.shift();
+							if (typeof miniMongoValue[f] === "undefined") {
+								success = false;
+								break;
+							}
+							miniMongoValue = miniMongoValue[f];
 						}
-						var miniMongoValueTransformed = options.dataTransformFromServer[threeWay.fieldMatchParams[fieldName].match](miniMongoValue, doc);
-						isUpdated = _.isEqual(miniMongoValueTransformed, threeWayMethods.get(fieldName));
+						if (success) {
+							var miniMongoValueTransformed = options.dataTransformFromServer[threeWay.fieldMatchParams[fieldName].match](miniMongoValue, doc);
+							isUpdated = _.isEqual(miniMongoValueTransformed, threeWayMethods.get(fieldName));
+						} else {
+							isUpdated = false;
+						}
 					});
 					threeWay.__serverIsUpdated.set(fieldName, isUpdated);
 				}
