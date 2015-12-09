@@ -151,7 +151,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 		})
 	);
 
-	return function setUpBinding(curr_f) {
+	return function setUpVMToDBBinding(curr_f) {
 		if (typeof threeWay._dataUpdateComputations[curr_f] === "undefined") {
 			threeWay._dataUpdateComputations[curr_f] = Tracker.autorun(function() {
 				var value = threeWay.data.get(curr_f);

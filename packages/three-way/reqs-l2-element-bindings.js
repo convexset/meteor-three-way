@@ -12,11 +12,12 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 	var updateRelatedFields = ThreeWayDependencies.instanceUtils.generateUpdateRelatedFieldsFunction(options, instance);
 	var updateServerUpdatedStatus = ThreeWayDependencies.instanceUtils.generateUpdateServerUpdatedStatusFunction(options, instance);
-	var doFieldMatch = threeWay.__doFieldMatch;
+	var doFieldMatch = threeWayMethods._doFieldMatch;
 	var processInTemplateContext = threeWayMethods._processInTemplateContext;
 
 	if (typeof doFieldMatch === "undefined") {
-		throw new Meteor.Error("missing-function", "threeWay.__doFieldMatch should have been defined");
+		// for debugging in future... just in case...
+		throw new Meteor.Error("missing-function", "threeWayMethods._doFieldMatch should have been defined");
 	}
 
 	return function bindElem(elem) {
