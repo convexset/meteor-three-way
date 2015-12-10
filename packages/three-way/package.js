@@ -26,6 +26,7 @@ Package.onUse(function(api) {
 
 	api.addFiles([
 		'reqs-l2-element-bindings.js',
+		'reqs-l2-data-observer.js',
 		'reqs-l2-dom-observer.js',
 		'reqs-l2-reload.js',
 		'reqs-l2-three-way-methods.js',
