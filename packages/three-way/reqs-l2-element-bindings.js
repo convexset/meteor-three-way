@@ -118,7 +118,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			};
 
 			// Check value and checked for multivariate binding
-			['value', 'checked'].forEach(function(bindingType) {
+			['value', 'checked', 'focus'].forEach(function(bindingType) {
 				if (!!elemBindings.bindings[bindingType]) {
 					var pipelineSplit = elemBindings.bindings[bindingType].source.split('|').map(x => x.trim()).filter(x => x !== "");
 					var source = pipelineSplit[0];
@@ -605,6 +605,26 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					}
 					$(elem).text(text);
 				}
+			}));
+			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+		}
+
+		//////////////////////////////////////////////////////
+		// .process
+		//////////////////////////////////////////////////////
+		if (!!elemBindings.bindings.process) {
+			threeWay.computations.push(Tracker.autorun(function(c) {
+				var pipelineSplit = elemBindings.bindings.process.source.split('|').map(x => x.trim()).filter(x => x !== "");
+				var source = pipelineSplit[0];
+				var mappings = pipelineSplit.splice(1);
+
+				if (c.firstRun) {
+					if (IN_DEBUG_MODE_FOR('process')) {
+						console.log("[process] Preparing \"process\" binding with " + source + " for", elem);
+					}
+				}
+
+				processInTemplateContext(source, mappings, elem);
 			}));
 			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 		}
