@@ -1,0 +1,36 @@
+<template name="Home">
+	<div class="column" style="text-align: justify;">
+		<h1>ThreeWay</h1>
+
+		<a href="https://atmospherejs.com/convexset/three-way" target=_blank><code>ThreeWay</code></a> is a <a href="https://www.meteor.com" target=_blank>Meteor</a> package providing a "reasonably fully featured" three-way data-binding solution that is very Blaze friendly.
+
+		<h3>Installation / Getting <code>ThreeWay</code></h3>
+		In the console:
+		<pre>meteor add convexset:three-way</pre>
+
+		Available on <a href="https://atmospherejs.com/convexset/three-way" target=_blank>Atmosphere</a>, and also on <a href="https://github.com/convexset/meteor-three-way" target=_blank>GitHub</a>.
+
+		<h3>Description</h3>
+		{{> ThreeWayDescription}}
+
+		<h3>The Architecture of <code>ThreeWay</code> in Bad Drawings</h3>
+		<p>
+			<img style="width: 100%;" src="https://s3-ap-southeast-1.amazonaws.com/convexset/development/three-way/overview_3.jpg">
+		</p>
+		
+		<p></p>
+	</div>
+</template>
+
+<template name="ThreeWayDescription">
+{{#markdown}}
+`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package).
+
+Database to view model connectivity is provided by Meteor methods (with signatures `function(id, value)`), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature `function(id, value, param1, param2, ...)`).
+The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
+
+The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
+
+Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with Semantic UI dropdowns and certain animations). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
+{{/markdown}}
+</template>

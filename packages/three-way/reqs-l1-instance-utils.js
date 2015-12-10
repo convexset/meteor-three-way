@@ -104,6 +104,10 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 /////////////////////////////////////////////////////////////////////
 // Set up binding for field (VM to DB)
 /////////////////////////////////////////////////////////////////////
+
+// TODO: ensure this is called at most once per instance
+// without leaving something that cannot be garbage collected post destroy
+
 PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils, 'generateSetUpVMToDBBindingFunction', function generateSetUpVMToDBBindingFunction(options, instance) {
 	var threeWay = instance[THREE_WAY_NAMESPACE];
 	var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
@@ -255,6 +259,10 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 /////////////////////////////////////////////////////////////////////
 // Set up validation
 /////////////////////////////////////////////////////////////////////
+
+// TODO: ensure this is called at most once per instance
+// without leaving something that cannot be garbage collected post destroy
+
 PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils, 'generateValidationFunction', function generateValidationFunction(options, instance) {
 	var threeWay = instance[THREE_WAY_NAMESPACE];
 	var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];

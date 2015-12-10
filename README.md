@@ -7,7 +7,7 @@ The user is responsible for ensuring the right subscriptions are in place so `Th
 
 The data binding responds to changes in the DOM. So Blaze can be used to generate and change data bindings.
 
-Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) and certain animations). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
+Presentation of data is facilitated by "pre-processors" which map values (display-only bindings) and may do DOM manipulation when needed (e.g.: with Semantic UI dropdowns and certain animations). This feature allows for great flexibility in displaying data, enabling one to "easily" (and typically declaratively) translate data to display.
 
 ## Table of Contents
 
@@ -953,7 +953,7 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_validValuesSynced(prop)`: `true` if synced or data is not valid. (See [previous section](#instance-methods).)
 
-- `_3w_validValuesNotSynced(prop)`: `true` if data is not invalid (ok, valid) and not synced. (See [previous section](#instance-methods).)
+ - `_3w_validValuesNotSynced(prop)`: `true` if data is not invalid (ok, valid) and not synced. (See [previous section](#instance-methods).)
 
  - `_3w_expandParams`: See [previous section](#instance-methods).
 
@@ -1125,7 +1125,7 @@ Recall that one may customize ids manually by passing `_3w_name` into the data c
 One may pass `_3w_ignoreReloadData` (boolean) into the data context of each template instance to indicate whether to ignore migrated data (`true` to ignore).
 
 
-### Debug Mode
+### Debug
 
 `ThreeWay.DEBUG_MODE.set(v)` - Turns on debug mode if `v` is `true` and turns it off otherwise 
 
@@ -1156,8 +1156,22 @@ One may pass `_3w_ignoreReloadData` (boolean) into the data context of each temp
  - `'class'`
  - `'event'`
 
-
 The above is obtainable from `ThreeWay.DEBUG_MODE.MESSAGE_HEADINGS`.
+
+`ThreeWay.utils.allInstances`: a description of all instances an array of instances as follows
+```javascript
+{
+    instanceId: ...,
+    dataId: ...,
+    data: ...,
+    template: instance,
+    templateType: instance.view.name,
+}
+```
+
+`ThreeWay.utils.allInstancesByTemplateType`: `ThreeWay.utils.allInstances` grouped by template type (name)
+
+
 
 ## Extras
 

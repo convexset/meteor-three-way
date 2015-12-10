@@ -1,0 +1,45 @@
+<template name="ExamplesViaPlugins">
+    <div class="column" style="text-align: justify;">
+        <h3>Contributing an Example</h3>
+
+        <p>
+            Do feel free to contribute an Example. All demos are packages that are registered using a simple <a href="https://atmospherejs.com/convexset/plugins" target=_blank>framework for plugins</a>.
+        </p>
+
+        <h3>Writing an Example</h3>
+
+        <p>
+            To create an example, simply do the folowing:
+            <ol>
+                <li>Create a package (with no exports)</li>
+                <li>Place with your entire example in a template</li>
+                <li>Add the following package: <a href="https://atmospherejs.com/convexset/plugins" target=_blank><code>convexset:plugins</code></a></li>
+                <li>Include the following code and with information about your example</li>
+            </ol>
+        </p>
+
+<pre>Plugins.register('ThreeWay Examples Namespace', {
+    methods: {
+        info: function() {
+            return {
+                name: 'Example Name',
+                description: 'Description of your package.',
+                routeName: 'userName-routeName',
+                templateName: 'Example_Username_YourExampleName',
+            };
+        },
+    },
+});</pre>
+
+        <p>
+            Incidentally, here is a some information on <a href="https://themeteorchef.com/recipes/writing-a-package/" target=_blank>writing and testing Meteor packages</a>.
+        </p>
+
+        <h3>Naming Conventions</h3>
+
+        <p>
+            Please do "namespace" your examples to avoid any conflicts. The naming convention is suggested in the code sample above.
+            This is especially important for CSS. Try your best to use a <code>username-class</code> naming convention. =)
+        </p>
+    </div>
+</template>

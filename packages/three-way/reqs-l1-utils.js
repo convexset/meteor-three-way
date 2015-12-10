@@ -1,9 +1,32 @@
 /* global ThreeWayDependencies: true */
 /* global PackageUtilities: true */
+
 if (typeof ThreeWayDependencies === "undefined") {
 	ThreeWayDependencies = {};
 }
 ThreeWayDependencies.utils = {};
+
+//////////////////////////////////////////////////////////////////////
+// All Instances
+//////////////////////////////////////////////////////////////////////
+ThreeWayDependencies._allThreeWayInstances = [];
+PackageUtilities.addPropertyGetter(ThreeWayDependencies.utils, 'allInstances', () => ThreeWayDependencies._allThreeWayInstances.map(function(instance) {
+	var instanceId, dataId;
+	Tracker.nonreactive(function() {
+		instanceId = instance._3w_.get3wInstanceId();
+		dataId = instance._3w_.getId();
+	});
+	return {
+		instanceId: instanceId,
+		dataId: dataId,
+		data: instance._3w_.getAll_NR(),
+		template: instance,
+		templateType: instance.view.name,
+	};
+}));
+
+PackageUtilities.addPropertyGetter(ThreeWayDependencies.utils, 'allInstancesByTemplateType', () => _.groupBy(ThreeWayDependencies.utils.allInstances, item => item.templateType));
+
 
 //////////////////////////////////////////////////////////////////////
 // Various Utilities

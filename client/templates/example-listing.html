@@ -1,0 +1,20 @@
+<template name="ExamplesListing">
+	<div class="column" style="text-align: justify;">
+		<h1>Examples Listing</h1>
+		{{#each listThreeWayExamples}}
+			<h3><a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a></h3>
+			<p>{{description}}</p>
+		{{/each}}
+
+		<h1>To Do List</h1>
+		<table>
+			{{#each exampleToDos}}
+				<tr>
+					<td style="vertical-align: middle;"><input type="checkbox" {{isChecked this}} disabled>&nbsp;&nbsp;</td>
+					<td>{{item}}</td>
+				</tr>
+			{{/each}}
+		</table>
+		
+	</div>
+</template>

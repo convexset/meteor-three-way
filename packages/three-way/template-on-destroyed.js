@@ -48,6 +48,12 @@ ThreeWayDependencies.templateOnDestroyed = function(options) {
 			delete ultimateAncestor[THREE_WAY_NAMESPACE].familyTreeMembers[myId];
 		}
 
+		// Remove from ThreeWayDependencies._allThreeWayInstances
+		var instanceIdx = ThreeWayDependencies._allThreeWayInstances.indexOf(instance);
+		if (instanceIdx !== -1) {
+			ThreeWayDependencies._allThreeWayInstances.splice(instanceIdx, 1);
+		}
+
 		ThreeWayDependencies.reload._deregisterForReload(myId, instance);
 	};
 };

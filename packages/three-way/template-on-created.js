@@ -16,6 +16,9 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 		instance[THREE_WAY_NAMESPACE] = ThreeWayDependencies.utils.threeWayDefaultItem(options);
 		ThreeWayDependencies.createMethods(options, instance);
 
+		// Register on ThreeWayDependencies._allThreeWayInstances
+		ThreeWayDependencies._allThreeWayInstances.push(instance);
+
 		var threeWay = instance[THREE_WAY_NAMESPACE];
 		var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
 

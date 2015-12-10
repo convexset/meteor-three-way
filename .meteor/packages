@@ -15,26 +15,26 @@ tracker                 # Meteor's client-side reactive programming library
 standard-minifiers      # JS/CSS minifiers run for production mode
 es5-shim                # ECMAScript 5 compatibility for older browsers.
 ecmascript              # Enable ECMAScript2015+ syntax in app code
-ejson
 
-insecure
+markdown				# Yep... Parse markdown...
 
+# Semantic UI
 semantic:ui
 flemay:less-autoprefixer
 
-anti:fake
-reactive-var
-reactive-dict
-
+# Routing
 kadira:blaze-layout
 kadira:flow-router
 arillo:flow-router-helpers
 
-mrt:githubreadme
-
-convexset:template-helpers
+# Other Packages
 convexset:three-way
+convexset:template-helpers
 convexset:package-utils
 convexset:flow-router-tree
-anima-t3d:3w-demo-ani-1
-anima-t3d:3w-demo-ani-2
+convexset:plugins
+
+# Examples
+convexset:three-way--the-first-demo
+anima-t3d:3w-example-ani-1
+anima-t3d:3w-example-ani-2

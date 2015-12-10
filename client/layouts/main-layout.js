@@ -1,3 +1,5 @@
+/* global Plugins: true */
+
 Template.MainLayout.onRendered(function() {
 //TODO: change menu-clicker to proper binding
 	$('.ui.sidebar').first()
@@ -9,4 +11,3 @@ Template.MainLayout.onRendered(function() {
 		}
 	);
 });
-

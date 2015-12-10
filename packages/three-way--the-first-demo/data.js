@@ -9,8 +9,8 @@ DataThing.prototype = {
 	someMethod: () => "lalalala"
 };
 
-var myDemo = {
-	collection: new Mongo.Collection('data', {
+Demo = {
+	collection: new Mongo.Collection('data-original-demo-thing', {
 		transform: (doc) => new DataThing(doc)
 	}),
 	fields: [
@@ -36,6 +36,3 @@ var myDemo = {
 		'opt3': 'XYZ',
 	},
 };
-
-Demo = {};
-Demo = _.extend(Demo,myDemo);

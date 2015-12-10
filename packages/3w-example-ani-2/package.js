@@ -1,8 +1,8 @@
 Package.describe({
-	name: 'anima-t3d:3w-demo-ani-1',
+	name: 'anima-t3d:3w-example-ani-2',
 	version: '1.0.0',
 	// Brief, one-line summary of the package.
-	summary: 'Contains the code for demo 1',
+	summary: 'Contains the code for demo 2',
 	// URL to the Git repository containing the source code for this package.
 	git: '',
 	// By default, Meteor will default to using README.md for documentation.
@@ -26,24 +26,26 @@ Package.onUse(function(api) {
 		'anti:fake',
 		'anima-t3d:3w-ui-modal'
 	]);
+	api.use('convexset:plugins@0.1.0', 'client');
+
 	api.addFiles([
 		'lib/threeway.js',
 		'lib/threeway.html',
 		'lib/threeway.css',
 		'lib/lib/data.js'
-	],
-	[
+	], [
 		'client',
 		'server'
 	]);
 
 	api.addFiles([
-		'lib/templates/TagsManager.html',
-		'lib/templates/TagsManager.js',
-		'lib/templates/UsersTable.html',
-		'lib/templates/UsersTable.js'
-	],
-	'client'
+			'plugin-setup.js',
+			'lib/templates/Ani_ModalShowCase.html',
+			'lib/templates/Ani_ModalShowCase.js',
+			'lib/templates/Ani_WhatName.html',
+			'lib/templates/Ani_WhatName.js'
+		],
+		'client'
 	);
 });
 
@@ -52,12 +54,11 @@ Package.onTest(function(api) {
 		'ecmascript',
 		'templating',
 		'tinytest',
-		'anima-t3d:3w-demo-ani-1'
+		'anima-t3d:3w-example-ani-2'
 	]);
 	api.addFiles([
 		'tests/client/client-tests.js'
-	],
-	[
+	], [
 		'client'
 	]);
 });
