@@ -67,7 +67,22 @@ Meteor.methods({
 		return Demo.collection.update(id, {
 			$set: updater
 		});
-	}
+	},
+	// Used for testing overlapping bindings
+	'update-personal.otherArr': function(id, value) {
+		return Demo.collection.update(id, {
+			$set: {
+				'personal.otherArr': value
+			}
+		});
+	},
+	'update-personal.otherArr.0': function(id, value) {
+		return Demo.collection.update(id, {
+			$set: {
+				'personal.otherArr.0': value
+			}
+		});
+	},
 });
 
 // Init. data
