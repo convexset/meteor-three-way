@@ -1,7 +1,7 @@
 Package.describe({
-	name: 'convexset:three-way--the-first-demo',
+	name: 'convexset:three-way--the-original-demo',
 	version: '0.0.1',
-	summary: 'three-way--the-first-demo',
+	summary: 'three-way--the-original-demo',
 });
 
 
@@ -20,7 +20,7 @@ Package.onUse(function(api) {
 		[
 			'reactive-var',
 			'blaze-html-templates',
-			'convexset:three-way@0.2.11',
+			'convexset:three-way@0.2.13',
 			'convexset:template-helpers@0.1.13',
 			'convexset:plugins@0.1.0',
 		],

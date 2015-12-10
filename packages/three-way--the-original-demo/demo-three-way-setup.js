@@ -47,7 +47,7 @@ ThreeWay.prepare(Template.ThreeWayOriginalDemo, {
 
 	// Inject default values if not in database record
 	injectDefaultValues: {
-		name: 'Unnamed Person'
+		name: 'Unnamed Person',
 	},
 
 	// Transformations from the server to the view model

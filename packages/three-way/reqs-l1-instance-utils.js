@@ -34,12 +34,11 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 			if (noTraversalError) {
 				// Don't use threeWayMethods.set because it calls this method
 				threeWay.data.set(match.fieldPath, curr_v);
-				threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
 			} else {
 				// Reasonably decent garbage collection
 				threeWay.data.set(match.fieldPath, undefined);
-				threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
 			}
+			threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
 		});
 		parentFields.forEach(function(match) {
 			var matchSplit = match.fieldPath.split('.');
@@ -169,6 +168,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 				}
 
 				// Skip update if subsidiary update
+				var equalToRecentDBEntry = _.isEqual(value, threeWay.__mostRecentDatabaseEntry[curr_f]);
 				var skipUpdate = !!threeWay.__updatesToSkipDueToRelatedObjectUpdate[curr_f];
 				if (!!skipUpdate) {
 					delete threeWay.__updatesToSkipDueToRelatedObjectUpdate[curr_f];
@@ -249,6 +249,19 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 				} else {
 					if (IN_DEBUG_MODE_FOR('db')) {
 						console.log('[db|update] No update for ' + curr_f + '; value:', value);
+
+						if(!__id) {
+							console.log('\tReason: No ID');
+						}
+						if (skipUpdate) {
+							console.log('\tReason: Skip Due To Related Object Update');
+						}
+						if(!threeWay.__idReady) {
+							console.log('\tReason: ID not ready');
+						}
+						if (equalToRecentDBEntry) {
+							console.log('\tReason: Equal to recent DB entry');
+						}
 					}
 				}
 			});

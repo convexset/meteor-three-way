@@ -20,7 +20,7 @@ Demo = {
 		'notes',
 		'tags',
 		'personal.someArr.*',
-		'personal.otherArr.*.*'
+		'personal.otherArr.*.*',
 	],
 	allTags: ['tag1', 'tag2', 'tag3', 'tag4', 'tag5'],
 	ageRanges: {

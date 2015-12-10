@@ -70,6 +70,11 @@ Meteor.methods({
 	},
 	// Used for testing overlapping bindings
 	'update-personal.otherArr': function(id, value) {
+		var myFieldName = 'update-personal.otherArr';
+		while (myFieldName.length < 40) {
+			myFieldName += " ";
+		}
+		console.log(myFieldName, id, '\t', value);
 		return Demo.collection.update(id, {
 			$set: {
 				'personal.otherArr': value
@@ -77,6 +82,11 @@ Meteor.methods({
 		});
 	},
 	'update-personal.otherArr.0': function(id, value) {
+		var myFieldName = 'update-personal.otherArr.0';
+		while (myFieldName.length < 40) {
+			myFieldName += " ";
+		}
+		console.log(myFieldName, id, '\t', value);
 		return Demo.collection.update(id, {
 			$set: {
 				'personal.otherArr.0': value

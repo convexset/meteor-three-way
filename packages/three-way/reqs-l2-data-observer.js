@@ -95,8 +95,7 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 								threeWay._focusedFieldUpdatedOnServer.set(curr_f, true);
 								options.updateOfFocusedFieldCallback(threeWay.fieldMatchParams[focusedField], newValue, currentValue);
 							} else {
-								// not using threeWayMethods.set to avoid redundancy
-								threeWay.data.set(curr_f, newValue);
+								threeWayMethods.set(curr_f, newValue);
 								threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 							}
 							threeWay.__mostRecentDatabaseEntry[curr_f] = newValue;
@@ -206,6 +205,13 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 				threeWay.__idReady = true;
 				descendInto(fields, doc, true);
 				injectDefaultValues();
+
+				// This field should be cleared because updateRelatedFields
+				// will mark certain fields as having "related updates"
+				// spuriously when threeWayMethods.set is used with overlapping
+				// field definitions; But we can conclude that at this point
+				// no updates are pending
+				threeWay.__updatesToSkipDueToRelatedObjectUpdate = {};
 			},
 			changed: function(id, fields) {
 				var doc = threeWay.collection.findOne(id, {
@@ -216,6 +222,9 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 				}
 				descendInto(fields, doc, false);
 				injectDefaultValues();
+
+				// See similar comment above in "added" hook
+				threeWay.__updatesToSkipDueToRelatedObjectUpdate = {};
 			},
 			removed: function(id) {
 				if (IN_DEBUG_MODE_FOR('observer')) {
