@@ -11,6 +11,7 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 }) {
 	var threeWay = instance[THREE_WAY_NAMESPACE];
 	var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
+	var updateRelatedFields = ThreeWayDependencies.instanceUtils.generateUpdateRelatedFieldsFunction(options, instance);
 
 	if (!!_id) {
 		if (IN_DEBUG_MODE_FOR('new-id')) {
@@ -95,7 +96,8 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 								threeWay._focusedFieldUpdatedOnServer.set(curr_f, true);
 								options.updateOfFocusedFieldCallback(threeWay.fieldMatchParams[focusedField], newValue, currentValue);
 							} else {
-								threeWayMethods.set(curr_f, newValue);
+								threeWay.data.set(curr_f, newValue);
+								updateRelatedFields(curr_f, newValue, true);
 								threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 							}
 							threeWay.__mostRecentDatabaseEntry[curr_f] = newValue;

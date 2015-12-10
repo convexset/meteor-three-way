@@ -16,29 +16,33 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 	var threeWay = instance[THREE_WAY_NAMESPACE];
 	var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
 
-	return function updateRelatedFields(fieldName, value) {
+	return function updateRelatedFields(fieldName, value, calledFromObserver = false) {
 		var childFields = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length > fieldName.length) && (match.fieldPath.substr(0, fieldName.length) === fieldName));
 		var parentFields = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length < fieldName.length) && (fieldName.substr(0, match.fieldPath.length + 1) === match.fieldPath + '.'));
 		var fieldSplit = fieldName.split('.');
 		childFields.forEach(function(match) {
 			var matchSplit = match.fieldPath.split('.');
 			var curr_v = value;
-			var noTraversalError = true;
+			var haveTraversalError = false;
 			for (var k = fieldSplit.length; k < matchSplit.length; k++) {
 				curr_v = curr_v[matchSplit[k]];
 				if (typeof curr_v === "undefined") {
-					noTraversalError = false;
+					haveTraversalError = true;
 					break;
 				}
 			}
-			if (noTraversalError) {
-				// Don't use threeWayMethods.set because it calls this method
-				threeWay.data.set(match.fieldPath, curr_v);
-			} else {
+			if (haveTraversalError) {
 				// Reasonably decent garbage collection
-				threeWay.data.set(match.fieldPath, undefined);
+				curr_v = undefined;
 			}
+			// Don't use threeWayMethods.set because it calls this method
+			threeWay.data.set(match.fieldPath, curr_v);
 			threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
+
+			if (calledFromObserver) {
+				// If called from observer, this is the "correct database value"
+				threeWay.__mostRecentDatabaseEntry[match.fieldPath] = curr_v;
+			}
 		});
 		parentFields.forEach(function(match) {
 			var matchSplit = match.fieldPath.split('.');
@@ -55,6 +59,11 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 			// Don't use threeWayMethods.set because it calls this method
 			threeWay.data.set(match.fieldPath, parentValue);
 			threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
+
+			if (calledFromObserver) {
+				// If called from observer, this is the "correct database value"
+				threeWay.__mostRecentDatabaseEntry[match.fieldPath] = value;
+			}
 		});
 	};
 });
