@@ -826,6 +826,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `get(prop)`: gets a property
 
+ - `getWithDefault(prop, defaultValue)`: gets a property and returns `defaultValue` if `undefined`.
+
  - `set(prop, value)`: sets a property
 
  - `get_NR(prop)`: gets a property "non-reactively"
@@ -925,6 +927,8 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `_3w_get`: See [previous section](#instance-methods).
 
+ - `_3w_getWithDefault`: See [previous section](#instance-methods).
+
  - `_3w_getAll`: See [previous section](#instance-methods).
 
  - `_3w_getAll`: See [previous section](#instance-methods).
@@ -1012,6 +1016,28 @@ Pre-processors have method signature `function(value, elem, vmData, dataSourceIn
 Pre-processors are called with `this` bound to template instance, and `Template.instance()` is also accessible. (Note: Be careful of lexically scoped arrow functions that overrides `call`/`apply`/`bind`.)
 
 Pre-processors may be inherited.
+
+#### Pure Processing Bindings
+
+One can data-bind to a sub-object/array/the entire document and pass it through a pre-processor. At times, only side-effects are sought. For this purpose, the `process` binding was created. For example:
+
+```html
+<div data-bind="process: vertices|plotDiagram"></div>
+```
+
+This gives a pre-processor `plotDiagram` the value of `vertices` and the `div` element on which the binding is defined. What follows might be that `plotDiagram` empties out the `div` (via jQuery's `.empty()`) and fills it up with a plot of the vertices. Pure side-effects with no annoying hackery.
+
+Furthermore, for the `process` pre-processor, it will be possible to bind the entire document. Wherein all transformations from MiniMongo will be available.
+
+```html
+<div data-bind="process: *|visualizeDocument"></div>
+```
+
+In addition, one may also bind to the full content of the view-model, wherein data is presented in a "flat" form.
+
+```html
+<div data-bind="process: @|describeViewModelContent"></div>
+```
 
 #### Pre-processor Pipelines in Blaze
 

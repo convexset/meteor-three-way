@@ -252,8 +252,12 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				}
 
 				elemGlobals.suppressChangesToSSOT = true;
-				var value = processInTemplateContext(source, pipeline, elem, false, false);
-				// (..., false, false): helpers not used and pipelines do not manipulate value
+				var value = processInTemplateContext(source, pipeline, elem, {
+					useHelpers: false,
+					processorsMutateValue: false,
+					additionalFailureCondition: () => false,
+					allowWholeDocumentAsSource: false,
+				});  // helpers not used and pipelines do not manipulate value
 
 				// Validate here
 				var isValid = threeWay.validateInput(source, value);
@@ -383,9 +387,12 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				}
 
 				elemGlobals.suppressChangesToSSOT = true;
-				var additionalFailureCondition = (elem.getAttribute('type').toLowerCase() === "radio") ? () => false : v => (typeof v !== "object") || (!(v instanceof Array));
-				var value = processInTemplateContext(source, pipeline, elem, false, false, additionalFailureCondition);
-				// (..., false, false): helpers not used and pipelines do not manipulate value
+				var value = processInTemplateContext(source, pipeline, elem, {
+					useHelpers: false,
+					processorsMutateValue: false,
+					additionalFailureCondition: (elem.getAttribute('type').toLowerCase() === "radio") ? () => false : v => (typeof v !== "object") || (!(v instanceof Array)),
+					allowWholeDocumentAsSource: false,
+				});  // helpers not used and pipelines do not manipulate value
 
 				// Validate here
 				var isValid = threeWay.validateInput(source, value);
@@ -525,8 +532,12 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				}
 
 				elemGlobals.suppressChangesToSSOT = true;
-				var focus = !!processInTemplateContext(source, pipeline, elem, false, false);
-				// (..., false, false): helpers not used and pipelines do not manipulate value
+				var focus = !!processInTemplateContext(source, pipeline, elem, {
+					useHelpers: false,
+					processorsMutateValue: false,
+					additionalFailureCondition: () => false,
+					allowWholeDocumentAsSource: false,
+				});  // helpers not used and pipelines do not manipulate value
 
 				// Validate here
 				var isValid = threeWay.validateInput(source, focus);
@@ -610,7 +621,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		}
 
 		//////////////////////////////////////////////////////
-		// .process
+		// "process"
 		//////////////////////////////////////////////////////
 		if (!!elemBindings.bindings.process) {
 			threeWay.computations.push(Tracker.autorun(function(c) {
@@ -624,7 +635,12 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					}
 				}
 
-				processInTemplateContext(source, mappings, elem);
+				processInTemplateContext(source, mappings, elem, {
+					useHelpers: true,
+					processorsMutateValue: true,
+					additionalFailureCondition: () => false,
+					allowWholeDocumentAsSource: true
+				});
 			}));
 			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 		}

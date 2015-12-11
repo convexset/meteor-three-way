@@ -129,10 +129,10 @@ Meteor.methods({
 							age: Fake.fromArray(ageRangeValues),
 						},
 						someArr: ["" + Math.floor(Math.random() * 10), '!!!', "" + Math.floor(Math.random() * 10)],
-						otherArr: _.range(4).map(function() {
+						otherArr: _.range(2 + Math.round(Math.random() * 5)).map(function() {
 							return {
-								a: "" + Math.floor(10 + Math.random() * 10),
-								b: "" + Math.floor(20 + Math.random() * 10)
+								a: "" + (Math.round(Math.random() * 20 - 10) / 10),
+								b: "" + (Math.round(Math.random() * 20 - 10) / 10)
 							};
 						})
 					},

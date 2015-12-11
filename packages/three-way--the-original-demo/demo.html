@@ -1,4 +1,3 @@
-
 <template name="ThreeWayOriginalDemo_Wrapper">
     {{> ThreeWayOriginalDemo _3w_name='big_daddy_has_an_optional_name'}}
 </template>
@@ -236,7 +235,7 @@
                             </div>
                         </td>
                     </tr>
-                    {{#each range 4}}
+                    {{#each range (length (_3w_getWithDefault 'personal.otherArr' arrayify0Args))}}
                         <tr>
                             <td><strong><code>personal.otherArr[{{this}}]</code></strong></td>
                             <td>
@@ -323,8 +322,11 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
                     <tr>
                         <td><strong>personal.otherArr</strong></td>
                         <td>
-                            <ol start="0">
-                                {{#each range 4}}
+                            <div data-bind="process: personal.otherArr|makeTable"></div>
+                            <pre>&lt;div data-bind=&quot;process: personal.otherArr|makeTable&quot;&gt;&lt;/div&gt;</pre>
+                            <p>The <code>process</code> binding is all about side-effects.</p>
+                            <!-- <ol start="0">
+                                {{#each range (length (_3w_get 'personal.otherArr'))}}
                                     <li>
                                         <ul>
                                             <li>
@@ -337,7 +339,14 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
                                         <br/>
                                     </li>
                                 {{/each}}
-                            </ol>
+                            </ol> -->
+                            <div data-bind="process: *#rotationValue|drawSomething" style="width: 95%"></div>
+                            <p style="text-align: center">Rotation: {{_3w_get 'rotationValue'}} &pi; radians</p>
+                            <input data-bind="value: rotationValue" type="range" style="width: 100%" min="-1" max="1" step="0.01">
+                            <pre>&lt;div data-bind=&quot;process: *#rotationValue|drawSomething&quot; style=&quot;width: 95%&quot;&gt;&lt;/div&gt;</pre>
+                            <p>With <code>process</code> is also possible to bind to the entire document (<code>*</code>) to obtain an object transform and all, or even the entire view model (<code>@</code>) which is a "flattened" object.</p>
+                            <div data-bind="process: @|saySomethingAboutPlot"></div>
+                            <pre>&lt;div data-bind=&quot;process: @|saySomethingAboutPlot&quot;&gt;&lt;/div&gt;</pre>
                         </td>
                     </tr>
                 </table>

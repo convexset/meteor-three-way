@@ -9,6 +9,7 @@ ThreeWayDependencies.templateHelpers = function(options) {
 		_3w_3wInstanceId: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].get3wInstanceId(),
 		_3w_hasData: () => Template.instance()[THREE_WAY_NAMESPACE].hasData.get(),
 		_3w_get: (propName) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].get(propName),
+		_3w_getWithDefault: (propName, defaultValue) => Template.instance()[THREE_WAY_NAMESPACE_METHODS].getWithDefault(propName, defaultValue),
 		_3w_getAll: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].getAll(),
 
 		_3w_display: function _3w_display(displayDescription) {

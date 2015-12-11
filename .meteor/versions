@@ -22,7 +22,7 @@ convexset:match-extensions@0.1.1
 convexset:package-utils@0.1.9
 convexset:plugins@0.1.0
 convexset:template-helpers@0.1.13
-convexset:three-way@0.2.14
+convexset:three-way@0.2.15
 convexset:three-way--the-original-demo@0.0.1
 cosmos:browserify@0.5.1
 ddp@1.2.2

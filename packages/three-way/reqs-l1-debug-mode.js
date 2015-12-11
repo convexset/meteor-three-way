@@ -37,6 +37,7 @@ var DEBUG_MESSAGES = {
 	'attr': false,
 	'class': false,
 	'event': false,
+	'process': false,
 };
 
 IN_DEBUG_MODE_FOR = function IN_DEBUG_MODE_FOR(message_class) {

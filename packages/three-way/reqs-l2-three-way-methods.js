@@ -28,6 +28,13 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		return threeWay.instanceId.get();
 	};
 	threeWayMethods.get = p => threeWay.data.get(p);
+	threeWayMethods.getWithDefault = function(p, defaultValue) {
+		var v = threeWay.data.get(p);
+		if (typeof v === "undefined") {
+			return defaultValue;
+		}
+		return v;
+	};
 	threeWayMethods.set = function(p, v) {
 		threeWay.data.set(p, v);
 		updateRelatedFields(p, v);
@@ -340,17 +347,18 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 
 	////////////////////////////////////////////////////////////
 	// Call helpers and pre-processors in template context
-	threeWayMethods._processInTemplateContext = function processInTemplateContext(source, mappings, elem, useHelpers, processorsMutateValue, additionalFailureCondition) {
+	threeWayMethods._processInTemplateContext = function processInTemplateContext(source, mappings, elem, {
+		useHelpers, processorsMutateValue, additionalFailureCondition, allowWholeDocumentAsSource
+	} = {
+		useHelpers: true,
+		processorsMutateValue: true,
+		additionalFailureCondition: () => false,
+		allowWholeDocumentAsSource: false,
+	}) {
 		var thisTemplate = instance.view.template;
 
-		if (typeof useHelpers === "undefined") {
-			useHelpers = true;
-		}
-		if (typeof processorsMutateValue === "undefined") {
-			processorsMutateValue = true;
-		}
 		if (!_.isFunction(additionalFailureCondition)) {
-			additionalFailureCondition = () => false;
+			throw new Meteor.Error("invalid-input", "additionalFailureCondition should be a function");
 		}
 
 		var value;
@@ -378,6 +386,18 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 						type: 'blaze-helper',
 						name: src
 					});
+				} else if (allowWholeDocumentAsSource && (src === "*")) {
+					_value = threeWay.collection.findOne(threeWay.id.get());
+					dataSourceInfomation.push(_.extend({
+						type: 'document',
+						name: src
+					}, threeWay.fieldMatchParams[src] || {}));
+				} else if (allowWholeDocumentAsSource && (src === "@")) {
+					_value = threeWayMethods.getAll();
+					dataSourceInfomation.push(_.extend({
+						type: 'view-model',
+						name: src
+					}, threeWay.fieldMatchParams[src] || {}));
 				} else {
 					_value = threeWay.data.get(src);
 					dataSourceInfomation.push(_.extend({

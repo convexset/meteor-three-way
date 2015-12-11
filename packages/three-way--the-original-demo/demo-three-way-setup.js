@@ -205,6 +205,107 @@ ThreeWay.prepare(Template.ThreeWayOriginalDemo, {
 		trueIfNonEmpty: x => (!!x) && x.length > 0,
 		grayIfTrue: x => (!!x) ? "#ccc" : "",
 		redIfTrue: x => (!!x) ? "red" : "",
+		makeTable: function(arr, elem) {
+			$(elem).empty();
+			var s = '';
+			s += '<table class="ui celled table">';
+			s += '<thead><tr><th>idx</th><th>a</th><th>b</th></tr></thead>';
+			s += '<tbody>';
+			(_.isArray(arr) ? arr : []).forEach(function (o, idx) {
+				s += '<tr><td>' + idx + '</td><td>' + o.a + '</td><td>' + o.b + '</td></tr>';
+			});
+			s += '</tbody>';
+			s += '</table>';
+			elem.innerHTML = s;
+		},
+		saySomethingAboutPlot: function(vmData, elem) {
+			var arr = vmData['personal.otherArr'] || [];
+			if (arr.length > 1) {
+				elem.innerHTML = "<em>" + arr.length + " points rotated through " + vmData.rotationValue + "&pi; radians" + "</em>";
+			} else {
+				elem.innerHTML = "Not enough points for a plot.";
+			}
+		},
+		drawSomething: function(doc, rotationValue, elem, vmData) {
+			$(elem).empty();
+			var arr = doc.personal.otherArr;
+
+			var angle = Number(vmData.rotationValue) * Math.PI;
+
+			var minA = -1;
+			var minB = -1;
+			var maxA = 1;
+			var maxB = 1;
+			(_.isArray(arr) ? arr : []).forEach(function (o) {
+				if (Number.isNaN(Number(o.a))) {
+					o.a = 10 * Math.random();
+				}
+				if (Number.isNaN(Number(o.b))) {
+					o.b = 10 * Math.random();
+				}
+				var x = Number(o.a);
+				var y = Number(o.b);
+				o.a = x * Math.cos(angle) + y * Math.sin(angle);
+				o.b = -x * Math.sin(angle) + y * Math.cos(angle);
+
+				minA = (o.a < minA) ? o.a : minA;
+				minB = (o.b < minB) ? o.b : minB;
+				maxA = (o.a > maxA) ? o.a : maxA;
+				maxB = (o.b > maxB) ? o.b : maxB;
+			});
+
+			var plotGraph = (_.isArray(arr) ? arr : []).length > 1;
+
+			var canvasContext;
+			var canvasWidth = 200;  // Math.max(200, Math.min(600, elem.parentElement.clientWidth));
+			var canvasHeight = Math.round(((maxB - minB) / (maxA - minA)) * canvasWidth);
+
+			if (plotGraph) {
+				elem.innerHTML = '<canvas width="' + canvasWidth + '" height="' + canvasHeight + '" style="background: #eee;">';
+				canvasContext = $(elem).find('canvas')[0].getContext('2d');
+			}
+
+			function mapX(x) {
+				return Math.round((0.1 + 0.8 * (Number(x) - minA) / (maxA - minA)) * canvasWidth);
+			}
+			function mapY(y) {
+				return Math.round((0.1 + 0.8 * (1 - (Number(y) - minB) / (maxB - minB))) * canvasHeight);
+			}
+
+			function drawLine(x1, y1, x2, y2, color = 'black') {
+				canvasContext.beginPath();
+				canvasContext.moveTo(mapX(x1), mapY(y1));
+				canvasContext.lineTo(mapX(x2), mapY(y2));
+				canvasContext.strokeStyle = color;
+				canvasContext.stroke();
+			}
+
+			function putText(x, y, text, color = 'black', font = "12px Arial") {
+				canvasContext.font = font;
+				canvasContext.fillStyle = color;
+				canvasContext.textAlign = "center";
+				canvasContext.fillText(text, mapX(x), mapY(y));
+			}
+
+			if (plotGraph) {
+
+				drawLine(0, minB, 0, maxB, 'blue');
+				drawLine(minA, 0, maxA, 0, 'blue');
+
+				(_.isArray(arr) ? arr : []).forEach(function (o, idx, thisArr) {
+					if (idx === 0) {
+						return;
+					}
+					var o1 = thisArr[idx - 1];
+					var o2 = thisArr[idx];
+					drawLine(o1.a, o1.b, o2.a, o2.b);
+				});
+
+				(_.isArray(arr) ? arr : []).forEach(function (o, idx) {
+					putText(o.a, o.b, idx, 'red');
+				});
+			}
+		},
 	},
 
 	// (Global) initial values for fields that feature only in the local view
@@ -223,6 +324,7 @@ ThreeWay.prepare(Template.ThreeWayOriginalDemo, {
 		"imgAltText": "Not Found (\'not shouting; blame the pre-processor)",
 		"semanticUIStyling": "yes",
 		"sliderValue": "50",
+		"rotationValue": "0",
 	},
 
 	// Event Handlers for binding

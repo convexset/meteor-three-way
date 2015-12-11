@@ -41,7 +41,7 @@ Template.ExamplesListing.helpers({
 				done: false
 			},
 			{
-				item: "Extravagant Pre-Processor Example: Cytoscape",
+				item: "A Pure Side-effects Pre-Processor Example: Rotate a Canvas Plot",
 				done: false
 			},
 		];
