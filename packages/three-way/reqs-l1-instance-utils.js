@@ -62,7 +62,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 
 			if (calledFromObserver) {
 				// If called from observer, this is the "correct database value"
-				threeWay.__mostRecentDatabaseEntry[match.fieldPath] = value;
+				threeWay.__mostRecentDatabaseEntry[match.fieldPath] = parentValue;
 			}
 		});
 	};
