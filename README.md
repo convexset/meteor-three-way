@@ -1,6 +1,10 @@
 # ThreeWay
 
-`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view. The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package).
+`ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view.
+
+Learn more at the [demo/guide site](https://three-way.meteor.com/).
+
+The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package).
 
 Database to view model connectivity is provided by Meteor methods (with signatures `function(id, value)`), with "interface transforms" for server-to-client and client-to-server. Actually, it is richer than that. One may configure fields for data-binding with wild cards and send the data back with meteor methods that take more arguments (e.g.: methods with signature `function(id, value, param1, param2, ...)`).
 The user is responsible for ensuring the right subscriptions are in place so `ThreeWay` can retrieve records from the local database cache.
@@ -18,7 +22,7 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
 
 
 - [Install](#install)
-- [The Example](#the-example)
+- [The Demo/Guide Site](#the-demoguide-site)
 - [Usage](#usage)
   - [Basic Set Up](#basic-set-up)
   - ["Intermediate-level" Set Up](#intermediate-level-set-up)
@@ -51,6 +55,7 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
     - [Sibling Data](#sibling-data)
   - [Additional Template Helpers](#additional-template-helpers)
   - [Pre-processor Pipelines](#pre-processor-pipelines)
+    - [Pure Processing Bindings](#pure-processing-bindings)
     - [Pre-processor Pipelines in Blaze](#pre-processor-pipelines-in-blaze)
   - [Data Validation](#data-validation)
   - ["Family Access": Ancestor and Descendant Data](#family-access-ancestor-and-descendant-data)
@@ -76,10 +81,11 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
 
 This is available as [`convexset:three-way`](https://atmospherejs.com/convexset/three-way) on [Atmosphere](https://atmospherejs.com/). (Install with `meteor add convexset:three-way`.)
 
-## The Example
+## The Demo/Guide Site
 
-A example is provided.
-It requires [`semantic:ui`](https://atmospherejs.com/semantic/ui) for the multi-select dropdown. Start Meteor, do a trivial edit of `client/lib/semantic-ui/custom.semantic.json`, and save it to generate [Semantic UI](semantic-ui.com).
+The repository contains the source for the [demo/guide site](https://three-way.meteor.com/) as well as the package proper.
+
+The site uses [`semantic:ui`](https://atmospherejs.com/semantic/ui) which requires a bit of initialization. Start Meteor, do a trivial edit of `client/lib/semantic-ui/custom.semantic.json`, and save it to generate [Semantic UI](http://semantic-ui.com/).
 
 It provides a view of the database via an `#each` block iterating over a cursor
 
