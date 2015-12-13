@@ -1159,7 +1159,11 @@ One may pass `_3w_ignoreReloadData` (boolean) into the data context of each temp
 
 ### Debug
 
-`ThreeWay.DEBUG_MODE.set(v)` - Turns on debug mode if `v` is `true` and turns it off otherwise 
+`ThreeWay.DEBUG_MODE.setOn()` - Turns debug mode on
+
+`ThreeWay.DEBUG_MODE.setOff()` - Turns debug mode off
+
+`ThreeWay.DEBUG_MODE.isOn` - Returns whether debug mode is on
 
 `ThreeWay.DEBUG_MODE.selectAll()` - Show all debug messages (initially none)
 

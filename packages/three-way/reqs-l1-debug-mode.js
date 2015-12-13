@@ -45,10 +45,13 @@ IN_DEBUG_MODE_FOR = function IN_DEBUG_MODE_FOR(message_class) {
 };
 
 PackageUtilities.addImmutablePropertyArray(ThreeWayDependencies.debugMode, 'MESSAGE_HEADINGS', _.map(DEBUG_MESSAGES, (v, k) => k));
-PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 'set', function debugModeStatusSet(v) {
-	DEBUG_MODE = !!v;
+PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 'setOn', function debugModeSetOn() {
+	DEBUG_MODE = true;
 });
-PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 'get', function debugModeStatus() {
+PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 'setOff', function debugModeSetOff() {
+	DEBUG_MODE = false;
+});
+PackageUtilities.addPropertyGetter(ThreeWayDependencies.debugMode, 'isOn', function debugModeStatus() {
 	return DEBUG_MODE;
 });
 PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 'selectAll', function debugModeSelectAll() {
