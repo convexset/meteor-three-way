@@ -1,5 +1,6 @@
 /* global FlowRouterTree: true */
 /* global listThreeWayExamples: true */
+/* global listThreeWayGuideItems: true */
 
 var root = FlowRouterTree.createNode({
 	name: 'rootNode',
@@ -51,18 +52,45 @@ FlowRouterTree.createNode({
 ///////////////////////////////////////////////////////////////////////////////
 // Examples
 ///////////////////////////////////////////////////////////////////////////////
-var examples = FlowRouterTree.createNode({
+var guideAndExamplesListing = FlowRouterTree.createNode({
 	parent: root,
-	name: 'examplesListing',
-	description: 'A Listing of Examples',
-	path: 'examples',
+	name: 'guideAndExamplesListing',
+	description: 'A Listing of Guide Items and Examples',
+	path: 'guide-and-examples-listing',
 	params: {
-		content: 'ExamplesListing'
+		content: 'guideAndExamplesListing'
 	},
+});
+
+var guide = FlowRouterTree.createNode({
+	parent: guideAndExamplesListing,
+	name: 'guide',
+	description: 'A Listing of Guide Items and Examples',
+	path: 'guide',
+	providesParentRoutePrefix: true
+});
+var examples = FlowRouterTree.createNode({
+	parent: guideAndExamplesListing,
+	name: 'examples',
+	description: 'A Listing of Guide Items and Examples',
+	path: 'examples',
 	providesParentRoutePrefix: true
 });
 
 // Create routes from plugins
+listThreeWayGuideItems()
+	.forEach(function(pluginInfo) {
+		FlowRouterTree.createNode({
+			parent: guide,
+			name: pluginInfo.routeName,
+			description: pluginInfo.name,
+			path: pluginInfo.routeName,
+			params: {
+				content: pluginInfo.templateName
+			},
+		});
+	});
+	
 listThreeWayExamples()
 	.forEach(function(pluginInfo) {
 		FlowRouterTree.createNode({

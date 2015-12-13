@@ -1,12 +1,14 @@
 /* global Plugins: true */
 
-Plugins.register('ThreeWay Examples Namespace', {
+var THREEWAY_GUIDE_NAMESPACE = "ThreeWay Guide Namespace";
+
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Basics (View Model Only)',
+                name: 'Basics (View Model Only)',
                 description: 'View to view model (two-way) data binding. Bindings: value, checked, text, html',
-                routeName: 'guide-basics',
+                routeName: 'basics',
                 templateName: 'ThreeWayGuide_BasicsVMOnly_Wrapper',
                 order: 1,
             };
@@ -14,13 +16,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Three-Way Data-Binding Proper',
+                name: '(Coming Soon) Three-Way Data-Binding Proper',
                 description: 'View to view model to database (three-way) data binding. Bindings via wild-cards.',
-                routeName: 'guide-three-way-proper',
+                routeName: 'three-way-proper',
                 templateName: 'ThreeWayGuide_ThreeWay_Wrapper',
                 order: 2,
             };
@@ -28,13 +30,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: A Few More Bindings',
-                description: 'More Bindings: style, class, attr, visible, disabled, focus, event',
-                routeName: 'guide-more-bindings',
+                name: '(Coming Soon) A Few More Bindings',
+                description: 'More Bindings: style, class, attr, visible, disabled, focus, event; Multivariate bindings.',
+                routeName: 'more-bindings',
                 templateName: 'ThreeWayGuide_MoreBindings_Wrapper',
                 order: 3,
             };
@@ -42,13 +44,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Data Validation',
+                name: '(Coming Soon) Data Validation',
                 description: 'More Bindings: style, class, attr, visible, disabled, focus, event',
-                routeName: 'guide-data-validation',
+                routeName: 'data-validation',
                 templateName: 'ThreeWayGuide_DataValidation_Wrapper',
                 order: 4,
             };
@@ -56,13 +58,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Using Pre-Processors',
+                name: '(Coming Soon) Declarative Data Display: Pre-Processors',
                 description: 'Pre-processors for displaying data and (necessary evil) side-effects for HTML components that require it',
-                routeName: 'guide-pre-processors',
+                routeName: 'pre-processors',
                 templateName: 'ThreeWayGuide_PreProcessors_Wrapper',
                 order: 5,
             };
@@ -70,13 +72,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Family Data Access',
+                name: '(Coming Soon) Family Data Access',
                 description: 'ThreeWay instances are connected in family trees and can access each others\' data',
-                routeName: 'guide-family-data-access',
+                routeName: 'family-data-access',
                 templateName: 'ThreeWayGuide_FamilyDataAccess_Wrapper',
                 order: 6,
             };
@@ -84,13 +86,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Dynamic Data-binding',
+                name: '(Coming Soon) Dynamic Data-binding',
                 description: 'Dynamic Data-binding and Usage with Family Trees',
-                routeName: 'guide-dynamic-data-binding',
+                routeName: 'dynamic-data-binding',
                 templateName: 'ThreeWayGuide_DynamicDataBinding_Wrapper',
                 order: 7,
             };
@@ -98,13 +100,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Reload and Migration',
+                name: '(Coming Soon) Reload and Migration',
                 description: 'Reload and View Model Data Persistence',
-                routeName: 'guide-reload',
+                routeName: 'reload',
                 templateName: 'ThreeWayGuide_Reload_Wrapper',
                 order: 8,
             };
@@ -112,13 +114,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Data Synchronization Feedback',
+                name: '(Coming Soon) Data Synchronization Feedback',
                 description: 'Data Synchronization Feedback: Fields updated on server, Updates made to a focused field',
-                routeName: 'guide-data-sync-feedback',
+                routeName: 'data-sync-feedback',
                 templateName: 'ThreeWayGuide_DataSyncFeedback_Wrapper',
                 order: 9,
             };
@@ -126,13 +128,13 @@ Plugins.register('ThreeWay Examples Namespace', {
     },
 });
 
-Plugins.register('ThreeWay Examples Namespace', {
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Guide: Pure Side-Effects with Process',
-                description: 'A Pure Side-effects Pre-Processor Example: Rotate a Canvas Plot',
-                routeName: 'guide-pure-side-effects',
+                name: 'Declarative Data Display with Process',
+                description: 'A Pure Side-effects (Using the process Binding) Pre-Processor Example: Rotate a Canvas Plot',
+                routeName: 'pure-side-effects',
                 templateName: 'ThreeWayGuide_PureSideEffects_Wrapper',
                 order: 10,
             };

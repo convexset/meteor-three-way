@@ -11,7 +11,7 @@
 // Preamble
 ////////////////////////////////////////////////////////////
 function setUpDebugMessages(template) {
-	ThreeWay.DEBUG_MODE.set(true);
+	ThreeWay.DEBUG_MODE.setOn();
 	ThreeWay.DEBUG_MODE.selectNone();
 	if (typeof template !== "undefined") {
 		var _selectedDebugMessages = template && template._3w_.get_NR('debugMessages') || [];

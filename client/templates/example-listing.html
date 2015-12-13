@@ -1,5 +1,11 @@
-<template name="ExamplesListing">
+<template name="guideAndExamplesListing">
 	<div class="column" style="text-align: justify;">
+		<h1>Guide Listing</h1>
+		{{#each listThreeWayGuideItems}}
+			<h3><a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a></h3>
+			<p>{{description}}</p>
+		{{/each}}
+
 		<h1>Examples Listing</h1>
 		{{#each listThreeWayExamples}}
 			<h3><a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a></h3>
@@ -17,4 +23,6 @@
 		</table>
 		
 	</div>
+	
+	<div style="min-height: 50px"></div>
 </template>

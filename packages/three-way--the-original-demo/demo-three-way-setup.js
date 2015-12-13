@@ -226,11 +226,11 @@ ThreeWay.prepare(Template.ThreeWayOriginalDemo, {
 				elem.innerHTML = "Not enough points for a plot.";
 			}
 		},
-		drawSomething: function(doc, rotationValue, elem, vmData) {
+		drawSomething: function(doc, rotationValue, elem) {
 			$(elem).empty();
 			var arr = doc.personal.otherArr;
 
-			var angle = Number(vmData.rotationValue) * Math.PI;
+			var angle = Number(rotationValue) * Math.PI;
 
 			var minA = -1;
 			var minB = -1;

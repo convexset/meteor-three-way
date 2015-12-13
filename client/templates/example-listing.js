@@ -1,4 +1,4 @@
-Template.ExamplesListing.helpers({
+Template.guideAndExamplesListing.helpers({
 	isChecked: function (todo) {
 		return todo.done ? {checked: true} : {};
 	},
@@ -13,7 +13,7 @@ Template.ExamplesListing.helpers({
 				done: false
 			},
 			{
-				item: "More Bindings: style, class, attr, visible, disabled, focus, event",
+				item: "More Bindings: style, class, attr, visible, disabled, focus, event; multi-variate bindings",
 				done: false
 			},
 			{
@@ -42,7 +42,7 @@ Template.ExamplesListing.helpers({
 			},
 			{
 				item: "A Pure Side-effects Pre-Processor Example: Rotate a Canvas Plot",
-				done: false
+				done: true
 			},
 		];
 	}

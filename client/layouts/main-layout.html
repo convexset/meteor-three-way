@@ -1,33 +1,33 @@
 <template name="MainLayout">
 	<div class="ui sidebar inverted vertical menu">
 		<div class="item">
-			<div class="header">Main Pages</div>
+			<div class="header">Main</div>
 			<div class="menu">
 				<a class="item" href="{{pathFor 'Home'}}">Home</a>
-				<a class="item" href="https://github.com/convexset/meteor-three-way/blob/master/README.md" target="_blank">Documentation</a> 
+				<a class="item" href="https://github.com/convexset/meteor-three-way/blob/master/README.md" target="_blank">Documentation on GitHub</a> 
+				<a class="item" href="https://atmospherejs.com/convexset/three-way" target="_blank">ThreeWay on Atmosphere.js</a>
+				<a class="item" href="https://github.com/convexset/meteor-three-way/" target="_blank">ThreeWay on GitHub</a>
+				<a class="item" href="https://github.com/convexset/meteor-three-way/issues" target="_blank">Bugs/Questions/Feedback</a>
 			</div>
 		</div>
 		<div class="item">
-			<div class="header">Examples</div>
+			<div class="header">The ThreeWay Guide</div>
 			<div class="menu">
-				<a class="item" href="{{pathFor 'examplesListing'}}"><strong>(Full Listing)</strong></a>
-				{{#each listThreeWayExamples}}
+				{{#each listThreeWayGuideItems}}
 					<a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a>
 				{{/each}}
 			</div>
 		</div>
 		<div class="item">
-			<div class="header">Contributing an Example</div>
+			<div class="header">More Examples</div>
 			<div class="menu">
-				<a class="item" href="{{pathFor 'ContributingExamples'}}">Instructions</a>
+				{{#each listThreeWayExamples}}
+					<a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a>
+				{{/each}}
 			</div>
-		</div>
-		<div class="item">
-			<div class="header">Links</div>
 			<div class="menu">
-				<a class="item" href="https://atmospherejs.com/convexset/three-way" target="_blank">Atmosphere.js</a>
-				<a class="item" href="https://github.com/convexset/meteor-three-way/" target="_blank">GitHub</a>
-				<a class="item" href="https://github.com/convexset/meteor-three-way/issues" target="_blank">Bugs/Questions/Feedback</a>
+				<a class="item" href="{{pathFor 'guideAndExamplesListing'}}"><em>Full Guide/Examples Listing</em></a>
+				<a class="item" href="{{pathFor 'ContributingExamples'}}"><em>Contributing an Example</em></a>
 			</div>
 		</div>
 	</div>

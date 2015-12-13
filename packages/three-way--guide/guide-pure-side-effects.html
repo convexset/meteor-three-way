@@ -1,10 +1,16 @@
 <template name="ThreeWayGuide_PureSideEffects_Wrapper">
     <div class="ui container">    
-        <h1>....</h1>
+        <h1>Declarative Data Display: Pure Side-Effects with Process</h1>
 
-        <p>...</p>
+        <p>
+            We have touched on how pre-processors enable "declarative data display". This example pushes things a little bit further, at least far enough to point out the full potential of the pre-processor feature.
+        </p>
 
         <div><ul id="toc"></ul></div>
+
+        <p>
+            By the end of this, it should be clear that one might use a <code>process</code> binding to generate a complete visualization of the bound data, be it a sub-object, array, the associated document or the entire view model.
+        </p>
 
         {{> ThreeWayGuide_PureSideEffects}}
     </div>
@@ -13,9 +19,189 @@
 <template name="ThreeWayGuide_PureSideEffects">
     <div class="column">
         <section>
-            <h3>....</h3>
+            <h3>The Example</h3>
+
+            <div>
+                <p>Begin by playing with the example.</p>
+                <button>Select Random Data Point</button>
+            </div>
+
+            <p></p>
+
+            <table>
+                <tr>
+                    <td style="width: 50%;">
+                        <table class="ui table celled">
+                            <thead>
+                                <tr>
+                                    <th>idx</th>
+                                    <th>x</th>
+                                    <th>y</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each range (length (_3w_getWithDefault 'points' arrayify0Args))}}
+                                    <tr>
+                                        <td>{{this}}</td>
+                                        <td><input type="number" data-bind="value: points.{{this}}.x" step="0.1"></td>
+                                        <td><input type="number" data-bind="value: points.{{this}}.y" step="0.1"></td>
+                                    </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                        <div style="width: 100%;">
+                            <p style="text-align: center">Rotation: {{_3w_get 'rotationAngle'}} &pi; radians</p>
+                            <input data-bind="value: rotationAngle" type="range" style="width: 100%" min="-1" max="1" step="0.01">
+                        </div>
+                    </td>
+                    <td style="min-width: 10px;">
+                    </td>
+                    <td style="min-width: 250px; vertical-align: top;">
+                        <div data-bind="process: @|drawSomething"></div>
+                        <pre>&lt;div data-bind=&quot;process: @|drawSomething&quot;&gt;&lt;/div&gt;</pre>
+                    </td>
+                </tr>
+            </table>
         </section>
 
         <div style="min-height: 20px"></div>
+
+        <section>
+            <h3>The Code: Process and Binding to the Entire View Model</h3>
+
+            <p>
+                As usual we bind to the same collection. Here is how we initialize the template:
+            </p>
+
+<pre>
+ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
+    collection: GuideData.collection,
+    updatersForServer: {
+        'points': 'three-way-guide/update/points',
+        'points.*.*': 'three-way-guide/update/points.*.*',
+        'rotationAngle': 'three-way-guide/update/rotationAngle',
+    },
+    dataTransformToServer: {
+        'points.*.*': x => Number(x),
+        'rotationAngle': x => Number(x),
+    },
+    dataTransformFromServer: {
+        'points.*.*': x => ("" + x),    // Yeah... Values are represented
+        'rotationAngle': x => ("" + x), // in the browser as text
+    },
+    preProcessors: {
+        // function drawSomething(data, elem) --> render stuff
+        drawSomething: drawSomething,
+        // ...
+        // ...
+    }
+});
+</pre>
+
+            <p>
+                Here <code>drawSomething</code> is a function that accepts, as arguments, all data from the view model and a DOM element, and renders a diagram via HTML5 canvas in that element. The rest should be clear.
+            </p>
+
+            <p>
+                The table on the left side should be a familiar fixture by now. On the right, we have:
+            </p>
+
+<pre>&lt;div data-bind=&quot;process: @|drawSomething&quot;&gt;&lt;/div&gt;</pre>
+
+            <p>
+                The <code>process</code> binding obtains data from a data source (reactively) and then executes the entire processing pipeline described by the pre-processors. Nothing else is done beyond that.
+            </p>
+
+        </section>
+
+        <div style="min-height: 20px"></div>
+
+        <section>
+            <h3>Binding to the View Model (<code>@</code>) or Document (<code>*</code>)</h3>
+            <p>
+                In the above example, instead of something like <code>points#rotationAngle</code> (a multi-variable binding), we are using <code>@</code> which refers to the entire view model.
+            </p>
+            <p>
+                There are some fundamental differences between binding to the entire view model (<code>@</code>) and binding to the associated document (<code>*</code>).
+
+                <table class="ui table celled">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Binding to the View Model (<code>@</code>)</th>
+                            <th style="width: 50%;">Binding to the Associated Documentation (<code>*</code>)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>All view model data</td>
+                            <td>Just data in the associated document</td>
+                        </tr>
+                        <tr>
+                            <td>Flat data representation</td>
+                            <td>An object with defined transformations, if any</td>
+                        </tr>
+                        <tr>
+                            <td>Updated on view model update</td>
+                            <td>Updated when MiniMongo is updated (from the server; hence latency)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </p>
+            
+            <p>
+                Experiment with binding to <code>*</code> in the next section.
+            </p>
+        </section>
+
+        <div style="min-height: 20px"></div>
+
+        <section>
+            <h3>The Example Rehashed with <code>*</code></h3>
+
+            <div>
+                <p>The following rehashed the above example with a binding to the associated document. Play with the example and note the differences.</p>
+                <button>Select Random Data Point</button>
+            </div>
+
+            <p></p>
+
+            <table>
+                <tr>
+                    <td style="width: 50%;">
+                        <table class="ui table celled">
+                            <thead>
+                                <tr>
+                                    <th>idx</th>
+                                    <th>x</th>
+                                    <th>y</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{#each range (length (_3w_getWithDefault 'points' arrayify0Args))}}
+                                    <tr>
+                                        <td>{{this}}</td>
+                                        <td><input type="number" data-bind="value: points.{{this}}.x" step="0.1"></td>
+                                        <td><input type="number" data-bind="value: points.{{this}}.y" step="0.1"></td>
+                                    </tr>
+                                {{/each}}
+                            </tbody>
+                        </table>
+                        <div style="width: 100%;">
+                            <p style="text-align: center">Rotation: {{_3w_get 'rotationAngle'}} &pi; radians</p>
+                            <input data-bind="value: rotationAngle" type="range" style="width: 100%" min="-1" max="1" step="0.01">
+                        </div>
+                    </td>
+                    <td style="min-width: 10px;">
+                    </td>
+                    <td style="min-width: 250px; vertical-align: top;">
+                        <div data-bind="process: *|drawSomething2"></div>
+                        <pre>&lt;div data-bind=&quot;process: *|drawSomething2&quot;&gt;&lt;/div&gt;</pre>
+                    </td>
+                </tr>
+            </table>
+        </section>
+
+        <div style="min-height: 50px"></div>
+
     </div>
 </template>
