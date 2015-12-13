@@ -57,7 +57,6 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'parse
 		debounceInterval: DEFAULT_DEBOUNCE_INTERVAL,
 		throttleInterval: DEFAULT_THROTTLE_INTERVAL,
 		throttledUpdaters: [],
-		methodInterval: DEFAULT_METHOD_INTERVAL,
 		eventHandlers: {},
 		helpers: {},
 		updateOfFocusedFieldCallback: null,

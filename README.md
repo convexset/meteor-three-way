@@ -412,8 +412,6 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     throttleInterval: 500, // default: 500
     // Fields for which updaters are throttle'd instead of debounce'ed
     throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
-    // Interval between update Meteor methods on fields with the same top level parent (e.g.: `particulars.name` and `particulars.hobbies.4.hobbyId`).
-    methodInterval: 10, // default: 10
 
     // Reports updates of focused fields
     // default: null (i.e.: update focused field and do nothing;
