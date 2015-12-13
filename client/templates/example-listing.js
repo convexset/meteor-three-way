@@ -5,8 +5,8 @@ Template.ExamplesListing.helpers({
 	exampleToDos: function () {
 		return [
 			{
-				item: "View + View Model; Bindings: value, checked, text, html",
-				done: false
+				item: "View + View Model; Bindings: value, checked, text",
+				done: true
 			},
 			{
 				item: "View + View Model + DB; Default Values; Wildcards",
@@ -21,7 +21,7 @@ Template.ExamplesListing.helpers({
 				done: false
 			},
 			{
-				item: "Display with Pre-Processors",
+				item: "Using Pre-Processors: style, class, html, visible, disabled",
 				done: false
 			},
 			{

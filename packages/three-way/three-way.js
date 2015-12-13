@@ -16,7 +16,7 @@ PackageUtilities.addImmutablePropertyObject(ThreeWay, 'utils', ThreeWayDependenc
 //////////////////////////////////////////////////////////////////////
 // Stuff Proper
 //////////////////////////////////////////////////////////////////////
-PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'prepare', function prepare(tmpl, options) {
+PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'prepare', function prepare(tmpl, options = {}) {
 	// Parse Options
 	options = PackageUtilities.shallowCopy(options);
 	ThreeWayDependencies.utils.parseOptions(tmpl, options);

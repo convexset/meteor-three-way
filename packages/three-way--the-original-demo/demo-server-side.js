@@ -24,12 +24,12 @@ Demo.fields.forEach(function(field) {
 				$set: updater
 			});
 		};
-		methods['update-' + field] = fn;
+		methods['original-demo/update-' + field] = fn;
 		Meteor.methods(methods);
 	}
 });
 Meteor.methods({
-	'update-personal.someArr.1': function(id, value) {
+	'original-demo/update-personal.someArr.1': function(id, value) {
 		// different, more specific updater
 		// for no reason at all
 		// but validation for this is done "via update-personal.someArr.*"
@@ -44,7 +44,7 @@ Meteor.methods({
 			$set: updater
 		});
 	},
-	'update-personal.someArr.*': function(id, value, k) {
+	'original-demo/update-personal.someArr.*': function(id, value, k) {
 		var updater = {};
 		updater['personal.someArr.' + k] = value;
 		var myFieldName = 'update-personal.someArr.' + k;
@@ -56,7 +56,7 @@ Meteor.methods({
 			$set: updater
 		});
 	},
-	'update-personal.otherArr.*.*': function(id, value, k, fld) {
+	'original-demo/update-personal.otherArr.*.*': function(id, value, k, fld) {
 		var updater = {};
 		updater['personal.otherArr.' + k + '.' + fld] = value;
 		var myFieldName = 'update-personal.otherArr.' + k + '.' + fld;
@@ -69,7 +69,7 @@ Meteor.methods({
 		});
 	},
 	// Used for testing overlapping bindings
-	'update-personal.otherArr': function(id, value) {
+	'original-demo/update-personal.otherArr': function(id, value) {
 		var myFieldName = 'update-personal.otherArr';
 		while (myFieldName.length < 40) {
 			myFieldName += " ";
@@ -81,7 +81,7 @@ Meteor.methods({
 			}
 		});
 	},
-	'update-personal.otherArr.0': function(id, value) {
+	'original-demo/update-personal.otherArr.0': function(id, value) {
 		var myFieldName = 'update-personal.otherArr.0';
 		while (myFieldName.length < 40) {
 			myFieldName += " ";

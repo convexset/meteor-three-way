@@ -4,14 +4,14 @@
 ////////////////////////////////////////////////////////////
 // Preamble
 ////////////////////////////////////////////////////////////
-var updatersForServer = _.object(Demo.fields, Demo.fields.map(x => "update-" + x));
+var updatersForServer = _.object(Demo.fields, Demo.fields.map(x => "original-demo/update-" + x));
 // updatersForServer['personal.someArr.1'] = 'update-personal.someArr.1';
 updatersForServer['name'] = function(id, value) {
 	console.info('[update-name] Updating name of id ', id, "to", value);
-	Meteor.call('update-name', id, value);
+	Meteor.call('original-demo/update-name', id, value);
 };
 updatersForServer['personal.someArr.1'] = {
-	method: 'update-personal.someArr.1',
+	method: 'original-demo/update-personal.someArr.1',
 	callback: function(err, res, info) {
 		console.info('[update-personal.someArr.1] Updated.', err, res, info);
 	}
@@ -19,13 +19,13 @@ updatersForServer['personal.someArr.1'] = {
 
 // Used for testing overlapping bindings
 updatersForServer['personal.otherArr'] = {
-	method: 'update-personal.otherArr',
+	method: 'original-demo/update-personal.otherArr',
 	callback: function(err, res, info) {
 		console.info('[update-personal.otherArr] Updated entire array.', err, res, info);
 	}
 };
 updatersForServer['personal.otherArr.0'] = {
-	method: 'update-personal.otherArr.0',
+	method: 'original-demo/update-personal.otherArr.0',
 	callback: function(err, res, info) {
 		console.info('[update-personal.otherArr.0] Updated entire object.', err, res, info);
 	}
@@ -410,4 +410,4 @@ ThreeWay.prepare(Template.ThreeWayOriginalDemo_GrandChild, {
 ////////////////////////////////////////////////////////////
 // Grand Child Template
 ////////////////////////////////////////////////////////////
-ThreeWay.prepare(Template.ThreeWayOriginalDemo_PreparationDeficient, {});
+ThreeWay.prepare(Template.ThreeWayOriginalDemo_PreparationDeficient);

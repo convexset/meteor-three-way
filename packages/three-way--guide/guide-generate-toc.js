@@ -1,0 +1,43 @@
+Meteor.startup(function() {
+	function generateTOC() {
+		var instance = this;
+		var allIds = [];
+		Array.prototype.forEach.call(instance.$("h3"), function(elem) {
+			var sectionName = $(elem).text().trim();
+
+			var sectionHash = '';
+			for (var i = 0; i < sectionName.length; i++) {
+				sectionHash += ((sectionName[i].toLowerCase() >= 'a') && (sectionName[i].toLowerCase() <= 'z')) ? sectionName[i].toLowerCase() : '-';
+			}
+			while (allIds.indexOf(sectionHash) !== -1) {
+				sectionHash += '-';
+			}
+			allIds.push(sectionHash);
+
+			instance.$("#toc").append("<li><a href=#" + sectionHash + ">" + sectionName + "</a></li>");
+			$(elem.parentElement).attr('id', sectionHash);
+		});
+	}
+
+	Object.keys(Template)
+		.filter(function(x) {
+			var xs = x.split('_');
+			if (xs.length < 2) {
+				return false;
+			}
+			return (xs[0] === "ThreeWayGuide") && (xs[xs.length - 1] === "Wrapper");
+		})
+		.forEach(function(templateName) {
+			Template[templateName].onRendered(generateTOC);
+		});
+
+	// Scroll and change hash
+	// http://stackoverflow.com/questions/5315659/jquery-change-hash-while-scrolling-down-page/5315993#5315993
+	$(document).bind('scroll', function() {
+		$('section').each(function() {
+			if (($(this).offset().top < window.pageYOffset) && ($(this).offset().top + $(this).height() > window.pageYOffset)) {
+				window.location.hash = $(this).attr('id');
+			}
+		});
+	});
+});

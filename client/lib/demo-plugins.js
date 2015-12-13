@@ -13,7 +13,7 @@ listThreeWayExamples = function() {
 			.map(x => x.methods.info())
 			.sort(function(x, y) {
 				if ((x.order || Infinity) !== (y.order || Infinity)) {
-					return (x.order || Infinity) < (y.order || Infinity);
+					return (x.order || Infinity) - (y.order || Infinity);
 				}
 				return (x.name || "") > (y.name || "");
 			})
