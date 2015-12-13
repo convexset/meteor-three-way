@@ -1045,6 +1045,14 @@ In addition, one may also bind to the full content of the view-model, wherein da
 <div data-bind="process: @|describeViewModelContent"></div>
 ```
 
+There are some fundamental differences between binding to the entire view model (`@`) and binding to the associated document (`*`).
+
+| Binding to the View Model (`@`) | Binding to the Associated Documentation (`*`) |
+|-------------------------------|---------------------------------------------|
+| All view model data           | Just data in the associated document        |
+| Flat data representation      | An object with "depth" and [transformations](http://docs.meteor.com/#/full/mongo_collection), if any |
+| Updated on view model update  | Updated when MiniMongo is updated (from the server; hence latency) |
+
 #### Pre-processor Pipelines in Blaze
 
 Pre-processors may also be used with the `_3w_display` blaze-helper. For example,

@@ -21,7 +21,7 @@ Template.guideAndExamplesListing.helpers({
 				done: false
 			},
 			{
-				item: "Using Pre-Processors: style, class, html, visible, disabled",
+				item: "Declarative data->display. Using Pre-Processors: style, class, html, visible, disabled; Usage in blaze and differences",
 				done: false
 			},
 			{
@@ -41,7 +41,7 @@ Template.guideAndExamplesListing.helpers({
 				done: false
 			},
 			{
-				item: "A Pure Side-effects Pre-Processor Example: Rotate a Canvas Plot",
+				item: "Declarative data->display. A Pure Side-effects Pre-Processor Example: Rotate a Canvas Plot",
 				done: true
 			},
 		];

@@ -12,6 +12,10 @@
             By the end of this, it should be clear that one might use a <code>process</code> binding to generate a complete visualization of the bound data, be it a sub-object, array, the associated document or the entire view model.
         </p>
 
+        <p>
+            (It was initially intended to demonstrate with a visualization of "project dependencies" via [Cytoscape](http://www.cytoscape.org/)... But for various reasons, such as avoiding the need to build an editing interface, the following will have to suffice.)
+        </p>
+
         {{> ThreeWayGuide_PureSideEffects}}
     </div>
 </template>
@@ -31,7 +35,7 @@
             <table>
                 <tr>
                     <td style="width: 50%;">
-                        <table class="ui table celled">
+                        <table class="ui celled table form" data-bind="class: {loading: ready|not}">
                             <thead>
                                 <tr>
                                     <th>idx</th>
@@ -81,6 +85,8 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
         'points.*.*': 'three-way-guide/update/points.*.*',
         'rotationAngle': 'three-way-guide/update/rotationAngle',
     },
+    throttledUpdaters: ['rotationAngle'],
+    throttleInterval: 200,
     dataTransformToServer: {
         'points.*.*': x => Number(x),
         'rotationAngle': x => Number(x),
@@ -138,7 +144,7 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
                         </tr>
                         <tr>
                             <td>Flat data representation</td>
-                            <td>An object with defined transformations, if any</td>
+                            <td>An object with "depth" and <a href="http://docs.meteor.com/#/full/mongo_collection" target="_blank">transformations</a>, if any</td>
                         </tr>
                         <tr>
                             <td>Updated on view model update</td>
@@ -168,7 +174,7 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
             <table>
                 <tr>
                     <td style="width: 50%;">
-                        <table class="ui table celled">
+                        <table class="ui celled table form" data-bind="class: {loading: ready|not}">
                             <thead>
                                 <tr>
                                     <th>idx</th>
@@ -187,7 +193,7 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
                             </tbody>
                         </table>
                         <div style="width: 100%;">
-                            <p style="text-align: center">Rotation: {{_3w_get 'rotationAngle'}} &pi; radians</p>
+                            <p style="text-align: center">Rotation: {{_3w_get 'rotationAngle'}} &pi; radians (the item above reacts to changes here)</p>
                             <input data-bind="value: rotationAngle" type="range" style="width: 100%" min="-1" max="1" step="0.01">
                         </div>
                     </td>
@@ -199,6 +205,10 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
                     </td>
                 </tr>
             </table>
+
+            <p>
+                Fun fact: <code>drawSomething2</code> has a method body with one line of code due to the use of transformations, <code>drawSomething</code> has thirty-two. So there is a bit of a trade-off, but given a use-case, the ideal choice is usually clear.
+            </p>
         </section>
 
         <div style="min-height: 50px"></div>

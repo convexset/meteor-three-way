@@ -109,6 +109,8 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
 		'points.*.*': 'three-way-guide/update/points.*.*',
 		'rotationAngle': 'three-way-guide/update/rotationAngle',
 	},
+	throttledUpdaters: ['rotationAngle'],
+    throttleInterval: 200,
 	dataTransformToServer: {
 		'points.*.*': x => Number(x),
 		'rotationAngle': x => Number(x),
@@ -122,7 +124,8 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
 		drawSomething: drawSomething,
 		// function drawSomething2(doc, elem) --> render stuff
 		drawSomething2: drawSomething2,
-	}
+	},
+	updateOfFocusedFieldCallback: () => null,
 });
 
 Template.ThreeWayGuide_PureSideEffects.onCreated(function() {
@@ -152,6 +155,10 @@ Template.ThreeWayGuide_PureSideEffects.onRendered(function() {
 			instance._3w_.setId(id);
 		}
 	});
+});
+
+Template.ThreeWayGuide_PureSideEffects.helpers({
+	ready: () => Template.instance().subscriptionsReady(),
 });
 
 Template.ThreeWayGuide_PureSideEffects.events({
