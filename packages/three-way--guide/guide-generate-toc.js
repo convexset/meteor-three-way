@@ -36,7 +36,9 @@ Meteor.startup(function() {
 	$(document).bind('scroll', function() {
 		$('section').each(function() {
 			if (($(this).offset().top < window.pageYOffset) && ($(this).offset().top + $(this).height() > window.pageYOffset)) {
-				window.location.hash = $(this).attr('id');
+				if ((!!$(this).attr('id')) && (window.location.hash !== $(this).attr('id'))) {
+					history.replaceState(null, null, location.pathname + "#" + $(this).attr('id'));
+				}
 			}
 		});
 	});
