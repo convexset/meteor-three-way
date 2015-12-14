@@ -69,6 +69,6 @@ GuideData = {
 	emailPrefsAll: {
 		'opt1': 'Spam Away',
 		'opt2': 'Only My Orders',
-		'opt3': 'Don\'t',
+		'opt3': 'Just Don\'t',
 	},
 };

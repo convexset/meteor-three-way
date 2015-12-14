@@ -1,6 +1,6 @@
 <template name="ThreeWayGuide_PureSideEffects_Wrapper">
     <div class="ui container">    
-        <h1>Declarative Data Display: Pure Side-Effects with Process</h1>
+        <h1>Declarative Data Display: Pure Side-Effects with the Process Binding</h1>
 
         <p>
             We have touched on how pre-processors enable "declarative data display". This example pushes things a little bit further, at least far enough to point out the full potential of the pre-processor feature.
@@ -13,7 +13,7 @@
         </p>
 
         <p>
-            (It was initially intended to demonstrate with a visualization of "project dependencies" via [Cytoscape](http://www.cytoscape.org/)... But for various reasons, such as avoiding the need to build an editing interface, the following will have to suffice.)
+            (It was initially intended to demonstrate with a visualization of "project dependencies" via <a href="http://www.cytoscape.org/" target="_blank">Cytoscape</a>... But for various reasons, such as avoiding the need to build an editing interface, the following will have to suffice.)
         </p>
 
         {{> ThreeWayGuide_PureSideEffects}}
@@ -44,7 +44,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {{#each range (length (_3w_getWithDefault 'points' arrayify0Args))}}
+                                {{#each range (length (_3w_getWithDefault 'points' emptyArray))}}
                                     <tr>
                                         <td>{{this}}</td>
                                         <td><input type="number" data-bind="value: points.{{this}}.x" step="0.1"></td>
@@ -183,7 +183,7 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
                                 </tr>
                             </thead>
                             <tbody>
-                                {{#each range (length (_3w_getWithDefault 'points' arrayify0Args))}}
+                                {{#each range (length (_3w_getWithDefault 'points' emptyArray))}}
                                     <tr>
                                         <td>{{this}}</td>
                                         <td><input type="number" data-bind="value: points.{{this}}.x" step="0.1"></td>

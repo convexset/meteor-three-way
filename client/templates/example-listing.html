@@ -1,18 +1,18 @@
 <template name="guideAndExamplesListing">
 	<div class="column" style="text-align: justify;">
-		<h1>Guide Listing</h1>
+		<h3>Guide Listing</h3>
 		{{#each listThreeWayGuideItems}}
-			<h3><a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a></h3>
+			<h5><a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a></h5>
 			<p>{{description}}</p>
 		{{/each}}
 
-		<h1>Examples Listing</h1>
+		<h3>Examples Listing</h3>
 		{{#each listThreeWayExamples}}
-			<h3><a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a></h3>
+			<h5><a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a></h5>
 			<p>{{description}}</p>
 		{{/each}}
 
-		<h1>To Do List</h1>
+		<h3>To Do List</h3>
 		<table>
 			{{#each exampleToDos}}
 				<tr>

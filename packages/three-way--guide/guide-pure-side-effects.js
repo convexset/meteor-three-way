@@ -1,6 +1,7 @@
 /* global Fake: true */
 /* global ThreeWay: true */
 /* global GuideData: true */
+/* global getRandomId: true */
 
 
 function mapX(x, canvasWidth, bounds) {
@@ -116,8 +117,8 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
 		'rotationAngle': x => Number(x),
 	},
 	dataTransformFromServer: {
-		'points.*.*': x => ("" + x),    // Yeah... Values are represented
-		'rotationAngle': x => ("" + x), // in the browser as text
+		'points.*.*': x => x.toString(),    // Yeah... Values are represented
+		'rotationAngle': x => x.toString(), // in the browser as text
 	},
 	preProcessors: {
 		// function drawSomething(data, elem) --> render stuff

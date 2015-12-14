@@ -15,11 +15,6 @@ GuideData.fields.forEach(function(field) {
 		var fn = function(id, value) {
 			var updater = {};
 			updater[field] = value;
-			var myFieldName = 'three-way-guide/update/' + field;
-			while (myFieldName.length < 40) {
-				myFieldName += " ";
-			}
-			console.log(myFieldName, id, '\t', value);
 			return GuideData.collection.update(id, {
 				$set: updater
 			});
@@ -29,9 +24,9 @@ GuideData.fields.forEach(function(field) {
 	}
 });
 Meteor.methods({
-	'three-way-guide/update/someArr.*': function(id, value, k) {
+	'three-way-guide/update/someArray.*': function(id, value, k) {
 		var updater = {};
-		updater['someArr.' + k] = value;
+		updater['someArray.' + k] = value;
 		return GuideData.collection.update(id, {
 			$set: updater
 		});
@@ -43,8 +38,10 @@ Meteor.methods({
 			$set: updater
 		});
 	},
-	'three-way-guide/update/points': function(id, value) {
-        console.log(id, value)
+	'three-way-guide/update/someArray': function() {
+		throw new Meteor.Error('unexpected-operation', 'points should not be updated directly');
+	},
+	'three-way-guide/update/points': function() {
 		throw new Meteor.Error('unexpected-operation', 'points should not be updated directly');
 	},
 });
@@ -79,7 +76,7 @@ Meteor.methods({
 					name: user.fullname,
 					emailPrefs: _emPrefs,
 					age: Fake.fromArray(ageRangeValues),
-					someArr: [
+					someArray: [
 						Math.floor(Math.random() * 10), ((Math.random() < 0.33) ? '!!!' : Math.floor(Math.random() * 10)),
 						Math.floor(Math.random() * 10)
 					],

@@ -21,7 +21,7 @@ Package.onUse(function(api) {
             'reactive-var',
             'blaze-html-templates',
             'convexset:three-way@0.2.15',
-            'convexset:template-helpers@0.1.13',
+            'convexset:template-helpers@0.1.15',
             'convexset:plugins@0.1.0',
         ],
         'client'
@@ -32,17 +32,16 @@ Package.onUse(function(api) {
 
     api.addFiles([
         'guide-generate-toc.js',
+        'guide-random-id.js',
         'guide.css',
         'guide-basics.html',
         'guide-basics.js',
         'guide-three-way-proper.html',
         'guide-three-way-proper.js',
-        'guide-more-bindings.html',
-        'guide-more-bindings.js',
-        'guide-data-validation.html',
-        'guide-data-validation.js',
-        'guide-pre-processors.html',
-        'guide-pre-processors.js',
+        'guide-pre-processors-and-more-bindings.html',
+        'guide-pre-processors-and-more-bindings.js',
+        'guide-events-data-validation.html',
+        'guide-events-data-validation.js',
         'guide-family-data-access.html',
         'guide-family-data-access.js',
         'guide-dynamic-data-binding.html',
@@ -53,6 +52,8 @@ Package.onUse(function(api) {
         'guide-data-sync-feedback.js',
         'guide-pure-side-effects.html',
         'guide-pure-side-effects.js',
+        'guide-customizing-vm-updates.html',
+        'guide-customizing-vm-updates.js',
     ], 'client');
 
     api.addFiles('plugin-setup.js', 'client');

@@ -20,7 +20,7 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) Three-Way Data-Binding Proper',
+                name: 'Three-Way Data-Binding Proper',
                 description: 'View to view model to database (three-way) data binding. Bindings via wild-cards.',
                 routeName: 'three-way-proper',
                 templateName: 'ThreeWayGuide_ThreeWay_Wrapper',
@@ -34,10 +34,10 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) A Few More Bindings',
-                description: 'More Bindings: style, class, attr, visible, disabled, focus, event; Multivariate bindings.',
-                routeName: 'more-bindings',
-                templateName: 'ThreeWayGuide_MoreBindings_Wrapper',
+                name: 'Declarative Data Display (... and More Bindings)',
+                description: 'Pre-processors for displaying data and (necessary evil) side-effects for HTML components that require it. More Bindings: style, class, attr, visible, disabled; Multivariate bindings.',
+                routeName: 'pre-processors-and-more-bindings',
+                templateName: 'ThreeWayGuide_PreProcessorsMoreBindings_Wrapper',
                 order: 3,
             };
         },
@@ -48,25 +48,11 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) Data Validation',
-                description: 'More Bindings: style, class, attr, visible, disabled, focus, event',
-                routeName: 'data-validation',
-                templateName: 'ThreeWayGuide_DataValidation_Wrapper',
+                name: '(Coming Soon) Events and Data Validation',
+                description: 'Events and the data validation flow',
+                routeName: 'events-data-validation',
+                templateName: 'ThreeWayGuide_EventsDataValidation_Wrapper',
                 order: 4,
-            };
-        },
-    },
-});
-
-Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
-    methods: {
-        info: function() {
-            return {
-                name: '(Coming Soon) Declarative Data Display: Pre-Processors',
-                description: 'Pre-processors for displaying data and (necessary evil) side-effects for HTML components that require it',
-                routeName: 'pre-processors',
-                templateName: 'ThreeWayGuide_PreProcessors_Wrapper',
-                order: 5,
             };
         },
     },
@@ -80,7 +66,7 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
                 description: 'ThreeWay instances are connected in family trees and can access each others\' data',
                 routeName: 'family-data-access',
                 templateName: 'ThreeWayGuide_FamilyDataAccess_Wrapper',
-                order: 6,
+                order: 5,
             };
         },
     },
@@ -94,7 +80,7 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
                 description: 'Dynamic Data-binding and Usage with Family Trees',
                 routeName: 'dynamic-data-binding',
                 templateName: 'ThreeWayGuide_DynamicDataBinding_Wrapper',
-                order: 7,
+                order: 6,
             };
         },
     },
@@ -108,6 +94,20 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
                 description: 'Reload and View Model Data Persistence',
                 routeName: 'reload',
                 templateName: 'ThreeWayGuide_Reload_Wrapper',
+                order: 7,
+            };
+        },
+    },
+});
+
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
+    methods: {
+        info: function() {
+            return {
+                name: '(Coming Soon) More Feedback: Data Synchronization, Focus, Focused Field Updates',
+                description: 'Data Synchronization Feedback: Fields updated on server, Updates made to a focused field',
+                routeName: 'data-sync-feedback',
+                templateName: 'ThreeWayGuide_DataSyncFeedback_Wrapper',
                 order: 8,
             };
         },
@@ -118,10 +118,10 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) Data Synchronization Feedback',
-                description: 'Data Synchronization Feedback: Fields updated on server, Updates made to a focused field',
-                routeName: 'data-sync-feedback',
-                templateName: 'ThreeWayGuide_DataSyncFeedback_Wrapper',
+                name: 'Declarative Data Display with the Process Binding',
+                description: 'A Pure Side-effects (Using the process Binding) Pre-Processor Example: Rotate a Canvas Plot',
+                routeName: 'pure-side-effects',
+                templateName: 'ThreeWayGuide_PureSideEffects_Wrapper',
                 order: 9,
             };
         },
@@ -132,10 +132,10 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Declarative Data Display with Process',
-                description: 'A Pure Side-effects (Using the process Binding) Pre-Processor Example: Rotate a Canvas Plot',
-                routeName: 'pure-side-effects',
-                templateName: 'ThreeWayGuide_PureSideEffects_Wrapper',
+                name: '(Coming Soon) Customizing How the UI Updates the View Model',
+                description: 'Customizing How the UI Updates the View Model. Applying throttling, debouncing or choosing whether or not to update the view model on an input event.',
+                routeName: 'customizing-vm-updates',
+                templateName: 'ThreeWayGuide_CustomizingVMUpdates_Wrapper',
                 order: 10,
             };
         },

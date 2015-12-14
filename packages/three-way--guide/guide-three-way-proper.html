@@ -2,20 +2,411 @@
     <div class="ui container">    
         <h1>Basics: Three-Way Data Binding</h1>
 
-        <p>...</p>
+        <p>In this second part of the guide, we touch on how to implement actual three-way data binding. We will begin with binding to </p>
 
         <div><ul id="toc"></ul></div>
 
-        {{> ThreeWayGuide_ThreeWay}}
+        {{> ThreeWayGuide_ThreeWay_Simple}}
+        
+        {{> ThreeWayGuide_ThreeWay_Wildcards}}
+
+        {{> ThreeWayGuide_ThreeWay_Objects}}
     </div>
 </template>
 
-<template name="ThreeWayGuide_ThreeWay">
+<template name="ThreeWayGuide_ThreeWay_Simple">
     <div class="column">
         <section>
-            <h3>Set Up</h3>
+            <h3>Setting Up Three-Way Data Binding</h3>
+
+            <p>
+                To set up binding with the database, you need:
+                <ul>
+                    <li>a collection via a name (string), an explicit <code>Mongo.Collection</code> or a <code>null</code> (default)</li>
+                    <li>a subscription that populates the MiniMongo (if applicable)</li>
+                    <li>a dictionary mapping field names to the corresponding Meteor methods for updating the database (See: <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#updaters-to-the-server" target="_blank">documentation</a> for details, including information on the "extended notation")</li>
+                </ul>
+            </p>
+
+<pre>
+ThreeWay.prepare(Template.ThreeWayGuide_ThreeWay_Simple, {
+    collection: GuideData.collection,  // this is a Mongo.Collection
+    updatersForServer: {
+        'name': 'three-way-guide/update/name',
+        'emailPrefs': 'three-way-guide/update/emailPrefs',
+        'age': 'three-way-guide/update/age',
+        'notes': 'three-way-guide/update/notes',
+    },
+});
+</pre>
+
+            <p>
+                Data binding to DOM elements is implemented in the same way as outlined in the previous <a href="{{pathFor 'basics'}}">guide item</a>.
+            </p>
+
+            <h5>List Data (via MiniMongo) and Edit Documents (via ThreeWay)</h5>
+
+            <p>Naturally, changes will be propagated to client-side elements before stuff on the "server-side" (or "server's side"). When your changes appear here, it means that data has made its way to the database, has been saved to the database, and has been sent back and stored in the MiniMongo local cache.</p>
+
+            <p>If you do not like what you see, simply enter the following into the console:</p>
+            <pre>Meteor.call('regenerate-data--original-demo');</pre>
+
+            <table class="ui celled table form" data-bind="class: {loading: ready|not}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>e-mail Preferences</th>
+                        <th>Age</th>
+                        <th>Notes</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each data}}
+                        <tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
+                            <td>{{name}}</td>
+                            <td>{{emailPrefsToCSL emailPrefs}}</td>
+                            <td>{{getProperty age ageRanges}}</td>
+                            <td>{{notes}}</td>
+                            <td>
+                                <button class="select-document" data-id="{{_id}}">Edit</button>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+
+            <div data-bind="visible: _3w_hasData">
+                <table class="ui celled table edit-table">
+                    <tr>
+                        <td>
+                            <strong>Name</strong>
+                        </td>
+                        <td>
+                            <input name="name" style="border: 0; width: 100%;" data-bind="value: name">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>e-mail Preferences</strong>
+                        </td>
+                        <td>
+                            {{#each repackageDictionaryAsArray emailPrefsAll}}
+                                <div class="ui checkbox">
+                                    <input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
+                                    <label>{{value}}</label>
+                                </div>
+                            {{/each}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Age</strong>
+                        </td>
+                        <td>
+                            <div class="inline fields">
+                                {{#each repackageDictionaryAsArray ageRanges}}
+                                    <div class="ui radio checkbox">
+                                        <input type="radio" name="age" value="{{key}}" data-bind="checked: age">
+                                        <label>{{value}}</label>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Notes</strong></td>
+                        <td>
+                            <textarea data-bind="value: notes" style="border: 0; width: 100%;"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
         </section>
 
         <div style="min-height: 20px"></div>
+    </div>
+</template>
+
+<template name="ThreeWayGuide_ThreeWay_Wildcards">
+    <div class="column">
+        <section>
+            <h3>Three-Way Data Binding with Wild Cards</h3>
+
+            <p>
+                As the title suggests, what is available above might not quite be enough. In particular, one commonly works with arrays or arrays of objects. The framework also caters to that through wild card field specifiers, as follows:
+            </p>
+
+<pre>
+ThreeWay.prepare(Template.ThreeWayGuide_ThreeWay_Wildcards, {
+    collection: GuideData.collection,
+    updatersForServer: {
+        'name': 'three-way-guide/update/name',
+        'emailPrefs': 'three-way-guide/update/emailPrefs',
+        'age': 'three-way-guide/update/age',
+        'notes': 'three-way-guide/update/notes',
+
+        // these are actually arrays
+        // points is an array of objects of elements like {x: 0.3, y: 0.5}
+        'someArray': 'three-way-guide/update/someArray',
+        'points': 'three-way-guide/update/points',
+
+        // these match elements like someArray[3] and points[0].x respectively
+        // (but if there is something like points[0].xyz, it will match too)
+        'someArray.*': 'three-way-guide/update/someArray.*',
+        'points.*.*': 'three-way-guide/update/points.*.*',
+    },
+    /////////////////////////////////////////////
+    // Some Stuff on "Transformations" Goes Here
+    /////////////////////////////////////////////
+});
+</pre>
+
+            <p>
+                Data-binding to DOM elements for array elements can be done as follows (note that this is reasonably Blaze-friendly):
+            </p>
+
+<pre>
+&lt;ul&gt;
+    &lbrace;&lbrace;#each range (length (_3w_getWithDefault &#039;someArray&#039; emptyArray))&rbrace;&rbrace;
+        &lt;li&gt;
+            &lt;strong&gt;
+                #&lbrace;&lbrace;this&rbrace;&rbrace;:
+            &lt;/strong&gt;
+            &lt;input data-bind=&quot;value: someArray.&lbrace;&lbrace;this&rbrace;&rbrace;&quot;&gt;
+        &lt;/li&gt;
+    &lbrace;&lbrace;/each&rbrace;&rbrace;
+&lt;/ul&gt;
+</pre>
+
+            <p>
+                ... where <code>&lbrace;&lbrace;_3w_getWithDefault &#039;someArray&#039; emptyArray&rbrace;&rbrace;</code> is a helper like <code>_3w_get</code> that returns a default value if the view model value is undefined. [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#additional-template-helpers" target="_blank">Documentation</a>]
+            </p>
+
+            <p>
+                Also, we are using <a href="http://handlebarsjs.com/expressions.html#subexpressions" target="_blank">Handlebars sub-expressions</a> which uses prefix notation. In addition, <code>emptyArray</code> and <code>length</code> are helpers found in <a href="https://atmospherejs.com/convexset/template-helpers" target="_blank"><code>convexset:template-helpers</code></a>.
+            </p>
+
+            <p>
+                But... though <code>points</code> is an object of... points, comprising objects like <code>{x: 1, y: 0}</code>, values are stored in the DOM as strings. We want data to be stored in the data as numbers. So we transform the data that is being sent back. (We may also transform inbound data.) Transformations are useful for converting data from a representation convenient for manipulation in the view model to one appropriate for storage (and back). Here is the configuration with transformations:
+            </p>
+
+<pre>
+ThreeWay.prepare(Template.ThreeWayGuide_ThreeWay_Wildcards, {
+    collection: GuideData.collection,
+    updatersForServer: {
+        'name': 'three-way-guide/update/name',
+        'emailPrefs': 'three-way-guide/update/emailPrefs',
+        'age': 'three-way-guide/update/age',
+        'notes': 'three-way-guide/update/notes',
+
+        // these are actually arrays
+        // points is an array of objects of elements like {x: 0.3, y: 0.5}
+        'someArray': 'three-way-guide/update/someArray',
+        'points': 'three-way-guide/update/points',
+
+        // these match elements like someArray[3] and points[0].x respectively
+        // (but if there is something like points[0].xyz, it will match too)
+        'someArray.*': 'three-way-guide/update/someArray.*',
+        'points.*.*': 'three-way-guide/update/points.*.*',
+    },
+    dataTransformToServer: {
+        'points.*.*': x => Number(x),
+    },
+    dataTransformFromServer: {
+        'points.*.*': x => x.toString(),
+    },
+});
+</pre>
+
+            <p>
+                And on to the data...
+            </p>
+
+            <table class="ui celled table form" data-bind="class: {loading: ready|not}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>e-mail Preferences</th>
+                        <th>Age</th>
+                        <th>Notes</th>
+                        <th>Some Array</th>
+                        <th style="width: 150px;">Points</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each data}}
+                        <tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
+                            <td>{{name}}</td>
+                            <td>{{emailPrefsToCSL emailPrefs}}</td>
+                            <td>{{getProperty age ageRanges}}</td>
+                            <td>{{notes}}</td>
+                            <td>
+                                <ol start="0">
+                                    {{#each someArray}}
+                                        <li>{{this}}</li>
+                                    {{/each}}
+                                </ol>
+                            </td>
+                            <td>
+                                <ol start="0">
+                                    {{#each points}}
+                                        <li>x: {{x}}; y: {{y}}</li>
+                                    {{/each}}
+                                </ol>
+                            </td>
+                            <td>
+                                <button class="select-document" data-id="{{_id}}">Edit</button>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+
+            <div data-bind="visible: _3w_hasData">
+                <table class="ui celled table edit-table">
+                    <tr>
+                        <td>
+                            <strong>Name</strong>
+                        </td>
+                        <td>
+                            <input name="name" style="border: 0; width: 100%;" data-bind="value: name">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>e-mail Preferences</strong>
+                        </td>
+                        <td>
+                            {{#each repackageDictionaryAsArray emailPrefsAll}}
+                                <div class="ui checkbox">
+                                    <input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
+                                    <label>{{value}}</label>
+                                </div>
+                            {{/each}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Age</strong>
+                        </td>
+                        <td>
+                            <div class="inline fields">
+                                {{#each repackageDictionaryAsArray ageRanges}}
+                                    <div class="ui radio checkbox">
+                                        <input type="radio" name="age" value="{{key}}" data-bind="checked: age">
+                                        <label>{{value}}</label>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Notes</strong></td>
+                        <td>
+                            <textarea data-bind="value: notes" style="border: 0; width: 100%;"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong><code>someArray</code></strong>
+                        </td>
+                        <td>
+                            {{#each range (length (_3w_getWithDefault 'someArray' emptyArray))}}
+                                <strong>
+                                    #{{this}}:
+                                </strong>
+                                <input data-bind="value: someArray.{{this}}">
+                                &nbsp;&nbsp;&nbsp;
+                            {{/each}}
+                        </td>
+                    </tr>
+                    {{#each range (length (_3w_getWithDefault 'points' emptyArray))}}
+                        <tr>
+                            <td><strong><code>points[{{this}}]</code></strong></td>
+                            <td>
+                                <strong>x</strong>: <input type="number" step="0.1" data-bind="value: points.{{this}}.x">
+                                &nbsp;&nbsp;&nbsp;
+
+                                <strong>y</strong>: <input type="number" step="0.1" data-bind="value: points.{{this}}.y">
+                            </td>
+                        </tr>
+                    {{/each}}
+                </table>
+            </div>
+
+            <p></p>
+            <p>
+                Incidentally, <code>_3w_get</code> can be used with wild card fields. For example, the first pair of coordinates in <code>points</code> is ({{_3w_get (_3w_expandParams 'points.*.x' 0)}}, {{_3w_get (_3w_expandParams 'points.*.y' 0)}}) via:
+            </p>
+
+<pre>
+(&lbrace;&lbrace;_3w_get (_3w_expandParams 'points.*.x' 0)&rbrace;&rbrace;,
+&lbrace;&lbrace;_3w_get (_3w_expandParams 'points.*.y' 0)&rbrace;&rbrace;)
+or
+(&lbrace;&lbrace;_3w_get (_3w_expandParams 'points.*.*' (arrayify2Args '0' 'x'))&rbrace;&rbrace;,
+&lbrace;&lbrace;_3w_get (_3w_expandParams 'points.*.*' (arrayify2Args '0' 'y'))&rbrace;&rbrace;)
+</pre>
+
+            <p>
+                ... where <code>arrayify2Args</code> is a helper that takes two arguments and returns an array containing them as elements. It is one of a family of helpers (running from 0 to 100) in <a href="https://atmospherejs.com/convexset/template-helpers" target="_blank"><code>convexset:template-helpers</code></a>. (More on <code>_3w_expandParams</code> <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#additional-template-helpers" target="_blank">here</a>.)
+            </p>
+
+        </section>
+
+        <div style="min-height: 20px"></div>
+
+        <section>
+            <h3>Injecting Default Values</h3>
+
+            <p>
+                Sometimes the data in a Mongo document may not contain a field. For example, after a schema change. Default values may be injected by adding the following to the options specifier of <code>ThreeWay.prepare</code>.
+            </p>
+
+<pre>
+// Inject default values if not in database record
+injectDefaultValues: {
+    'name': 'Unnamed Person',
+    // for wildcard fields, the last part of the field name cannot be a wildcard
+    'points.*.x': 0,
+    'points.*.y': 0,
+},
+</pre>
+
+            <p>
+                As indicated, for wildcard fields, the last part of the field name cannot be a wildcard. Otherwise, it would be impossible to determine exactly what field to add. The "non-tail" part of existing fields are used to figure out if there is missing data.
+            </p>
+
+            <p>
+                Note that data is injected "on the view model side". Meaning the data is <strong>not</strong> transformed with <code>dataTransformFromServer</code> before placing it in the view model.
+            </p>
+        </section>
+
+        <div style="min-height: 20px"></div>
+    </div>
+</template>
+
+<template name="ThreeWayGuide_ThreeWay_Objects">
+    <div class="column">
+        <section>
+            <h3>Three-Way Data Binding to Objects</h3>
+
+            <p>
+                Presently, there is no sensible way to generally do data binding of objects and arrays to vanilla DOM elements (save <code>checked</code> bindings for arrays).
+            </p>
+
+            <p>
+                But presumably, given any component whose display is data-driven can be generated via a one-way "display" binding which goes a bit beyond the vanilla <code>text</code>, <code>html</code>, <code>style</code>, <code>class</code>, etc. bindings. (See this <a href="{{pathFor 'pure-side-effects'}}">example</a>.)
+            </p>
+
+            <p>
+                To achieve a two-way binding (both view model to component and component to view model), synchronization might be achieved via writing a simple <code>templateInstance.autorun</code> containing <code>templateInstance._3w_.get</code> and firing component specific "onChange" callbacks that update the view model with <code>templateInstance._3w_.set</code>).
+            </p>
+
+        </section>
+
+        <div style="min-height: 50px"></div>
     </div>
 </template>
