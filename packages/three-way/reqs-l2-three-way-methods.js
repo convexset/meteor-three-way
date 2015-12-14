@@ -388,16 +388,16 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 					});
 				} else if (allowWholeDocumentAsSource && (src === "*")) {
 					_value = threeWay.collection.findOne(threeWay.id.get());
-					dataSourceInfomation.push(_.extend({
+					dataSourceInfomation.push({
 						type: 'document',
 						name: src
-					}, threeWay.fieldMatchParams[src] || {}));
+					});
 				} else if (allowWholeDocumentAsSource && (src === "@")) {
 					_value = threeWayMethods.getAll();
-					dataSourceInfomation.push(_.extend({
+					dataSourceInfomation.push({
 						type: 'view-model',
 						name: src
-					}, threeWay.fieldMatchParams[src] || {}));
+					});
 				} else {
 					_value = threeWay.data.get(src);
 					dataSourceInfomation.push(_.extend({

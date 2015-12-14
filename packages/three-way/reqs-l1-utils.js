@@ -11,15 +11,17 @@ ThreeWayDependencies.utils = {};
 //////////////////////////////////////////////////////////////////////
 ThreeWayDependencies._allThreeWayInstances = [];
 PackageUtilities.addPropertyGetter(ThreeWayDependencies.utils, 'allInstances', () => ThreeWayDependencies._allThreeWayInstances.map(function(instance) {
-	var instanceId, dataId;
+	var instanceId, dataId, doc;
 	Tracker.nonreactive(function() {
 		instanceId = instance._3w_.get3wInstanceId();
 		dataId = instance._3w_.getId();
+		doc = instance[THREE_WAY_NAMESPACE].collection.findOne(dataId);
 	});
 	return {
 		instanceId: instanceId,
 		dataId: dataId,
 		data: instance._3w_.getAll_NR(),
+		document: doc,
 		template: instance,
 		templateType: instance.view.name,
 	};

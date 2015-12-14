@@ -13,7 +13,7 @@ Package.onUse(function(api) {
 		'blaze', 'tracker',
 		'reactive-var', 'reactive-dict',
 		'reload',
-		'convexset:template-helpers@0.1.13'
+		'convexset:template-helpers@0.1.15'
 	], 'client');
 
 	api.addFiles([
