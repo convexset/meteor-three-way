@@ -472,7 +472,7 @@ Note that in the case of multiple matches, the most specific match will be used,
 
 ### Default Values
 
-If certain fields require a value but it is possible that database entries have such missing fields, they can be "injected" with defaults. These may be specified in the set up as follows:
+If certain fields require a value but it is possible that database entries have such missing fields, they can be "injected" (on the view model side) with defaults. These may be specified in the set up as follows:
 
 ```javascript
 // Inject default values if not in database record
@@ -1000,7 +1000,7 @@ preProcessors: {
 
 Multi-way data-bindings such as `value` and `checked` use pre-processing pipelines to deal with DOM manipulation only (e.g.: [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) via `ThreeWay.preProcessors.updateSemanticUIDropdown`). Pipeline functions do not manipulate value.
 
-Pre-processors have method signature `function(value, elem, vmData, dataSourceInfomation)` where `value` is the value in the view model, `elem` is the bound element, `vmData` is a dictionary containing all the data from the view model, and `dataSourceInfomation` contains information on the source of the data in the form:
+Pre-processors have method signature `function(value, elem, vmData, dataSourceInfomation)` (`function(v1, v2, ..., vn, elem, vmData, dataSourceInfomation)` for the first pre-processor in a multi-variable binding) where `value` is the value in the view model, `elem` is the bound element, `vmData` is a dictionary containing all the data from the view model, and `dataSourceInfomation` contains information on the source of the data in the form:
 ```javascript
 {
     "type": 'field',
@@ -1228,9 +1228,7 @@ Extra processors may be accessed via the `ThreeWay.preProcessors` namespace (e.g
  - `isNonEmptyArray`: returns the described true/false value
  - `toUpperCase`: transforms the value to a string (`undefined` to `''`) and returns it in upper case
  - `toLowerCase`: transforms the value to a string (`undefined` to `''`) and returns it in lower case
- - `updateSemanticUIDropdown`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html); uses `.dropdown("set exactly", ...)` that triggers value changes and may lead to unnecessary updates
- - `updateSemanticUIDropdownSingle`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html); uses direct DOM manipulation; value changes not triggered
- - `updateSemanticUIDropdownMultiple`: does the necessary calls that enable the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html) multiple drop down; uses direct DOM manipulation; value changes not triggered
+ - `updateSemanticUIDropdown`: does the necessary DOM manipulation that enables the use of [Semantic UI dropdowns](http://semantic-ui.com/modules/dropdown.html); (Previously, this used `.dropdown("set exactly", ...)` that would trigger value changes and unnecessary updates.)
  - `undefinedToEmptyStringFilter`: maps `undefined`'s to empty strings and passes other values
 
 ### Extra Pre-Processor Generators
@@ -1375,4 +1373,6 @@ However, this is when `check` and authentication causes a bit of a problem. The 
 
 ## To Do
 
+- Consider how to perform binding to web components (possibly via a call-back interface)
+- Consider enabling "hard-links" between pieces of data (possibly via a SSOT)
 - Reconsider group debounced updates (given that auto-generation of a general updater in `convexset:collection-tools` is done)
