@@ -1276,11 +1276,16 @@ Similar to the above, but these are generators for transformations that take one
 
 ### Extra Event Generators
 
-Similar to the above, but these are generators for transformations that take one or more parameters and return a transformation. They may be accessed via the `ThreeWay.eventGenerators` namespace (e.g.: `ThreeWay.eventGenerators.returnKeyHandlerGenerator`).
+These are generators for event handlers via specialization of existing DOM events.
+They take an event handler and wrap a filter around it, returning a new event handler that is called on the parent event, but checks to see whether the user specified handler should be called.
+These generators may be accessed via the `ThreeWay.eventGenerators` namespace (e.g.: `ThreeWay.eventGenerators.returnKeyHandlerGenerator`).
 
 Generally, these generators take, as first argument, an event handler with signature `function(event, template, vmData)` (see [Event Bindings](#event-bindings)).
 
  - `keypressHandlerGenerator(handler, keyCodes, specialKeys)`: calls event handler if the pressed key is in the array `keyCodes` and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
+
+ - `keypressHandlerGeneratorFromChars(handler, chars, specialKeys)`: calls event handler if the pressed key is in the string `char` and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
+ - `returnKeyHandlerGenerator(handler, specialKeys)`: calls event handler if the pressed key was RETURN and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
 
 For example:
 ```javascript
@@ -1290,10 +1295,6 @@ var ctrlReturnKey = ThreeWay.eventGenerators.returnKeyHandlerGenerator(() => con
     shiftKey: false,
 });
 ```
-
- - `keypressHandlerGeneratorFromChars(handler, chars, specialKeys)`: calls event handler if the pressed key is in the string `char` and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
- - `returnKeyHandlerGenerator(handler, specialKeys)`: calls event handler if the pressed key was RETURN and the special keys (SHIFT, CTRL, ALT) pressed match those in `specialKeys` (bind the result to `keydown`, `keyup` and similar handlers)
-
 
 ### Extra Events
 
@@ -1375,4 +1376,6 @@ However, this is when `check` and authentication causes a bit of a problem. The 
 
 - Consider how to perform binding to web components (possibly via a call-back interface)
 - Consider enabling "hard-links" between pieces of data (possibly via a SSOT)
+- Consider events executed at most n times
+- Consider events "limited"/"filtered" by a truthy view model field
 - Reconsider group debounced updates (given that auto-generation of a general updater in `convexset:collection-tools` is done)

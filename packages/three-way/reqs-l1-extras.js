@@ -193,8 +193,7 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'transf
 });
 
 PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'eventGenerators', {
-	keypressHandlerGenerator: function keypressHandlerGenerator(handler, keyCodes, specialKeys) {
-		specialKeys = specialKeys || {};
+	keypressHandlerGenerator: function keypressHandlerGenerator(handler, keyCodes, specialKeys = {}) {
 		return function keypressHandler(event, template, vmData) {
 			var specialKeysMatch = true;
 			['altKey', 'ctrlKey', 'shiftKey'].forEach(function(k) {
@@ -202,13 +201,12 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'eventG
 					specialKeysMatch = specialKeysMatch && (specialKeys[k] === event[k]);
 				}
 			});
-			if (specialKeysMatch && (keyCodes.indexOf(event.keyCode) !== -1)) {
-				return handler(event, template, vmData);
+			if (specialKeysMatch && (keyCodes.indexOf(event.which) !== -1)) {
+				handler.call(this, event, template, vmData);
 			}
 		};
 	},
-	keypressHandlerGeneratorFromChars: function keypressHandlerGeneratorFromChars(handler, chars, specialKeys) {
-		specialKeys = specialKeys || {};
+	keypressHandlerGeneratorFromChars: function keypressHandlerGeneratorFromChars(handler, chars, specialKeys = {}) {
 		return function keypressHandler(event, template, vmData) {
 			var specialKeysMatch = true;
 			['altKey', 'ctrlKey', 'shiftKey'].forEach(function(k) {
@@ -216,13 +214,12 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'eventG
 					specialKeysMatch = specialKeysMatch && (specialKeys[k] === event[k]);
 				}
 			});
-			if (specialKeysMatch && (Array.prototype.map.call(chars.toUpperCase(), x => x.charCodeAt(0)).indexOf(event.keyCode) !== -1)) {
-				return handler(event, template, vmData);
+			if (specialKeysMatch && (Array.prototype.map.call(chars, x => x.toUpperCase().charCodeAt(0)).indexOf(event.which) !== -1)) {
+				handler.call(this, event, template, vmData);
 			}
 		};
 	},
-	returnKeyHandlerGenerator: function returnKeyHandlerGenerator(handler, specialKeys) {
-		specialKeys = specialKeys || {};
+	returnKeyHandlerGenerator: function returnKeyHandlerGenerator(handler, specialKeys = {}) {
 		return function returnKeypressHandler(event, template, vmData) {
 			var specialKeysMatch = true;
 			['altKey', 'ctrlKey', 'shiftKey'].forEach(function(k) {
@@ -230,8 +227,8 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'eventG
 					specialKeysMatch = specialKeysMatch && (specialKeys[k] === event[k]);
 				}
 			});
-			if (specialKeysMatch && (event.keyCode === 13)) {
-				return handler(event, template, vmData);
+			if (specialKeysMatch && (event.which === 13)) {
+				handler.call(this, event, template, vmData);
 			}
 		};
 	},
