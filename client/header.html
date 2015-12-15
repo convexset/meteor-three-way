@@ -12,6 +12,20 @@
 					<strong>ThreeWay: A Meteor Package for Data-Binding</strong>
 				</a>
 			</div>
+
+			<div class="header item">
+				<div><strong>Syntax Highlighting Theme:</strong></div>
+                <div class="ui fluid search selection dropdown">
+                    <input name="tags" type="hidden" data-bind="value: theme|updateSemanticUIDropdown">
+                    <i class="dropdown icon"></i>
+                    <div class="default text">Select Theme</div>
+                    <div class="menu">
+                        {{#each themes}}
+                            <div class="item" data-value="{{id}}">{{name}}</div>
+                        {{/each}}
+                    </div>
+                </div>
+			</div>
 		</div>
 	</div>
 </template>
