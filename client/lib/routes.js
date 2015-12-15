@@ -1,6 +1,7 @@
 /* global FlowRouterTree: true */
 /* global listThreeWayExamples: true */
 /* global listThreeWayGuideItems: true */
+/* global hljsProcessPreBlocks: true */
 
 var root = FlowRouterTree.createNode({
 	name: 'rootNode',
@@ -12,7 +13,12 @@ var root = FlowRouterTree.createNode({
 		footer: 'Footer'
 	},
 	actionFactory: FlowRouterTree.SampleParameterizedActions.blazeLayoutRenderThreeComponent,
-	makeRoute: false
+	makeRoute: false,
+	triggersEnter: {
+		hljsProcessPreBlocks: function() {
+			setTimeout(hljsProcessPreBlocks, 250);
+		}
+	}
 });
 
 FlowRouterTree.createNode({

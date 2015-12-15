@@ -60,4 +60,6 @@ Package.onUse(function(api) {
     ], 'client');
 
     api.addFiles('plugin-setup.js', 'client');
+
+    api.export('hljsProcessPreBlocks');
 });

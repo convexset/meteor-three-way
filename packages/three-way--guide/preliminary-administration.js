@@ -1,4 +1,41 @@
 /* global hljs: true */
+/* global hljsProcessPreBlocks: true */
+
+function numLeadingSpaces(s) {
+	if (s.trim() === "") {
+		return Infinity;
+	}
+	return s.length - s.trimLeft().length;
+}
+
+function lessLeadingCharacters(s, n) {
+	return s.substr(n);
+}
+
+hljsProcessPreBlocks = function hljsProcessPreBlocks() {
+	$('pre').each(function(i, elem) {
+		if (Array.prototype.indexOf.call(elem.classList, 'hljs') !== -1) {
+			return;
+		}
+
+		var textBlocks = $(elem).text().split('\n').map(x => x.trimRight());
+		while (textBlocks[0] === "") {
+			textBlocks.shift();
+		}
+		while (textBlocks[textBlocks.length - 1] === "") {
+			textBlocks.pop();
+		}
+		textBlocks.forEach(function(v, idx) {
+			while (textBlocks[idx].indexOf('\t') !== -1) {
+				textBlocks[idx] = textBlocks[idx].replace('\t', '    ');
+			}
+		});
+		var minLeadingSpaces = Math.min.apply({}, textBlocks.map(numLeadingSpaces));
+
+		$(elem).text(textBlocks.map(s => lessLeadingCharacters(s, minLeadingSpaces)).join('\n'));
+		hljs.highlightBlock(elem);
+	});
+};
 
 Meteor.startup(function() {
 	function generateTOC() {
@@ -33,17 +70,6 @@ Meteor.startup(function() {
 			Template[templateName].onRendered(generateTOC);
 		});
 
-	function numLeadingSpaces(s) {
-		if (s.trim() === "") {
-			return Infinity;
-		}
-		return s.length - s.trimLeft().length;
-	}
-
-	function lessLeadingCharacters(s, n) {
-		return s.substr(n);
-	}
-
 	Object.keys(Template)
 		.filter(function(x) {
 			var xs = x.split('_');
@@ -53,30 +79,7 @@ Meteor.startup(function() {
 			return (xs[0] === "ThreeWayGuide");
 		})
 		.forEach(function(templateName) {
-			Template[templateName].onRendered(function() {
-				$('pre').each(function(i, elem) {
-					if (Array.prototype.indexOf.call(elem.classList, 'hljs') !== -1) {
-						return;
-					}
-
-					var textBlocks = $(elem).text().split('\n').map(x => x.trimRight());
-					while (textBlocks[0] === "") {
-						textBlocks.shift();
-					}
-					while (textBlocks[textBlocks.length - 1] === "") {
-						textBlocks.pop();
-					}
-					textBlocks.forEach(function(v, idx) {
-						while (textBlocks[idx].indexOf('\t') !== -1) {
-							textBlocks[idx] = textBlocks[idx].replace('\t', '    ');
-						}
-					});
-					var minLeadingSpaces = Math.min.apply({}, textBlocks.map(numLeadingSpaces));
-
-					$(elem).text(textBlocks.map(s => lessLeadingCharacters(s, minLeadingSpaces)).join('\n'));
-					hljs.highlightBlock(elem);
-				});
-			});
+			Template[templateName].onRendered(hljsProcessPreBlocks);
 		});
 
 	// Scroll and change hash

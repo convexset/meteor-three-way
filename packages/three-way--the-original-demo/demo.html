@@ -35,7 +35,7 @@
             <p>Naturally, changes will be propagated to client-side elements before stuff on the "server-side" (or "server's side"). When your changes appear here, it means that data has made its way to the database, has been saved to the database, and has been sent back and stored in the MiniMongo local cache.</p>
 
             <p>If you do not like what you see, simply enter the following into the console:</p>
-            <pre>Meteor.call('regenerate-data--original-demo');</pre>
+            <pre class="javascript">Meteor.call('regenerate-data--original-demo');</pre>
 
             <table class="ui celled table form" data-bind="class: {loading: ready|not}">
                 <thead>
@@ -259,10 +259,10 @@
 
                 <div>
                     <p>If you are feeling frisky, try manually manipulating the DOM to see if the data binding responds:</p>
-                    <pre>$("input[name='personal.someArr.2']").attr('data-bind', 'value: personal.someArr.0')</pre>
+                    <pre class="javascript">$("input[name='personal.someArr.2']").attr('data-bind', 'value: personal.someArr.0')</pre>
                     <p>should link "#2" of the <code>personal.someArr</code> data-entry row with the value of "#0"...</p>
                     <p>Alternatively, try adding a nodes below like so:</p>
-<pre>
+<pre class="html">
 $(&#039;#below-me&#039;).append(&#039;&lt;h3&gt;Multivariable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h3&gt;&#039;);
 $(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.0&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
 $(&#039;#below-me&#039;).append(&#039;&lt;input data-bind=&quot;value: personal.someArr.1&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
@@ -323,7 +323,7 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
                         <td><strong>personal.otherArr</strong></td>
                         <td>
                             <div data-bind="process: personal.otherArr|makeTable"></div>
-                            <pre>&lt;div data-bind=&quot;process: personal.otherArr|makeTable&quot;&gt;&lt;/div&gt;</pre>
+                            <pre class="html">&lt;div data-bind=&quot;process: personal.otherArr|makeTable&quot;&gt;&lt;/div&gt;</pre>
                             <p>The <code>process</code> binding is all about side-effects.</p>
                             <!-- <ol start="0">
                                 {{#each range (length (_3w_get 'personal.otherArr'))}}
@@ -343,10 +343,10 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
                             <div data-bind="process: *#rotationValue|drawSomething" style="width: 95%"></div>
                             <p style="text-align: center">Rotation: {{_3w_get 'rotationValue'}} &pi; radians</p>
                             <input data-bind="value: rotationValue" type="range" style="width: 100%" min="-1" max="1" step="0.01">
-                            <pre>&lt;div data-bind=&quot;process: *#rotationValue|drawSomething&quot; style=&quot;width: 95%&quot;&gt;&lt;/div&gt;</pre>
+                            <pre class="html">&lt;div data-bind=&quot;process: *#rotationValue|drawSomething&quot; style=&quot;width: 95%&quot;&gt;&lt;/div&gt;</pre>
                             <p>With <code>process</code> is also possible to bind to the entire document (<code>*</code>) to obtain an object transform and all, or even the entire view model (<code>@</code>) which is a "flattened" object.</p>
                             <div data-bind="process: @|saySomethingAboutPlot"></div>
-                            <pre>&lt;div data-bind=&quot;process: @|saySomethingAboutPlot&quot;&gt;&lt;/div&gt;</pre>
+                            <pre class="html">&lt;div data-bind=&quot;process: @|saySomethingAboutPlot&quot;&gt;&lt;/div&gt;</pre>
                         </td>
                     </tr>
                 </table>
@@ -387,7 +387,7 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
 
                     <div>
                     Initialized (at Template-level) via:
-<pre>viewModelToViewOnly: {
+<pre class="javascript">viewModelToViewOnly: {
     "hide": "Set to \"hide\" to hide",
     ...
 }</pre>
@@ -610,9 +610,9 @@ $(&#039;#below-me&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-co
     <div style="background-color: #ccf; padding: 15px;">
         <h1 data-bind="text: title"></h1>
         <p>This was initialized with:</p>
-        <pre>ThreeWay.prepare(Template.DemoThreeWayPreparationDeficient);</pre>
+        <pre class="javascript">ThreeWay.prepare(Template.DemoThreeWayPreparationDeficient);</pre>
         <p>... and all view model content was created in <code>onRendered</code> with <code>Template.instance()._3w_.set</code>.</p>
-<pre>
+<pre class="javascript">
 Template.DemoThreeWayPreparationDeficient.onRendered(function() {
     preparationDeficientTemplate = this;
     Template.instance()._3w_.set('title', 'Preparation Deficit: Quick and Dirty View Models');

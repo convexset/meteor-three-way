@@ -1,27 +1,208 @@
 <template name="ThreeWayGuide_FamilyDataAccess_Wrapper">
     <div class="ui container">    
-        <h1>....</h1>
+        <h1>Family Data Access</h1>
 
-        <p>...</p>
+        <p>
+            Just like DOM elements can be viewed as being part of a "DOM tree", ThreeWay instances, which are attached to Blaze template instances, have an implicit tree structure. If one considers each "ThreeWay-linked" template instance and traces its most immediate "ThreeWay-linked" ancestor (if any, and there is at most one though one may have to pass through non-"ThreeWay-linked" ancestors), one will obtain an honest "ThreeWay Family Tree" (or a "forest" of them).
+        </p>
+
+        <p>
+            This part of the guide will show how to access data from ancestors, descendants and siblings. The main thing to take away from this is that in a "family", everyone needs a name. Kinda. In each family tree, unique names (based on the template type) are automatically assigned is one is not assigned by passing one in via <code>_3w_name</code> in the data context:
+        </p>
+
+        <pre class="handlebars">&lbrace;&lbrace;&gt; SomeChildTemplate _3w_name='childNode'&rbrace;&rbrace;</pre>
+
+        <p>
+            Now onward!
+        </p>
 
         <div><ul id="toc"></ul></div>
 
         {{> ThreeWayGuide_FamilyDataAccess}}
+
+        <section>
+            <h3>Modifying Family Tree Data: Code Samples</h3>
+
+            <p>Here are some code samples that should illustrate what is needed:</p>
+
+            <pre>
+                Template.ThreeWayGuide_FamilyTree_GenOne.events({
+                    'click button#rnd-child': function() {
+                        Template.instance()._3w_.childDataSet('data', Fake.word(), 'child');
+                    },
+                    'click button#rnd-gc-one': function() {
+                        Template.instance()._3w_.childDataSet('data', Fake.word(), ['child', 'grand-child-1']);
+                    },
+                    'click button#rnd-gc-two': function() {
+                        Template.instance()._3w_.childDataSet('data', Fake.word(), ['child', 'grand-child-2']);
+                    },
+                });
+
+                Template.ThreeWayGuide_FamilyTree_GenTwo.events({
+                    'click button#rnd-parent': function() {
+                        Template.instance()._3w_.parentDataSet('data', Fake.word(), 1);
+                    },
+                    'click button#rnd-gc-one': function() {
+                        Template.instance()._3w_.childDataSet('data', Fake.word(), 'grand-child-1');
+                    },
+                    'click button#rnd-gc-two': function() {
+                        Template.instance()._3w_.childDataSet('data', Fake.word(), 'grand-child-2');
+                    },
+                });
+            </pre>
+
+            <p>However, it is perhaps best to view the documentation:</p>
+
+            <ul>
+                <li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#ancestor-data-and-other-possessions" target="_blank">Ancestor Data</a></li>
+                <li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#descendant-data" target="_blank">Descendant Data</a></li>
+                <li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#sibling-data" target="_blank">Sibling Data</a></li>
+                <li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#additional-template-helpers" target="_blank">Template Helpers</a></li>
+            </ul>
+
+            <div style="min-height: 20px"></div>
+        </section>        
+
+        <div style="min-height: 30px"></div>
     </div>
 </template>
 
 <template name="ThreeWayGuide_FamilyDataAccess">
     <div class="column">
         <section>
-            <h3>....</h3>
+            <h3>The Example</h3>
+
+            <p>There really isn't very much to talk about in this example save that data can is accessible by name in JavaScript and helpers. It is not possible to bind directly to data in another ThreeWay instance, but one has read/write access through JavaScript and read access via template helpers.</p>
+
+            <p>In all the "ThreeWay-linked" instances, data is contained in a field unimaginatively called <code>data</code>.</p>
+
+            {{> ThreeWayGuide_FamilyTree_GenOne}}
         </section>
 
         <div style="min-height: 20px"></div>
 
-        <section>
-            <h3>....</h3>
-        </section>
+    </div>
+</template>
 
-        <div style="min-height: 50px"></div>
+<template name="ThreeWayGuide_FamilyTree_GenOne">
+    <div style="background-color: #f99; border-radius: 10px; padding: 10px 20px; width: 95%; text-align: center; margin: auto;">
+        <h4 style="color: #246;">ThreeWayGuide_FamilyTree_GenOne: <code>{{_3w_3wInstanceId}}</code></h4>
+        <div style="text-align: left; width: 800px; margin: auto;">
+            <table style="width: 100%;">
+                <tr>
+                    <td colspan="2" style="padding: 5px; font-weight: bold;">My Data:</td>
+                    <td colspan="2"><input data-bind="value: data" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Child Data:</td>
+                    <td style="padding: 5px;">{{_3w_childDataGet 'data' childName}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_childDataGet 'data' childName&rbrace;&rbrace;</pre>
+                    </td>
+                    <td style="width: 100px;"><button class="ui button" id="rnd-child">Randomize</button></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Grand Child Data 1:</td>
+                    <td style="padding: 5px;">{{_3w_childDataGet 'data' grandChildPath1}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_childDataGet 'data' grandChildPath1&rbrace;&rbrace;</pre>
+                    </td>
+                    <td><button class="ui button" id="rnd-gc-one">Randomize</button></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Grand Child Data 2:</td>
+                    <td style="padding: 5px;">{{_3w_childDataGet 'data' grandChildPath2}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_childDataGet 'data' grandChildPath2&rbrace;&rbrace;</pre>
+                    </td>
+                    <td><button class="ui button" id="rnd-gc-two">Randomize</button></td>
+                </tr>
+            </table>
+        </div>
+        <div style="height: 10px;"></div>
+        {{> ThreeWayGuide_FamilyTree_GenTwo _3w_name=childName}}
+        <div style="height: 10px;"></div>
+    </div>
+</template>
+
+<template name="ThreeWayGuide_FamilyTree_GenTwo">
+    <div style="background-color: #9f9; border-radius: 10px; padding: 10px 20px; width: 95%; text-align: center; margin: auto;">
+        <h4 style="color: #246;">ThreeWayGuide_FamilyTree_GenTwo: <code>{{_3w_3wInstanceId}}</code></h4>
+        <div style="text-align: left; width: 800px; margin: auto;">
+            <table style="width: 100%;">
+                <tr>
+                    <td colspan="2" style="padding: 5px; font-weight: bold;">My Data:</td>
+                    <td colspan="2"><input data-bind="value: data" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Parent Data:</td>
+                    <td style="padding: 5px;">{{_3w_parentDataGet 'data' 1}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_parentDataGet 'data' 1&rbrace;&rbrace;</pre>
+                    </td>
+                    <td style="width: 100px;"><button class="ui button" id="rnd-parent">Randomize</button></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Grand Child Data 1:</td>
+                    <td style="padding: 5px;">{{_3w_childDataGet 'data' childName1}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_childDataGet 'data' childName1&rbrace;&rbrace;</pre>
+                    </td>
+                    <td><button class="ui button" id="rnd-gc-one">Randomize</button></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Grand Child Data 2:</td>
+                    <td style="padding: 5px;">{{_3w_childDataGet 'data' childName2}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_childDataGet 'data' childName2&rbrace;&rbrace;</pre>
+                    </td>
+                    <td><button class="ui button" id="rnd-gc-two">Randomize</button></td>
+                </tr>
+            </table>
+        </div>
+        <div style="height: 10px;"></div>
+        {{> ThreeWayGuide_FamilyTree_GenThree _3w_name=childName1}}
+        <div style="height: 10px;"></div>
+        {{> ThreeWayGuide_FamilyTree_GenThree _3w_name=childName2}}
+        <div style="height: 10px;"></div>
+    </div>
+</template>
+
+<template name="ThreeWayGuide_FamilyTree_GenThree">
+    <div style="background-color: #99f; border-radius: 10px; padding: 10px 20px; width: 95%; text-align: center; margin: auto;">
+        <h4 style="color: #246;">ThreeWayGuide_FamilyTree_GenThree: <code>{{_3w_3wInstanceId}}</code></h4>
+        <div style="text-align: left; width: 800px; margin: auto;">
+            <table style="width: 100%;">
+                <tr>
+                    <td colspan="2" style="padding: 5px; font-weight: bold;">My Data:</td>
+                    <td colspan="2"><input data-bind="value: data" style="width: 100%;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Grand Parent Data:</td>
+                    <td style="padding: 5px;">{{_3w_parentDataGet 'data' 2}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_parentDataGet 'data' 2&rbrace;&rbrace;</pre>
+                    </td>
+                    <td style="width: 100px;"><button class="ui button" id="rnd-gen-one">Randomize</button></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Parent Data:</td>
+                    <td style="padding: 5px;">{{_3w_parentDataGet 'data' 1}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_parentDataGet 'data' 1&rbrace;&rbrace;</pre>
+                    </td>
+                    <td style="width: 100px;"><button class="ui button" id="rnd-gen-two">Randomize</button></td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Sibling Data:</td>
+                    <td style="padding: 5px;">{{_3w_siblingDataGet 'data' siblingName}}</td>
+                    <td style="padding: 5px;">
+                        <pre class="handlebars">&lbrace;&lbrace;_3w_siblingDataGet 'data' siblingName&rbrace;&rbrace;</pre>
+                    </td>
+                    <td style="width: 100px;"><button class="ui button" id="rnd-sibling">Randomize</button></td>
+                </tr>
+            </table>
+        </div>
+        <div style="height: 10px;"></div>
     </div>
 </template>

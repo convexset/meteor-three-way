@@ -62,8 +62,8 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) Family Data Access',
-                description: 'ThreeWay instances are connected in family trees and can access each others\' data',
+                name: 'Family Data Access',
+                description: 'ThreeWay instances are connected in family trees and can access each others\' data. Here is how things work.',
                 routeName: 'family-data-access',
                 templateName: 'ThreeWayGuide_FamilyDataAccess_Wrapper',
                 order: 5,
@@ -76,7 +76,7 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) Dynamic Data-binding',
+                name: '(Coming Soon) Dynamic Data-binding (... and the Wonderful Dev. Experience)',
                 description: 'Dynamic Data-binding and Usage with Family Trees',
                 routeName: 'dynamic-data-binding',
                 templateName: 'ThreeWayGuide_DynamicDataBinding_Wrapper',

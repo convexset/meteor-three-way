@@ -1,11 +1,11 @@
 #logo{
-	color:yellowgreen;
+	color: #17e;
 }
 #logo:hover i{
-	text-shadow: 0 0 3px green;
+	text-shadow: 0 0 3px #0057ad;
 }
 #logo strong{
-	font-size: 2rem;
+	font-size: 1.6rem;
 	color: dimgray;
 }
 
