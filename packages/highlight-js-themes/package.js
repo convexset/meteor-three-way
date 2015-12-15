@@ -2,7 +2,6 @@ Package.describe({
 	name: 'convexset:highlight-js-themes',
 	version: '0.1.0',
 	summary: 'HighlightJS with Easy Theme Switching',
-	git: 'https://github.com/convexset/meteor-three-way',
 	documentation: 'README.md'
 });
 
