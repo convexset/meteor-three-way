@@ -34,6 +34,8 @@ Returns a dictionary (object) of all themes mapping "themeId" to theme name. Her
 
 Returns the default theme (should be "Monokai Sublime"). Throws an error if there is an attempt to set it to an invalid theme.
 
+Note that the default theme may be set prior to `Meteor.startup`.
+
 #### `HighlightJSThemes.currentTheme`
 
 Returns the current theme.
