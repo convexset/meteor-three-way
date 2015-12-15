@@ -33,17 +33,6 @@ ThreeWay.prepare(Template.ThreeWayGuide_ThreeWay_Wildcards, {
 	},
 });
 
-var helperBundle = {
-	ready: () => Template.instance().subscriptionsReady(),
-	data: () => GuideData.collection.find(),
-	allTags: () => GuideData.allTags,
-	ageRanges: () => GuideData.ageRanges,
-	emailPrefsAll: () => GuideData.emailPrefsAll,
-	emailPrefsToCSL: function(arr) {
-		return arr.map(x => GuideData.emailPrefsAll[x]).join(", ");
-	},
-};
-
 [
 	Template.ThreeWayGuide_ThreeWay_Simple,
 	Template.ThreeWayGuide_ThreeWay_Wildcards,
@@ -64,7 +53,7 @@ var helperBundle = {
 		});
 	});
 
-	tmpl.helpers(helperBundle);
+	tmpl.helpers(GuideData.helperBundle);
 
 	tmpl.events({
 		'click button.select-document': function(event, instance) {

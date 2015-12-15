@@ -62,7 +62,7 @@
                     </td>
                     <td style="min-width: 250px; vertical-align: top;">
                         <div data-bind="process: @|drawSomething"></div>
-                        <pre>&lt;div data-bind=&quot;process: @|drawSomething&quot;&gt;&lt;/div&gt;</pre>
+                        <pre class="html">&lt;div data-bind=&quot;process: @|drawSomething&quot;&gt;&lt;/div&gt;</pre>
                     </td>
                 </tr>
             </table>
@@ -77,32 +77,32 @@
                 As usual we bind to the same collection. Here is how we initialize the template:
             </p>
 
-<pre>
-ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
-    collection: GuideData.collection,
-    updatersForServer: {
-        'points': 'three-way-guide/update/points',
-        'points.*.*': 'three-way-guide/update/points.*.*',
-        'rotationAngle': 'three-way-guide/update/rotationAngle',
-    },
-    throttledUpdaters: ['rotationAngle'],
-    throttleInterval: 200,
-    dataTransformToServer: {
-        'points.*.*': x => Number(x),
-        'rotationAngle': x => Number(x),
-    },
-    dataTransformFromServer: {
-        'points.*.*': x => ("" + x),    // Yeah... Values are represented
-        'rotationAngle': x => ("" + x), // in the browser as text
-    },
-    preProcessors: {
-        // function drawSomething(data, elem) --> render stuff
-        drawSomething: drawSomething,
-        // ...
-        // ...
-    }
-});
-</pre>
+            <pre class="javascript">
+                ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
+                    collection: GuideData.collection,
+                    updatersForServer: {
+                        'points': 'three-way-guide/update/points',
+                        'points.*.*': 'three-way-guide/update/points.*.*',
+                        'rotationAngle': 'three-way-guide/update/rotationAngle',
+                    },
+                    throttledUpdaters: ['rotationAngle'],
+                    throttleInterval: 200,
+                    dataTransformToServer: {
+                        'points.*.*': x => Number(x),
+                        'rotationAngle': x => Number(x),
+                    },
+                    dataTransformFromServer: {
+                        'points.*.*': x => ("" + x),    // Yeah... Values are represented
+                        'rotationAngle': x => ("" + x), // in the browser as text
+                    },
+                    preProcessors: {
+                        // function drawSomething(data, elem) --> render stuff
+                        drawSomething: drawSomething,
+                        // ...
+                        // ...
+                    }
+                });
+            </pre>
 
             <p>
                 Here <code>drawSomething</code> is a function that accepts, as arguments, all data from the view model and a DOM element, and renders a diagram via HTML5 canvas in that element. The rest should be clear.
@@ -112,7 +112,9 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
                 The table on the left side should be a familiar fixture by now. On the right, we have:
             </p>
 
-<pre>&lt;div data-bind=&quot;process: @|drawSomething&quot;&gt;&lt;/div&gt;</pre>
+            <pre class="html">
+                &lt;div data-bind=&quot;process: @|drawSomething&quot;&gt;&lt;/div&gt;
+            </pre>
 
             <p>
                 The <code>process</code> binding obtains data from a data source (reactively) and then executes the entire processing pipeline described by the pre-processors. Nothing else is done beyond that.
@@ -201,7 +203,7 @@ ThreeWay.prepare(Template.ThreeWayGuide_PureSideEffects, {
                     </td>
                     <td style="min-width: 250px; vertical-align: top;">
                         <div data-bind="process: *|drawSomething2"></div>
-                        <pre>&lt;div data-bind=&quot;process: *|drawSomething2&quot;&gt;&lt;/div&gt;</pre>
+                        <pre class="html">&lt;div data-bind=&quot;process: *|drawSomething2&quot;&gt;&lt;/div&gt;</pre>
                     </td>
                 </tr>
             </table>

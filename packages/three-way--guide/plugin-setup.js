@@ -36,7 +36,7 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
             return {
                 name: 'Declarative Data Display (... and More Bindings)',
                 description: 'Pre-processors for displaying data and (necessary evil) side-effects for HTML components that require it. More Bindings: style, class, attr, visible, disabled; Multivariate bindings.',
-                routeName: 'pre-processors-and-more-bindings',
+                routeName: 'declarative-data-display',
                 templateName: 'ThreeWayGuide_PreProcessorsMoreBindings_Wrapper',
                 order: 3,
             };
@@ -48,7 +48,7 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) Events and Data Validation',
+                name: 'Events and Data Validation',
                 description: 'Events and the data validation flow',
                 routeName: 'events-data-validation',
                 templateName: 'ThreeWayGuide_EventsDataValidation_Wrapper',
@@ -118,8 +118,8 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: 'Declarative Data Display with the Process Binding',
-                description: 'A Pure Side-effects (Using the process Binding) Pre-Processor Example: Rotate a Canvas Plot',
+                name: 'Taking Declarative Data Display Further',
+                description: 'One cannot do justice to the idea of declarative data display by just adding a few items to a list. Here, we present a pure side-effects pre-processor example (using the process binding) with a little more visual appeal and interactivity',
                 routeName: 'pure-side-effects',
                 templateName: 'ThreeWayGuide_PureSideEffects_Wrapper',
                 order: 9,

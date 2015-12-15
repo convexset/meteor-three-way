@@ -18,6 +18,7 @@ callback-hook@1.0.4
 check@1.1.0
 coffeescript@1.0.11
 convexset:flow-router-tree@0.1.2
+convexset:highlight-js-themes@0.1.0
 convexset:match-extensions@0.1.1
 convexset:package-utils@0.1.9
 convexset:plugins@0.1.0
@@ -75,6 +76,7 @@ routepolicy@1.0.6
 semantic:ui@2.1.6
 semantic:ui-data@2.1.6
 session@1.1.1
+sewdn:highlightjs@8.4.0_2
 spacebars@1.0.7
 spacebars-compiler@1.0.7
 standard-minifiers@1.0.2

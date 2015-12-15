@@ -1,164 +1,190 @@
 <template name="ThreeWayGuide_BasicsVMOnly_Wrapper">
-    <div class="ui container">    
-        <h1>Basics (View Model Only)</h1>
+	<div class="ui container">    
+		<h1>Basics (View Model Only)</h1>
 
-        <p>In this part of the guide, the bare basics will be covered. Binding to Mongo documents will be touched on in the next guide.</p>
+		<p>In this part of the guide, the bare basics will be covered. Binding to Mongo documents will be touched on in the next guide.</p>
 
-        <div><ul id="toc"></ul></div>
-        
-        {{> ThreeWayGuide_BasicsVMOnly}}
-    </div>
+		<div><ul id="toc"></ul></div>
+		
+		{{> ThreeWayGuide_BasicsVMOnly}}
+	</div>
 </template>
 
 <template name="ThreeWayGuide_BasicsVMOnly">
-    <div class="column">
-        <section>
-            <h3>Set Up</h3>
-            <p>Set up is as simple as:</p>
-            <pre>ThreeWay.prepare(Template.ThreeWayGuide_BasicsVMOnly);</pre>
-            <p>Totally zero-fuss... ish.</p>
-            <p>Most of the <code>ThreeWay</code> is set-up by the <a href="http://docs.meteor.com/#/full/template_onRendered" target=_blank><code>onRendered</code></a> stage of the <a href="http://docs.meteor.com/#/full/templates_api" target=_blank>template life cycle</a> so initialization can be done there.</p>
+	<div class="column">
+		<section>
+			<h3>Set Up</h3>
+			<p>Set up is as simple as:</p>
+			<pre class="javascript">ThreeWay.prepare(Template.ThreeWayGuide_BasicsVMOnly);</pre>
+			<p>Totally zero-fuss... ish.</p>
+			<p>Most of the <code>ThreeWay</code> is set-up by the <a href="http://docs.meteor.com/#/full/template_onRendered" target=_blank><code>onRendered</code></a> stage of the <a href="http://docs.meteor.com/#/full/templates_api" target=_blank>template life cycle</a> so initialization can be done there.</p>
 
-<pre>
-Template.ThreeWayGuide_BasicsVMOnly.onRendered(function() {
-    var instance = this;
-    // initialize
-    instance._3w_.set('name', 'Some Name');
-    instance._3w_.set('checkedValue', []);
-    instance._3w_.set('radioValue', '');
-    instance._3w_.set('sliderValue', 0);
-});
-</pre>
-        </section>
+			<pre class="javascript">
+				Template.ThreeWayGuide_BasicsVMOnly.onRendered(function() {
+					var instance = this;
+					// initialize
+					instance._3w_.set('name', 'Some Name');
+					instance._3w_.set('checkedValue', []);
+					instance._3w_.set('radioValue', '');
+					instance._3w_.set('sliderValue', 0);
+				});
+			</pre>
+		</section>
 
-        <div style="min-height: 20px"></div>
+		<div style="min-height: 20px"></div>
 
-        <section>
-            <h3>Bindings</h3>
-            <p>
-                In what follows, the <code>value</code>, <code>checked</code> and <code>text</code> bindings are illustrated [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#binding-to-the-view" target="_blank">Documentation</a>], along with the <code>_3w_get</code> helper [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#additional-template-helpers" target="_blank">Documentation</a>].
-            </p>
+		<section>
+			<h3>Bindings</h3>
+			<p>
+				In what follows, the <code>value</code>, <code>checked</code> and <code>text</code> bindings are illustrated [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#binding-to-the-view" target="_blank">Documentation</a>], along with the <code>_3w_get</code> helper [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#additional-template-helpers" target="_blank">Documentation</a>].
+			</p>
 
-            <table class="ui table celled">
-                <thead>
-                    <tr>
-                        <th colspan="2" style="width: 50%">Input</th>
-                        <th colspan="2" style="width: 50%">Display</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Name:</td>
-                        <td><input data-bind="value: name" style="width: 100%;"></td>
-                        <td>Name:</td>
-                        <td><span data-bind="text: name"></span></td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="vertical-align: top;"><pre>&lt;input data-bind=&quot;value: name&quot;&gt;</pre></td>
-                        <td colspan="2" style="vertical-align: top;"><pre>&lt;span data-bind=&quot;text: name&quot;&gt;&lt;/span&gt;</pre></td>
-                    </tr>
+			<table class="ui table celled">
+				<thead>
+					<tr>
+						<th colspan="2" style="width: 50%">Input</th>
+						<th colspan="2" style="width: 50%">Display</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Name:</td>
+						<td><input data-bind="value: name" style="width: 100%;"></td>
+						<td>Name:</td>
+						<td><span data-bind="text: name"></span></td>
+					</tr>
+					<tr>
+						<td colspan="2" style="vertical-align: top;">
+							<pre class="html">&lt;input data-bind=&quot;value: name&quot;&gt;</pre>
+						</td>
+						<td colspan="2" style="vertical-align: top;">
+							<pre class="html">&lt;span data-bind=&quot;text: name&quot;&gt;&lt;/span&gt;</pre>
+						</td>
+					</tr>
 
-                    <tr>
-                        <td>Some Number:<br/></td>
-                        <td>
-                            <input type="range" min="-10" max="10" data-bind="value: sliderValue" style="width: 70%;">&nbsp;&nbsp;
-                            <input type="number" min="-10" max="10" data-bind="value: sliderValue" style="width: 25%;">
-                        </td>
-                        <td>Some Number: </td>
-                        <td>{{_3w_get 'sliderValue'}}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="vertical-align: top;">
-<pre>&lt;input type=&quot;range&quot; min=&quot;-10&quot; max=&quot;10&quot;
-    data-bind=&quot;value: sliderValue&quot;&gt;
-&lt;input type=&quot;number&quot; min=&quot;-10&quot; max=&quot;10&quot;
-    data-bind=&quot;value: sliderValue&quot;&gt;</pre></td>
-                        <td colspan="2" style="vertical-align: top;"><pre>&lt;!-- Here&#039;s a &quot;tag-free&quot; alternative --&gt;
-&lbrace;&lbrace;_3w_get &#039;sliderValue&#039;&rbrace;&rbrace;</pre></td>
-                    </tr>
+					<tr>
+						<td>Some Number:<br/></td>
+						<td>
+							<input type="range" min="-10" max="10" data-bind="value: sliderValue" style="width: 70%;">&nbsp;&nbsp;
+							<input type="number" min="-10" max="10" data-bind="value: sliderValue" style="width: 25%;">
+						</td>
+						<td>Some Number: </td>
+						<td>{{_3w_get 'sliderValue'}}</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="vertical-align: top;">
+							<pre class="html">
+								&lt;input type=&quot;range&quot; min=&quot;-10&quot; max=&quot;10&quot;
+									data-bind=&quot;value: sliderValue&quot;&gt;
+								&lt;input type=&quot;number&quot; min=&quot;-10&quot; max=&quot;10&quot;
+									data-bind=&quot;value: sliderValue&quot;&gt;
+							</pre>
+						</td>
+						<td colspan="2" style="vertical-align: top;">
+							<pre class="html">
+								&lt;!-- Here&#039;s a &quot;tag-free&quot; alternative --&gt;
+								&lbrace;&lbrace;_3w_get &#039;sliderValue&#039;&rbrace;&rbrace;
+							</pre></td>
+					</tr>
 
-                    <tr>
-                        <td>Choice:</td>
-                        <td>
-                            <div class="ui radio checkbox">
-                                <input type="radio" value="opt1" data-bind="checked: radioValue">
-                                <label>Option 1&nbsp;&nbsp;</label>
-                            </div>
-                            <div class="ui radio checkbox">
-                                <input type="radio" value="opt2" data-bind="checked: radioValue">
-                                <label>Option 2&nbsp;&nbsp;</label>
-                            </div>
-                            <div class="ui radio checkbox">
-                                <input type="radio" value="opt3" data-bind="checked: radioValue">
-                                <label>Option 3&nbsp;&nbsp;</label>
-                            </div>
-                        </td>
-                        <td>Choice:</td>
-                        <td>{{_3w_get 'radioValue'}}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="vertical-align: top;"><pre>&lt;!-- This is one of a few --&gt;
-&lt;input type=&quot;radio&quot; value=&quot;opt1&quot;
-    data-bind=&quot;checked: radioValue&quot;&gt;</pre></td>
-                        <td colspan="2" style="vertical-align: top;"><pre>&lt;!-- This is a string value --&gt;
-&lbrace;&lbrace;_3w_get &#039;radioValue&#039;&rbrace;&rbrace;</pre></td>
-                    </tr>
+					<tr>
+						<td>Choice:</td>
+						<td>
+							<div class="ui radio checkbox">
+								<input type="radio" value="opt1" data-bind="checked: radioValue">
+								<label>Option 1&nbsp;&nbsp;</label>
+							</div>
+							<div class="ui radio checkbox">
+								<input type="radio" value="opt2" data-bind="checked: radioValue">
+								<label>Option 2&nbsp;&nbsp;</label>
+							</div>
+							<div class="ui radio checkbox">
+								<input type="radio" value="opt3" data-bind="checked: radioValue">
+								<label>Option 3&nbsp;&nbsp;</label>
+							</div>
+						</td>
+						<td>Choice:</td>
+						<td>{{_3w_get 'radioValue'}}</td>
+					</tr>
+					<tr>
+						<td colspan="2" style="vertical-align: top;">
+							<pre class="html">
+								&lt;!-- This is one of a few --&gt;
+								&lt;input type=&quot;radio&quot; value=&quot;opt1&quot;
+									data-bind=&quot;checked: radioValue&quot;&gt;
+							</pre></td>
+						<td colspan="2" style="vertical-align: top;">
+							<pre class="html">
+								&lt;!-- This is a string value --&gt;
+								&lbrace;&lbrace;_3w_get &#039;radioValue&#039;&rbrace;&rbrace;
+							</pre></td>
+					</tr>
 
-                    <tr>
-                        <td>Selection:</td>
-                        <td>
-                            <div class="ui checkbox">
-                                <input type="checkbox" value="item1" data-bind="checked: checkedValue">
-                                <label>Item 1&nbsp;&nbsp;</label>
-                            </div>
-                            <div class="ui checkbox">
-                                <input type="checkbox" value="item2" data-bind="checked: checkedValue">
-                                <label>Item 2&nbsp;&nbsp;</label>
-                            </div>
-                            <div class="ui checkbox">
-                                <input type="checkbox" value="item3" data-bind="checked: checkedValue">
-                                <label>Item 3&nbsp;&nbsp;</label>
-                            </div>
-                        </td>
-                        <td>Selection:</td>
-                        <td>{{#each _3w_get 'checkedValue'}}{{this}}&nbsp;&nbsp;{{/each}}</td>
-                    </tr>
-                    <tr>
-                        <td colspan="2"  style="vertical-align: top;"><pre>&lt;!-- This is one of a few --&gt;
-&lt;input type=&quot;radio&quot; value=&quot;opt1&quot;
-    data-bind=&quot;checked: checkedValue&quot;&gt;</pre></td>
-                        <td colspan="2"  style="vertical-align: top;"><pre>&lt;!-- This is an array --&gt;
-&lbrace;&lbrace;#each _3w_get 'checkedValue'&rbrace;&rbrace;&lbrace;&lbrace;this&rbrace;&rbrace; &lbrace;&lbrace;/each&rbrace;&rbrace;</pre></td>
-                    </tr>
+					<tr>
+						<td>Selection:</td>
+						<td>
+							<div class="ui checkbox">
+								<input type="checkbox" value="item1" data-bind="checked: checkedValue">
+								<label>Item 1&nbsp;&nbsp;</label>
+							</div>
+							<div class="ui checkbox">
+								<input type="checkbox" value="item2" data-bind="checked: checkedValue">
+								<label>Item 2&nbsp;&nbsp;</label>
+							</div>
+							<div class="ui checkbox">
+								<input type="checkbox" value="item3" data-bind="checked: checkedValue">
+								<label>Item 3&nbsp;&nbsp;</label>
+							</div>
+						</td>
+						<td>Selection:</td>
+						<td>{{#each _3w_get 'checkedValue'}}{{this}}&nbsp;&nbsp;{{/each}}</td>
+					</tr>
+					<tr>
+						<td colspan="2"  style="vertical-align: top;">
+							<pre class="html">
+								&lt;!-- This is one of a few --&gt;
+								&lt;input type=&quot;radio&quot; value=&quot;opt1&quot;
+									data-bind=&quot;checked: checkedValue&quot;&gt;
+							</pre>
+						</td>
+						<td colspan="2"  style="vertical-align: top;">
+							<pre class="html">
+								&lt;!-- This is an array --&gt;
+								&lbrace;&lbrace;#each _3w_get 'checkedValue'&rbrace;&rbrace;&lbrace;&lbrace;this&rbrace;&rbrace; &lbrace;&lbrace;/each&rbrace;&rbrace;
+							</pre>
+						</td>
+					</tr>
 
-                </tbody>
-            </table>
-        </section>
+				</tbody>
+			</table>
+		</section>
 
-        <div style="min-height: 20px"></div>
+		<div style="min-height: 20px"></div>
 
-        <section>
-            <h3>Alternative Initialization Formats</h3>
-            <p>
-                Here is an initialization format that provides common initialization values across all template instances. [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#view-model-to-view-only-elements" target="_blank">Documentation</a>]
-            </p>
+		<section>
+			<h3>Alternative Initialization Formats</h3>
+			<p>
+				Here is an initialization format that provides common initialization values across all template instances. [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#view-model-to-view-only-elements" target="_blank">Documentation</a>]
+			</p>
 
-<pre>ThreeWay.prepare(Template.SomeTemplate, {
-    viewModelToViewOnly: {
-        'name': 'Some Name',
-        'checkedValue': [],
-        'radioValue': '',
-        'sliderValue': 0,
-    }
-});</pre>
+			<pre class="javascript">
+				ThreeWay.prepare(Template.SomeTemplate, {
+					viewModelToViewOnly: {
+						'name': 'Some Name',
+						'checkedValue': [],
+						'radioValue': '',
+						'sliderValue': 0,
+					}
+				});
+			</pre>
 
-            <p>
-                Here is an initialization format that is template instance specific, where data is passed into a template through the parameter <code>_3w_additionalViewModelOnlyData</code> that overwrites template-level initial values if they exist.
-            </p>
+			<p>
+				Here is an initialization format that is template instance specific, where data is passed into a template through the parameter <code>_3w_additionalViewModelOnlyData</code> that overwrites template-level initial values if they exist.
+			</p>
 
-            <pre>&lbrace;&lbrace;&gt; SomeTemplate _3w_additionalViewModelOnlyData=dataHelper&rbrace;&rbrace;</pre>
-        </section>
+			<pre class="handlebars">&lbrace;&lbrace;&gt; SomeTemplate _3w_additionalViewModelOnlyData=dataHelper&rbrace;&rbrace;</pre>
+		</section>
 
-        <div style="min-height: 50px"></div>
-    </div>        
+		<div style="min-height: 50px"></div>
+	</div>        
 </template>

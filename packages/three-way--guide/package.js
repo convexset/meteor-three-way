@@ -23,6 +23,7 @@ Package.onUse(function(api) {
             'convexset:three-way@0.2.15',
             'convexset:template-helpers@0.1.15',
             'convexset:plugins@0.1.0',
+            'convexset:highlight-js-themes@0.1.0',
         ],
         'client'
     );
@@ -31,9 +32,11 @@ Package.onUse(function(api) {
     api.addFiles('server-side.js', 'server');
 
     api.addFiles([
-        'guide-generate-toc.js',
-        'guide-random-id.js',
+        'preliminary-administration.js',
+
         'guide.css',
+        'guide-random-id.js',
+
         'guide-basics.html',
         'guide-basics.js',
         'guide-three-way-proper.html',
@@ -57,5 +60,4 @@ Package.onUse(function(api) {
     ], 'client');
 
     api.addFiles('plugin-setup.js', 'client');
-
 });

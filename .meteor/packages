@@ -33,6 +33,7 @@ convexset:template-helpers
 convexset:package-utils
 convexset:flow-router-tree
 convexset:plugins
+convexset:highlight-js-themes
 
 # Examples
 convexset:three-way--guide

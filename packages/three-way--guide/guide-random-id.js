@@ -1,6 +1,7 @@
 /* global Fake: true */
 /* global GuideData: true */
 /* global getRandomId: true */
+/* global lastRandomlySelectedDocument: true */
 
 getRandomId = function getRandomId(instance) {
 	if (instance.subscriptionsReady()) {
@@ -10,7 +11,8 @@ getRandomId = function getRandomId(instance) {
 		if (allItems.length === 0) {
 			return;
 		} else {
-			return Fake.fromArray(allItems)._id;
+			var _id = Fake.fromArray(allItems)._id;
+			return _id;
 		}
 	}
 };

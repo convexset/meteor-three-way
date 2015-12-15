@@ -1,323 +1,366 @@
 <template name="ThreeWayGuide_PreProcessorsMoreBindings_Wrapper">
-    <div class="ui container">    
-        <h1>Declarative Data Display: Pre-Processors (... and a Few More Bindings)</h1>
+	<div class="ui container">    
+		<h1>Declarative Data Display: Pre-Processors (... and a Few More Bindings)</h1>
 
-        <p>
-            The objective of this part of the guide is to introduce the idea of "declarative data display". Data drives presentation and the latter is nothing but a sequence of transformations (possibly just the identity mapping <code>x => x</code>) which converts data into the precise form in which it is meant to be presented.
-        </p>
+		<p>
+			The objective of this part of the guide is to introduce the idea of "declarative data display". Data drives presentation and the latter is nothing but a sequence of transformations (possibly just the identity mapping <code>x => x</code>) which converts data into the precise form in which it is meant to be presented.
+		</p>
 
-        <p>
-            This might mean that a non-empty string in <code>validationErrorText</code> maps to an element being styled with the <code>color</code> red and with a <code>font-weight</code> of bold. This might take the form of a CSS class:
-        </p>
+		<p>
+			This might mean that a non-empty string in <code>validationErrorText</code> maps to an element being styled with the <code>color</code> red and with a <code>font-weight</code> of bold. This might take the form of a CSS class:
+		</p>
 
-<pre>&lt;span data-bind=&quot;value: validationErrorText, class: {error: validationErrorText|isNonEmptyString}&quot;&gt;&lt;/span&gt;</pre>
+		<pre class="html">
+			&lt;span data-bind=&quot;value: validationErrorText, class: {error: validationErrorText|isNonEmptyString}&quot;&gt;&lt;/span&gt;
+		</pre>
 
-        <p>... or by direct styling...</p>
+		<p>... or by direct styling...</p>
 
-<pre>
-&lt;div data-bind=&quot;style: {background-color: validationErrorText|redIfNonEmptyString}&quot;&gt;
-    &lt;!-- Stuff --&gt;
-&lt;/div&gt;
-</pre>
+		<pre class="html">
+			&lt;div data-bind=&quot;style: {background-color: validationErrorText|redIfNonEmptyString}&quot;&gt;
+				&lt;!-- Stuff --&gt;
+			&lt;/div&gt;
+		</pre>
 
-        <p>
-            What follows the view model field is the transformation pipeline that pre-processes data before display. <code>isNonEmptyString</code> is an actual "built-in" pre-processor [see <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#extradefault-pre-processors" target="_blank">Documentation</a>], and <code>redIfNonEmptyString</code> presumably would do exactly that.
-        </p>
+		<p>
+			What follows the view model field is the transformation pipeline that pre-processes data before display. <code>isNonEmptyString</code> is an actual "built-in" pre-processor [see <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#extradefault-pre-processors" target="_blank">Documentation</a>], and <code>redIfNonEmptyString</code> presumably would do exactly that.
+		</p>
 
-        <p>
-            So let's get to it.
-        </p>
+		<p>
+			So let's get to it.
+		</p>
 
-        <div><ul id="toc"></ul></div>
+		<div><ul id="toc"></ul></div>
 
-        {{> ThreeWayGuide_PreProcessorsMoreBindings}}
-    </div>
+		{{> ThreeWayGuide_PreProcessorsMoreBindings}}
+	</div>
 </template>
 
 <template name="ThreeWayGuide_PreProcessorsMoreBindings">
-    <div class="column">
-        <section>
-            <h3>Pre-Processors for Display</h3>
+	<div class="column">
+		<section>
+			<h3>Pre-Processors for Display</h3>
 
-            <p>
-                Here's how pre-processors may be set up:               
-            </p>
+			<p>
+				Here's how pre-processors may be set up:               
+			</p>
 
-<pre>
-var optionMap = {
-    o1: 'Option 1',
-    o2: 'Option 2',
-    o3: 'Option 3',
-};
+			<pre class="javascript">
+				var optionMap = {
+					o1: 'Option 1',
+					o2: 'Option 2',
+					o3: 'Option 3',
+				};
 
-ThreeWay.prepare(Template.ThreeWayGuide_PreProcessorsMoreBindings, {
-    viewModelToViewOnly: {
-        'option': 'o1',
-        'selection': [],
-        'sliderR': Math.floor(64 * 192 * Math.random()),
-        'sliderG': Math.floor(64 * 192 * Math.random()),
-        'sliderB': Math.floor(64 * 192 * Math.random()),
-        'tags': 'tag5',
-    },
-    preProcessors: {
-        isAtLeastLengthTwo: arr => arr.length >= 2,
-        toRGB: function(r, g, b) {
-            return '#' + [r, g, b].map(x => Number(x).toString(16)).join('');
-        },
-        toInvRGB: function(r, g, b) {
-            return '#' + [r, g, b].map(x => (255 - Number(x)).toString(16)).join('');
-        },
-        toOption: k => optionMap[k],
-        toOptionMap: arr => map(k => optionMap[k]),
-        join: arr => arr.join(', '),
-        showAllArgs: function(v, elem, vmData, paramInfo) {
-            console.info('---');
-            console.info('[showAllArgs] v:', v);
-            console.info('[showAllArgs] elem:', elem);
-            console.info('[showAllArgs] vmData:', vmData);
-            console.info('[showAllArgs] paramInfo:', paramInfo);
-            return v;
-        },
-        populateList: function(arr, elem) {
-            $(elem).empty();
-            arr.forEach(v =&gt; $(elem).append(&#039;&lt;li&gt;&#039; + v + &#039;&lt;/li&gt;&#039;));
-        }
-    }
-});
-</pre>
+				ThreeWay.prepare(Template.ThreeWayGuide_PreProcessorsMoreBindings, {
+					viewModelToViewOnly: {
+						'option': 'o1',
+						'selection': [],
+						'sliderR': Math.floor(64 * 192 * Math.random()),
+						'sliderG': Math.floor(64 * 192 * Math.random()),
+						'sliderB': Math.floor(64 * 192 * Math.random()),
+						'tags': 'tag5',
+					},
+					preProcessors: {
+						isAtLeastLengthTwo: arr => arr.length >= 2,
+						toRGB: function(r, g, b) {
+							return '#' + [r, g, b].map(x => Number(x).toString(16)).join('');
+						},
+						toInvRGB: function(r, g, b) {
+							return '#' + [r, g, b].map(x => (255 - Number(x)).toString(16)).join('');
+						},
+						toOption: k => optionMap[k],
+						toOptionMap: arr => map(k => optionMap[k]),
+						join: arr => arr.join(', '),
 
-            <div>
-                <table>
-                    <tr>
-                        <td>
-                            <strong>Option:</strong>
-                        </td>
-                        <td style="width: 10px;">
-                        </td>
-                        <td>
-                            {{#each rangeStartToEnd 1 4}}
-                                <div class="ui radio checkbox">
-                                    <input type="radio" value="o{{this}}" data-bind="checked: option">
-                                    <label>Opt. {{this}}&nbsp;&nbsp;</label>
-                                </div>
-                            {{/each}}
-                        </td>
-                        <td style="width: 10px;">
-                        </td>
-                        <td>
-                            <pre>&lt;em data-bind=&quot;text: option|toOption&quot;&gt;&lt;/em&gt;</pre>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>Selected Option:</strong>
-                        </td>
-                        <td></td>
-                        <td><em data-bind="text: option|toOption"></em></td>
-                        <td></td>
-                        <td style="text-align: center;">
-                            or
-                        </td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>
-                            <pre>&lbrace;&lbrace;_3w_display 'option|toOption'&rbrace;&rbrace;</pre>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+						////////////////////////////////////
+						// Come back to these later
+						////////////////////////////////////
+						// display info and pass data on
+						showAllArgs: function(v, elem, vmData, paramInfo) {
+							console.info('---');
+							console.info('[showAllArgs] v:', v);
+							console.info('[showAllArgs] elem:', elem);
+							console.info('[showAllArgs] vmData:', vmData);
+							console.info('[showAllArgs] paramInfo:', paramInfo);
+							return v;
+						},
+						// populates an element with LI nodes
+						populateList: function(arr, elem) {
+							$(elem).empty();
+							arr.forEach(v =&gt; $(elem).append(&#039;&lt;li&gt;&#039; + v + &#039;&lt;/li&gt;&#039;));
+						}
+					}
+				});
+			</pre>
 
-            <p>
-                The <code>_3w_display</code> helper executes a pipeline and displays the result. Rather simple stuff. Convenient when <code>_3w_get</code> doesn't quite do the job.
-            </p>
+			<div>
+				<table>
+					<tr>
+						<td>
+							<strong>Option:</strong>
+						</td>
+						<td style="width: 10px;">
+						</td>
+						<td>
+							{{#each rangeStartToEnd 1 4}}
+								<div class="ui radio checkbox">
+									<input type="radio" value="o{{this}}" data-bind="checked: option">
+									<label>Opt. {{this}}&nbsp;&nbsp;</label>
+								</div>
+							{{/each}}
+						</td>
+						<td style="width: 10px;">
+						</td>
+						<td>
+							<pre class="html">&lt;em data-bind=&quot;text: option|toOption&quot;&gt;&lt;/em&gt;</pre>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<strong>Selected Option:</strong>
+						</td>
+						<td></td>
+						<td><em data-bind="text: option|toOption"></em></td>
+						<td></td>
+						<td style="text-align: center;">
+							or
+						</td>
+					</tr>
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>
+							<pre class="handlebars">&lbrace;&lbrace;_3w_display 'option|toOption'&rbrace;&rbrace;</pre>
+						</td>
+					</tr>
+				</table>
+			</div>
 
-            <div>
-                <table>
-                    <tr>
-                        <td>
-                            <strong>Selection:</strong>
-                        </td>
-                        <td style="width: 10px;">
-                        </td>
-                        <td>
-                            {{#each rangeStartToEnd 1 4}}
-                                <div class="ui checkbox">
-                                    <input type="checkbox" value="o{{this}}" data-bind="checked: selection">
-                                    <label>Opt. {{this}}&nbsp;&nbsp;</label>
-                                </div>
-                            {{/each}}
-                        </td>
-                        <td style="width: 10px;">
-                        </td>
-                        <td>
-                            <pre>&lt;em data-bind=&quot;text: selection|toOptionMap|join&quot;&gt;&lt;/em&gt;</pre>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>Selected Items:</strong>
-                        </td>
-                        <td></td>
-                        <td><em data-bind="text: selection|toOptionMap|join"></em></td>
-                        <td></td>
-                        <td style="text-align: center;">
-                            or
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="3">
-                            <div data-bind="visible: selection|isAtLeastLengthTwo">
-                                <span style="color: blue;" >At least two options selected!</span> [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#bindings-visible-and-disabled-modern-necessities" target="_blank"><code>visible</code> and <code>disabled</code> in Documentation</a>]
-                            </div>
-<div><pre>&lt;div data-bind=&quot;visible: selection|isAtLeastLengthTwo&quot;&gt;
-    At least two options selected!
-&lt;/div&gt;
-</pre></div>
-                        </td>
-                        <td></td>
-                        <td style="vertical-align: top;">
-                            <pre>&lbrace;&lbrace;_3w_display 'selection|toOptionMap|join'&rbrace;&rbrace;</pre>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+			<p>
+				The <code>_3w_display</code> helper executes a pipeline and displays the result. Rather simple stuff. Convenient when <code>_3w_get</code> doesn't quite do the job.
+			</p>
 
-            <p>
-                Here is something with a little more visually impact. What it illustrates is a multi-variable data-binding:
-            </p>
+			<div>
+				<table>
+					<tr>
+						<td>
+							<strong>Selection:</strong>
+						</td>
+						<td style="width: 10px;">
+						</td>
+						<td>
+							{{#each rangeStartToEnd 1 4}}
+								<div class="ui checkbox">
+									<input type="checkbox" value="o{{this}}" data-bind="checked: selection">
+									<label>Opt. {{this}}&nbsp;&nbsp;</label>
+								</div>
+							{{/each}}
+						</td>
+						<td style="width: 10px;">
+						</td>
+						<td>
+							<pre class="html">&lt;em data-bind=&quot;text: selection|toOptionMap|join&quot;&gt;&lt;/em&gt;</pre>
+						</td>
+					</tr>
+					<tr>
+						<td style="vertical-align: top;">
+							<strong>Selected Items:</strong>
+						</td>
+						<td></td>
+						<td style="vertical-align: top;">
+							<em data-bind="text: selection|toOptionMap|join"></em>
+						</td>
+						<td></td>
+						<td>
+							<div style="text-align: center;">or</div>
+							<pre class="handlebars">
+								&lbrace;&lbrace;_3w_display 'selection|toOptionMap|join'&rbrace;&rbrace;
+							</pre>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3">
+							<div data-bind="visible: selection|isAtLeastLengthTwo">
+								<span style="color: blue;" >At least two options selected!</span> [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#bindings-visible-and-disabled-modern-necessities" target="_blank"><code>visible</code> and <code>disabled</code> in Documentation</a>]
+							</div>
+							<div>
+								<pre class="html">
+									&lt;div data-bind=&quot;visible: selection|isAtLeastLengthTwo&quot;&gt;
+										At least two options selected!
+									&lt;/div&gt;
+								</pre>
+							</div>
+						</td>
+						<td></td>
+						<td>
+						</td>
+					</tr>
+				</table>
+			</div>
 
-            <div style="text-align: center; padding: 20px; border-radius: 5px"
-                data-bind="style: {background-color: sliderR#sliderG#sliderB|toRGB}">
-                <h4 data-bind="style: {color: sliderR#sliderG#sliderB|toInvRGB}">Multi-variable Display Binding: <code>(R, G, B)</code> to <code>background-color</code></h4>
-                <input data-bind="value: sliderR" type="range" style="width: 100%" max=255 min=0>
-                <input data-bind="value: sliderG" type="range" style="width: 100%" max=255 min=0>
-                <input data-bind="value: sliderB" type="range" style="width: 100%" max=255 min=0>
-            </div>
+			<p>
+				Here is something with a little more visually impact. What it illustrates is a multi-variable data-binding:
+			</p>
 
-<pre>
-&lt;div style=&quot;text-align: center; padding: 20px; border-radius: 5px&quot;
-    data-bind=&quot;style: {background-color: sliderR#sliderG#sliderB|toRGB}&quot;&gt;
-    &lt;h4 data-bind=&quot;style: {color: sliderR#sliderG#sliderB|toInvRGB}&quot;&gt;Multi-variable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h4&gt;
-    &lt;input data-bind=&quot;value: sliderR&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
-    &lt;input data-bind=&quot;value: sliderG&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
-    &lt;input data-bind=&quot;value: sliderB&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
-&lt;/div&gt;
-</pre>
+			<div style="text-align: center; padding: 20px; border-radius: 5px"
+				data-bind="style: {background-color: sliderR#sliderG#sliderB|toRGB}">
+				<h4 data-bind="style: {color: sliderR#sliderG#sliderB|toInvRGB}">Multi-variable Display Binding: <code>(R, G, B)</code> to <code>background-color</code></h4>
+				<input data-bind="value: sliderR" type="range" style="width: 100%" max=255 min=0>
+				<input data-bind="value: sliderG" type="range" style="width: 100%" max=255 min=0>
+				<input data-bind="value: sliderB" type="range" style="width: 100%" max=255 min=0>
+			</div>
 
-            <p>
-                Here are links to various display bindings in the documentation:
-            </p>
+			<pre class="html">
+				&lt;div style=&quot;text-align: center; padding: 20px; border-radius: 5px&quot;
+					data-bind=&quot;style: {background-color: sliderR#sliderG#sliderB|toRGB}&quot;&gt;
+					&lt;h4 data-bind=&quot;style: {color: sliderR#sliderG#sliderB|toInvRGB}&quot;&gt;Multi-variable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h4&gt;
+					&lt;input data-bind=&quot;value: sliderR&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
+					&lt;input data-bind=&quot;value: sliderG&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
+					&lt;input data-bind=&quot;value: sliderB&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
+				&lt;/div&gt;
+			</pre>
 
-            <ul>
-                <li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#binding-html-and-text" target="_blank"><code>html</code> and <code>text</code></a></li>
-                <li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#bindings-visible-and-disabled-modern-necessities" target="_blank"><code>visible</code> and <code>disabled</code></a></li>
-                <li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#style-attribute-and-class-bindings" target="_blank"><code>style</code>, <code>attr</code> and <code>class</code></a></li>
-            </ul>
+			<p>
+				Here are links to various display bindings in the documentation:
+			</p>
 
-            <p>
-                Display bindings accept, in order of precedence (first being first):
-            </p>
+			<ul>
+				<li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#binding-html-and-text" target="_blank"><code>html</code> and <code>text</code></a></li>
+				<li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#bindings-visible-and-disabled-modern-necessities" target="_blank"><code>visible</code> and <code>disabled</code></a></li>
+				<li><a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#style-attribute-and-class-bindings" target="_blank"><code>style</code>, <code>attr</code> and <code>class</code></a></li>
+			</ul>
 
-            <ul>
-                <li>ThreeWay helpers (defined in a <code>helper</code> block in the options of <code>ThreeWay.prepare</code></li>
-                <li>Helpers of ancestor ThreeWay instances (more on inheritance later)</li>
-                <li>Blaze helpers</li>
-                <li>Fields (including the entire document and entire view model for <code>process</code> bindings)</li>
-            </ul>
+			<p>
+				Display bindings accept, in order of precedence (first being first):
+			</p>
 
-            <div>
-                <strong>Important Notes:</strong>
-                <ul>
-                    <li>ThreeWay helpers and pre-processors are inherited by child ThreeWay template instances</li>
-                    <li>They are executed with <code>this</code> bound to the template instance</li>
-                    <li>Within them, <code>Template.instance()</code> points to the template instance</li>
-                    <li>ThreeWay helpers (including inherited ones) are accessible to Blaze if there is no existing Blaze helper on the Template of the same name</li>
-                    <li>A number of <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#extradefault-pre-processors" target="_blank">default pre-processors</a> are available and can be "shadowed" by re-definition</li>
-                </ul>
-            </div>
-        </section>
+			<ul>
+				<li>ThreeWay helpers (defined in a <code>helper</code> block in the options of <code>ThreeWay.prepare</code></li>
+				<li>Helpers of ancestor ThreeWay instances (more on inheritance later)</li>
+				<li>Blaze helpers</li>
+				<li>Fields (including the entire document and entire view model for <code>process</code> bindings)</li>
+			</ul>
 
-        <div style="min-height: 20px"></div>
+			<div>
+				<strong>Important Notes:</strong>
+				<ul>
+					<li>ThreeWay helpers and pre-processors are inherited by child ThreeWay template instances</li>
+					<li>They are executed with <code>this</code> bound to the template instance</li>
+					<li>Within them, <code>Template.instance()</code> points to the template instance</li>
+					<li>ThreeWay helpers (including inherited ones) are accessible to Blaze if there is no existing Blaze helper on the Template of the same name</li>
+					<li>A number of <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#extradefault-pre-processors" target="_blank">default pre-processors</a> are available and can be "shadowed" by re-definition</li>
+				</ul>
+			</div>
+		</section>
 
-        <section>
-            <h3>Pre-Processors for DOM Manipulation and Other Side Effects</h3>
+		<div style="min-height: 20px"></div>
 
-            <p>
-                Pre-processors also may be used to implement side effects. This is useful when working with certain UI frameworks, or any other application need. In fact, the <code>process</code> binding may be used to implement pure side-effects. To enable this, pre-processors take additional arguments. (Note that only the first pre-processor may accept multiple value arguments such as in a multi-variable display binding.) In particular, the full method signature is <code>function(v1, v2, ..., vn, element, viewModelData, dataSourceInfomation)</code> where the last item contains information about the data source.
-            </p>
+		<section>
+			<h3>Pre-Processors for DOM Manipulation and Other Side Effects</h3>
 
-            <div>
-                <table>
-                    <tr>
-                        <td>
-                            <strong>Selection:</strong>
-                        </td>
-                        <td style="width: 10px;">
-                        </td>
-                        <td style="min-width: 250px">
-                            {{#each rangeStartToEnd 1 4}}
-                                <div class="ui checkbox">
-                                    <input type="checkbox" value="o{{this}}" data-bind="checked: selection">
-                                    <label>Opt. {{this}}&nbsp;&nbsp;</label>
-                                </div>
-                            {{/each}}
-                        </td>
-                        <td style="width: 10px;">
-                        </td>
-                        <td rowspan="2">
-                            <p>Look in the console and note the effects of the two occurrences of <code>showAllArgs</code>. In particular, clear the console and change your selection.</p>
-                            <ul data-bind="process: selection|showAllArgs|toOptionMap|showAllArgs|populateList"></ul>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <strong>Selected Items:</strong>
-                        </td>
-                        <td></td>
-                        <td>
-                            <em data-bind="text: selection|toOptionMap|join"></em>
-                        </td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td colspan="5">
-<pre>&lt;ul data-bind=&quot;process: selection|showAllArgs|toOptionMap|showAllArgs|populateList&quot;&gt;&lt;/ul&gt;</pre>
-                        </td>
-                    </tr>
-                </table>
-            </div>
+			<p>
+				Pre-processors also may be used to implement side effects. This is useful when working with certain UI frameworks, or any other application need. In fact, the <code>process</code> binding may be used to implement pure side-effects. To enable this, pre-processors take additional arguments. (Note that only the first pre-processor may accept multiple value arguments such as in a multi-variable display binding.) In particular, the full method signature is <code>function(v1, v2, ..., vn, element, viewModelData, dataSourceInfomation)</code> where the last item contains information about the data source.
+			</p>
 
-            <p>
-                To conclude, here is an example of a UI component (from <a href="http://semantic-ui.com/modules/dropdown.html" target="_blank">Semantic UI</a>) that requires some side-effects to get working:
-            </p>
+			<div>
+				<table>
+					<tr>
+						<td>
+							<strong>Selection:</strong>
+						</td>
+						<td style="width: 10px;">
+						</td>
+						<td style="min-width: 250px">
+							{{#each rangeStartToEnd 1 4}}
+								<div class="ui checkbox">
+									<input type="checkbox" value="o{{this}}" data-bind="checked: selection">
+									<label>Opt. {{this}}&nbsp;&nbsp;</label>
+								</div>
+							{{/each}}
+						</td>
+						<td style="width: 10px;">
+						</td>
+						<td rowspan="2">
+							<p>Look in the console and note the effects of the two occurrences of <code>showAllArgs</code>. In particular, clear the console and change your selection.</p>
+							<ul data-bind="process: selection|showAllArgs|toOptionMap|showAllArgs|populateList"></ul>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<strong>Selected Items:</strong>
+						</td>
+						<td></td>
+						<td>
+							<em data-bind="text: selection|toOptionMap|join"></em>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td colspan="5">
+							<pre class="html">
+								&lt;ul data-bind=&quot;process: selection|showAllArgs|toOptionMap|showAllArgs|populateList&quot;&gt;&lt;/ul&gt;
+							</pre>
+						</td>
+					</tr>
+				</table>
+			</div>
 
-            <div>
-                <h5>Favourite Branches of Mathematics:</h5>
-                <div class="ui fluid multiple search selection dropdown">
-                    <input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
-                    <i class="dropdown icon"></i>
-                    <div class="default text">Select Tags</div>
-                    <div class="menu">
-                        <div class="item" data-value="tag1">Algebra</div>
-                        <div class="item" data-value="tag2">Analysis</div>
-                        <div class="item" data-value="tag3">Combinatorics</div>
-                        <div class="item" data-value="tag4">Geometry and Topology</div>
-                        <div class="item" data-value="tag5">Probability and Measure</div>
-                    </div>
-                </div>
+			<p>
+				To conclude, here is an example of a UI component (from <a href="http://semantic-ui.com/modules/dropdown.html" target="_blank">Semantic UI</a>) that requires some side-effects to get working:
+			</p>
 
-                And this is what is stored in the view model: <code>"{{_3w_get 'tags'}}"</code>
-            </div>
+			<div>
+				<h5>Favourite Branches of Mathematics:</h5>
+				<div class="ui fluid multiple search selection dropdown">
+					<input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
+					<i class="dropdown icon"></i>
+					<div class="default text">Select Tags</div>
+					<div class="menu">
+						<div class="item" data-value="tag1">Algebra</div>
+						<div class="item" data-value="tag2">Analysis</div>
+						<div class="item" data-value="tag3">Combinatorics</div>
+						<div class="item" data-value="tag4">Geometry and Topology</div>
+						<div class="item" data-value="tag5">Probability and Measure</div>
+					</div>
+				</div>
 
-            <p>
-                Note that <code>updateSemanticUIDropdown</code> used above is among the <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#extradefault-pre-processors" target="_blank">default pre-processors</a> that are available. Admittedly, it is a bit of a stand-out. (Please feel free to contribute your own UI library-specific pre-processors.)
-            </p>
-        </section>        
+				<p>
+					And this is what is stored in the view model: <code>"{{_3w_get 'tags'}}"</code>
+				</p>
+			</div>
 
-        <div style="min-height: 50px"></div>
-    </div>
+			<p>
+				Note that <code>updateSemanticUIDropdown</code> used above is among the <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#extradefault-pre-processors" target="_blank">default pre-processors</a> that are available. Admittedly, it is a bit of a stand-out. (Please feel free to contribute your own UI library-specific pre-processors.)
+			</p>
+
+			<p>
+				For what it's worth, here is the relevant mark-up.
+			</p>
+
+			<pre class="html">
+				&lt;div class=&quot;ui fluid multiple search selection dropdown&quot;&gt;
+					&lt;input name=&quot;tags&quot; type=&quot;hidden&quot; data-bind=&quot;value: tags|updateSemanticUIDropdown&quot;&gt;
+					&lt;i class=&quot;dropdown icon&quot;&gt;&lt;/i&gt;
+					&lt;div class=&quot;default text&quot;&gt;Select Tags&lt;/div&gt;
+					&lt;div class=&quot;menu&quot;&gt;
+						&lt;div class=&quot;item&quot; data-value=&quot;tag1&quot;&gt;Algebra&lt;/div&gt;
+						&lt;div class=&quot;item&quot; data-value=&quot;tag2&quot;&gt;Analysis&lt;/div&gt;
+						&lt;div class=&quot;item&quot; data-value=&quot;tag3&quot;&gt;Combinatorics&lt;/div&gt;
+						&lt;div class=&quot;item&quot; data-value=&quot;tag4&quot;&gt;Geometry and Topology&lt;/div&gt;
+						&lt;div class=&quot;item&quot; data-value=&quot;tag5&quot;&gt;Probability and Measure&lt;/div&gt;
+					&lt;/div&gt;
+				&lt;/div&gt;
+			</pre>
+
+			<p>
+				... and onward!
+			</p>
+
+		</section>        
+
+		<div style="min-height: 50px"></div>
+	</div>
 </template>

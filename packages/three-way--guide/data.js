@@ -72,3 +72,14 @@ GuideData = {
 		'opt3': 'Just Don\'t',
 	},
 };
+
+GuideData.helperBundle = {
+	ready: () => Template.instance().subscriptionsReady(),
+	data: () => GuideData.collection.find(),
+	allTags: () => GuideData.allTags,
+	ageRanges: () => GuideData.ageRanges,
+	emailPrefsAll: () => GuideData.emailPrefsAll,
+	emailPrefsToCSL: function(arr) {
+		return arr.map(x => GuideData.emailPrefsAll[x]).join(", ");
+	},
+};

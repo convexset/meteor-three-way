@@ -1206,6 +1206,7 @@ The above is obtainable from `ThreeWay.DEBUG_MODE.MESSAGE_HEADINGS`.
     instanceId: ...,
     dataId: ...,
     data: ...,
+    document: ...,
     template: instance,
     templateType: instance.view.name,
 }
