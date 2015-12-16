@@ -37,6 +37,7 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 	};
 	threeWayMethods.set = function(p, v) {
 		threeWay.data.set(p, v);
+		threeWay._focusedFieldUpdatedOnServer.set(p, false);
 		updateRelatedFields(p, v);
 	};
 	threeWayMethods.get_NR = function(p) {
