@@ -516,7 +516,7 @@ A design decision was made to not require such a root node, but to leave it to t
 In the absence of a root node, all individual DOM elements in the template are observed for changes.
 (This is why having a wrapping element is useful.)
 
-In the event that the user would (inexplicably) like to observe disjoint parts of a template for changes, the `_3w_setRoots(selectorString)` method should be used to select root nodes (via a template-level jQuery selector). This to be in an `onRendered` hook or after rendering completes.
+In the event that the user would (inexplicably) like to observe disjoint parts of a template for changes, the `_3w_setRoots(selectorString)` method should be used to select root nodes (via a template-level jQuery selector). This might be done in an `onRendered` hook or after rendering completes.
 
 For even more specificity, the `restrict-template-type` attribute can be set (with a comma separated list of template names) on DOM elements to specify which `ThreeWay`-linked template types should be used to data bind individual elements.
 

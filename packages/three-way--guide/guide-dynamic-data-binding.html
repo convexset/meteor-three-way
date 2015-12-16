@@ -43,7 +43,7 @@
                 If you are too lazy...
             </p>
 
-            <pre>
+            <pre class="javascript">
                 $(&#039;#input-r&#039;).attr(&#039;data-bind&#039;, &#039;value: colR&#039;);
                 $(&#039;#input-g&#039;).attr(&#039;data-bind&#039;, &#039;value: colG&#039;);
                 $(&#039;#input-b&#039;).attr(&#039;data-bind&#039;, &#039;value: colB&#039;);
@@ -79,7 +79,7 @@
 
             <p></p>
             <p>Now go to the console and enter the following:</p>
-            <pre>
+            <pre class="javascript">
                 $(&#039;#put-stuff-here&#039;).append(&#039;&lt;h3&gt;Multivariable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h3&gt;&#039;);
                 $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colR&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
                 $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colG&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
@@ -107,7 +107,7 @@
 
             <p>... which is done via...</p>
 
-            <pre>
+            <pre class="handlebars">
                 &lt;table class=&quot;ui table celled&quot;&gt;
                     &lt;thead&gt;
                         &lt;tr&gt;&lt;th&gt;Field (instance: &lt;code&gt;&lbrace;&lbrace;_3w_3wInstanceId&rbrace;&rbrace;&lt;/code&gt;)&lt;/th&gt;
@@ -126,14 +126,14 @@
 
             <p></p>
             <p>You could try to mangle the view model by doing:</p>
-            <pre>
+            <pre class="javascript">
                 $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: item&quot; id=&quot;my-item&quot;&gt;&#039;);
                 setInterval(function() { $(&quot;#my-item&quot;).val(Math.random()).trigger('change'); }, 1000);
             </pre>
 
             <p>... while we are at it, if you have performed the previous steps...</p>
 
-            <pre>
+            <pre class="javascript">
                 function randomWalk(n) {
                     var _n = Number(n);
                     if (_n === 0) {
@@ -157,10 +157,46 @@
 
             <p>When Blaze updates the DOM, things get added and removed and data bindings have to be changed.</p>
 
-            <p>When developing, it would also be nice to enter the DOM inspector, change data bindings and have things just work without the need to refresh or even rebuild.</p>
+            <p>In fact, we have been using dynamic data binding all along. More explicitly, Blaze can be used to generate and change data bindings. For example:</p>
+
+            <pre class="handlebars">
+                &lbrace;&lbrace;#each fields&rbrace;&rbrace;
+                    <div>&lbrace;&lbrace;name&rbrace;&rbrace;: <input data-bind="value: particulars.&lbrace;&lbrace;field&rbrace;&rbrace;"></div>
+                &lbrace;&lbrace;/each&rbrace;&rbrace;
+            </pre>
+
+            <p>... might generate...</p>
+
+            <pre class="html">
+                &lt;div&gt;Name: &lt;input data-bind=&quot;value: particulars.name&quot;&gt;&lt;/div&gt;
+                &lt;div&gt;e-mail: &lt;input data-bind=&quot;value: particulars.email&quot;&gt;&lt;/div&gt;
+                &lt;div&gt;D.O.B.: &lt;input data-bind=&quot;value: particulars.dob&quot;&gt;&lt;/div&gt;
+            </pre>
+
+            <p>... and should a new field be added via the <code>fields</code> helper, data binding will take effect.</p>
+
+            <p>Now, as you might have noticed, when developing, it would also be nice to enter the DOM inspector, change data bindings and have things just work without the need to refresh or even rebuild.</p>
 
             <p>Hope that was fun. I do like the RGB example a lot.</p>
 
         </section>
+
+        <div style="min-height: 20px"></div>
+
+        <section>
+            <h3>Issues with Family Trees</h3>
+
+            <p>In a household, it is still necessary to know who owns what stuff. ThreeWay-linked templates are not exactly the most sharing family members. In fact, they are more akin to business associates wherein ownership must be clearly established. Which template should a new DOM node be associated with? The immediate template? A parent? Or a grand-parent?</p>
+
+            <p>By and large, if one follows instructions and encloses elements within ThreeWay-linked templates in a single set of tags (like a <code>div</code>) things will work fine. That is, the "lowest-level"/"youngest" template instance containing a new element will handle data binding.</p>
+
+            <p>In the event that the user would (inexplicably) like to respond to changes in disjoint parts of a template, the <code>_3w_setRoots(selectorString)</code> method should be used to select root nodes (via a template-level jQuery selector). This might be done in an <code>onRendered</code> hook or after rendering completes. </p>
+
+            <p>For even more specificity, the <code>restrict-template-type</code> attribute can be set (with a comma separated list of template names) on DOM elements to specify which ThreeWay-linked template types should be used to data bind individual elements.</p>
+
+        </section>
+
+        <div style="min-height: 20px"></div>
+
     </div>
 </template>
