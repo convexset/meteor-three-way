@@ -1,27 +1,166 @@
 <template name="ThreeWayGuide_DynamicDataBinding_Wrapper">
     <div class="ui container">    
-        <h1>....</h1>
+        <h1>Dynamic Data-binding: Reactivity and a Nice Dev. Experience</h1>
 
-        <p>...</p>
+        <p>In this demo, you will be doing most of the work. Simply speaking, ThreeWay watches the DOM for changes within ThreeWay-linked templates and bindings will "just happen".</p>
+
+        <p><strong>Things work best when ThreeWay-linked templates have all elements enclosed in a single parent element like so:</strong></p>
+
+        <pre class="html">
+            &lt;template name=&quot;ThreeWayLinkedTemplate&quot;&gt;
+                &lt;div&gt;
+                    &lt;!-- Template stuff --&gt;
+                &lt;/div&gt;
+            &lt;/template&gt;
+        </pre>
+
+        <p>So try things out. =)</p>
 
         <div><ul id="toc"></ul></div>
 
-        {{> ThreeWayGuide_DynamicDataBinding}}
+        <div style="background-color: #99f; border-radius: 10px; padding: 10px 20px; width: 95%; margin: auto;">
+            {{> ThreeWayGuide_DynamicDataBinding}}
+        </div>
     </div>
+
+    <div style="min-height: 30px"></div>
 </template>
 
 <template name="ThreeWayGuide_DynamicDataBinding">
     <div class="column">
         <section>
-            <h3>....</h3>
+            <div style="font-weight: bold; text-align: center;">
+                 [This is instance <code>{{_3w_3wInstanceId}}</code>]
+            </div>
+
+            <h3>Dynamic Data Binding Demo</h3>
+
+            <p>
+                In the table below, use the DOM Inspector of Dev. Tools to add the attribute <code>data-bind="value: fieldName"</code> where <code>fieldName</code> to each of the input elements. While you are at it, maybe set <code>style="width: 100%; border: 0;"</code>.
+            </p>
+
+            <p>
+                If you are too lazy...
+            </p>
+
+            <pre>
+                $(&#039;#input-r&#039;).attr(&#039;data-bind&#039;, &#039;value: colR&#039;);
+                $(&#039;#input-g&#039;).attr(&#039;data-bind&#039;, &#039;value: colG&#039;);
+                $(&#039;#input-b&#039;).attr(&#039;data-bind&#039;, &#039;value: colB&#039;);
+                $(&#039;#input-r&#039;).attr(&#039;style&#039;, &#039;width: 100%; border: 0;&#039;);
+                $(&#039;#input-g&#039;).attr(&#039;style&#039;, &#039;width: 100%; border: 0;&#039;);
+                $(&#039;#input-b&#039;).attr(&#039;style&#039;, &#039;width: 100%; border: 0;&#039;);
+            </pre>
+
+            <table class="ui table celled">
+                <thead>
+                    <tr><th>Field</th>
+                    <th>Value</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>colR</td>
+                        <td><input id="input-r" type=number min=0 max=255></td>
+                    </tr>
+                    <tr>
+                        <td>colG</td>
+                        <td><input id="input-g" type=number min=0 max=255></td>
+                    </tr>
+                    <tr>
+                        <td>colB</td>
+                        <td><input id="input-b" type=number min=0 max=255></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="text-align: center; width: 100%;">
+                <div id="put-stuff-here" style="border-radius: 10px; padding: 10px 20px; width: 80%; margin: auto;"></div>
+            </div>
+
+            <p></p>
+            <p>Now go to the console and enter the following:</p>
+            <pre>
+                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;h3&gt;Multivariable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h3&gt;&#039;);
+                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colR&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colG&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colB&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+                $(&#039;#put-stuff-here&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-color: colR#colG#colB|toRGB}&#039;);
+            </pre>
+
+            <p></p>
+            <p>Being the helpful demo writer, here is some visibility over the entire view model:</p>
+
+            <table class="ui table celled">
+                <thead>
+                    <tr><th>Field)</th>
+                    <th>Value</th></tr>
+                </thead>
+                <tbody>
+                    {{#each repackageDictionaryAsArray _3w_getAll}}
+                        <tr>
+                            <td>{{key}}</td>
+                            <td>{{value}}</td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+
+            <p>... which is done via...</p>
+
+            <pre>
+                &lt;table class=&quot;ui table celled&quot;&gt;
+                    &lt;thead&gt;
+                        &lt;tr&gt;&lt;th&gt;Field (instance: &lt;code&gt;&lbrace;&lbrace;_3w_3wInstanceId&rbrace;&rbrace;&lt;/code&gt;)&lt;/th&gt;
+                        &lt;th&gt;Value&lt;/th&gt;&lt;/tr&gt;
+                    &lt;/thead&gt;
+                    &lt;tbody&gt;
+                        &lbrace;&lbrace;#each repackageDictionaryAsArray _3w_getAll&rbrace;&rbrace;
+                            &lt;tr&gt;
+                                &lt;td&gt;&lbrace;&lbrace;key&rbrace;&rbrace;&lt;/td&gt;
+                                &lt;td&gt;&lbrace;&lbrace;value&rbrace;&rbrace;&lt;/td&gt;
+                            &lt;/tr&gt;
+                        &lbrace;&lbrace;/each&rbrace;&rbrace;
+                    &lt;/tbody&gt;
+                &lt;/table&gt;
+            </pre>
+
+            <p></p>
+            <p>You could try to mangle the view model by doing:</p>
+            <pre>
+                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: item&quot; id=&quot;my-item&quot;&gt;&#039;);
+                setInterval(function() { $(&quot;#my-item&quot;).val(Math.random()).trigger('change'); }, 1000);
+            </pre>
+
+            <p>... while we are at it, if you have performed the previous steps...</p>
+
+            <pre>
+                function randomWalk(n) {
+                    var _n = Number(n);
+                    if (_n === 0) {
+                        return 1;
+                    }
+                    if (_n === 255) {
+                        return 254;
+                    }
+                    return (Math.random() &lt; 0.5) ? (_n - 1) : (_n + 1);
+                }
+                setInterval(function() { $(&quot;#input-r&quot;).val(randomWalk($(&quot;#input-r&quot;).val())).trigger('change'); }, 100);
+                setInterval(function() { $(&quot;#input-g&quot;).val(randomWalk($(&quot;#input-g&quot;).val())).trigger('change'); }, 100);
+                setInterval(function() { $(&quot;#input-b&quot;).val(randomWalk($(&quot;#input-b&quot;).val())).trigger('change'); }, 100);
+            </pre>
         </section>
 
         <div style="min-height: 20px"></div>
 
         <section>
-            <h3>....</h3>
-        </section>
+            <h3>What this Buys Us</h3>
 
-        <div style="min-height: 50px"></div>
+            <p>When Blaze updates the DOM, things get added and removed and data bindings have to be changed.</p>
+
+            <p>When developing, it would also be nice to enter the DOM inspector, change data bindings and have things just work without the need to refresh or even rebuild.</p>
+
+            <p>Hope that was fun. I do like the RGB example a lot.</p>
+
+        </section>
     </div>
 </template>

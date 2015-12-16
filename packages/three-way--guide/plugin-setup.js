@@ -76,8 +76,8 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) Dynamic Data-binding (... and the Wonderful Dev. Experience)',
-                description: 'Dynamic Data-binding and Usage with Family Trees',
+                name: 'Dynamic Data-binding: Reactivity and a Nice Dev. Experience',
+                description: 'Dynamic Data-binding and how it works with Blaze. Combined with Dev. Tools, leads to a wonderful developer experience. Pointers on usage within Family Trees.',
                 routeName: 'dynamic-data-binding',
                 templateName: 'ThreeWayGuide_DynamicDataBinding_Wrapper',
                 order: 6,
