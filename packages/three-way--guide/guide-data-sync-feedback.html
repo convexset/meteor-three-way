@@ -4,11 +4,11 @@
 
         <p>This part of the guide is about the messy stuff: finding out whether data has been synchronized, whether an element has focus, and deciding what to do when a focused field is updated on the server (mid edit).</p>
 
-        <p><strong>Since this is not done yet (the source file is a non-working copy-and-paste-and-go-do-something-else job), go have a look at the <a href="{{pathFor 'original'}}">"Original Demo"</a> where all of the above is kinda in place place.</strong></p>
+        <p>Let's go!</p>
 
         <div><ul id="toc"></ul></div>
 
-        <!-- {{> ThreeWayGuide_DataSyncFeedback}} -->
+        {{> ThreeWayGuide_DataSyncFeedback}}
     </div>
     <div style="min-height: 30px"></div>
 </template>
@@ -18,214 +18,357 @@
         <section>
             <h3>A Demo</h3>
 
-            <p>Play with the demo below. There are two things to note.</p>
+            <p>Play with the demo below. There are a few things to note:</p>
 
             <ol>
-                <li>When </li>
-                <li></li>
+                <li>There is a focus binding on the <code>name</code> input, it is a read/write property</li>
+                <li>When the view model is changed and it is established that the server should be updated, there is visual feedback that the update is pending</li>
+                <li>When the a field is updated on the server and the change propagates to the client, the application may control what to do when a focused field is updated</li>
             </ol>
 
-            <table class="ui celled table">
-                <tr>
-                    <td>
-                        <strong data-bind="class: {classy: nameHasFocus}">Name</strong>
-                        <span data-bind="visible: nameHasFocus">(has focus)</span>
+            <table class="ui celled table form" data-bind="class: {loading: ready|not}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>e-mail Preferences</th>
+                        <th>Age</th>
+                        <th>Notes</th>
+                        <th>Tags</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each data}}
+                        <tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
+                            <td>{{name}}</td>
+                            <td>{{emailPrefsToCSL emailPrefs}}</td>
+                            <td>{{getProperty age ageRanges}}</td>
+                            <td>{{notes}}</td>
+                            <td>{{join tags ', '}}</td>
+                            <td>
+                                <button class="select-document" data-id="{{_id}}">Edit</button>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
 
-                        &nbsp;<a href="#" id="focus-name"><i class="pointing right icon"></i></a>
-                    </td>
-                    <td>
-                        <input name="name" style="border: 0; width: 85%;" data-bind="value: name; focus: nameHasFocus">
-                        &nbsp;&nbsp;&nbsp;
-                        {{#if _3w_validValuesNotSynced 'name'}}<i class="notched circle loading icon"></i>{{/if}}
-                        {{#if _3w_focusedFieldUpdatedOnServer 'name'}}<i class="warning icon"></i>{{/if}}
-                        <p style="font-size: 80%">Element updates the view model on <code>input</code> via <code>data-bind="value: name"</code>.</p>
+            <div data-bind="visible: _3w_hasData">
+                <h4>Document Id: {{_3w_id}} {{#if _3w_focusedField}}(Focused: {{_3w_focusedField}}){{/if}}</h4>
+                <table class="ui celled table edit-table">
+                    <tr>
+                        <td>
+                            <strong data-bind="class: {classy: nameHasFocus}">Name</strong>
+                            <span data-bind="visible: nameHasFocus">(has focus)</span>
 
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>e-mail Preferences</strong></td>
-                    <td>
-                        {{#each repackageDictionaryAsArray emailPrefsAll}}
-                            <div class="ui checkbox">
-                                <input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
-                                <label>{{value}}</label>
-                            </div>
-                        {{/each}}
-                        &nbsp;&nbsp;&nbsp;
-                        {{#if _3w_validValuesNotSynced 'emailPrefs'}}<i class="notched circle loading icon"></i>{{/if}}
-                        {{#if _3w_focusedFieldUpdatedOnServer 'emailPrefs'}}<i class="warning icon"></i>{{/if}}
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Age (<code>personal.particulars.age</code>)</strong></td>
-                    <td>
-                        <div class="inline fields">
-                            {{#each repackageDictionaryAsArray ageRanges}}
-                                <div class="ui radio checkbox">
-                                    <input type="radio" name="age" value="{{key}}" data-bind="checked: personal.particulars.age">
+                            &nbsp;<a href="#" id="focus-name"><i class="pointing right icon"></i></a>
+                        </td>
+                        <td>
+                            <input name="name" style="border: 0; width: 85%;" data-bind="value: name; focus: nameHasFocus">
+                            &nbsp;&nbsp;&nbsp;
+                            {{#if _3w_validValuesNotSynced 'name'}}<i class="notched circle loading icon"></i>{{/if}}
+                            {{#if _3w_focusedFieldUpdatedOnServer 'name'}}<i class="warning icon"></i>{{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>e-mail Preferences</strong></td>
+                        <td>
+                            {{#each repackageDictionaryAsArray emailPrefsAll}}
+                                <div class="ui checkbox">
+                                    <input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
                                     <label>{{value}}</label>
                                 </div>
                             {{/each}}
                             &nbsp;&nbsp;&nbsp;
-                            {{#if _3w_validValuesNotSynced 'personal.particulars.age'}}<i class="notched circle loading icon"></i>{{/if}}
-                            {{#if _3w_focusedFieldUpdatedOnServer 'personal.particulars.age'}}<i class="warning icon"></i>{{/if}}
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><strong>Notes</strong></td>
-                    <td>
-                        <table border=0 style="width: 100%;">
-                            <tr>
-                                <td style="width: 85%; border: none;">
-                                    <textarea data-bind="value#donotupdateon-input: notes" style="border: 0; width: 100%;"></textarea>
-                                </td>
-                                <td style="border: none;">
-                                    {{#if _3w_validValuesNotSynced 'notes'}}<i class="notched circle loading icon"></i>{{/if}}
-                                    {{#if _3w_focusedFieldUpdatedOnServer 'notes'}}<i class="warning icon"></i>{{/if}}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan=2>
-                                    <p style="font-size: 80%">Element updates the view model only at the usual change handler (via <code>data-bind="value#donotupdateon-input: notes"</code>)</p>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
-                        <strong>Tags</strong>
-                        <br>
-                        (Valid tags begin with "tag")
-                        <br>
-                        (... also, Semantic UI dropdowns don't play well with focus)
-                    </td>
-                    <td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|trueIfNonEmpty|grayIfTrue}">
-                        <table border=0 style="width: 100%;">
-                            <tr>
-                                <td style="width: 85%; border: none;">
-                                    <div class="ui fluid multiple search selection dropdown">
-                                        <input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
-                                        <i class="dropdown icon"></i>
-                                        <div class="default text">Select Tags</div>
-                                        <div class="menu">
-                                            {{#each allTags}}
-                                                <div class="item" data-value="{{this}}">{{this}}</div>
-                                            {{/each}}
-                                        </div>
-                                    </div>
-                                    <div data-bind="text: tagsValidationErrorText; visible: tagsValidationErrorText|trueIfNonEmpty; style: {color: tagsValidationErrorText|trueIfNonEmpty|redIfTrue}"></div>
-                                </td>
-                                <td style="border: none;">
-                                    {{#if _3w_validValuesNotSynced 'tags'}}<i class="notched circle loading icon"></i>{{/if}}
-                                    {{#if _3w_focusedFieldUpdatedOnServer 'tags'}}<i class="warning icon"></i>{{/if}}
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <strong><code>personal.someArr</code></strong>
-                        <br>
-                        (#0 takes only numbers; #2 forbids "!")
-                    </td>
-                    <td>
-                        <div>
-                            {{#each range num}}
-                                <strong
-                                data-bind="style: {color: someArrValidationErrorText.{{this}}|trueIfNonEmpty|redIfTrue}"
-                                >
-                                #{{this}}:
-                                </strong>
-                                <input
-                                name="personal.someArr.{{this}}"
-                                style="width: 20%;" data-bind="value: personal.someArr.{{this}}; style: {color: someArrValidationErrorText.{{this}}|trueIfNonEmpty|redIfTrue}"
-                                >
-                                {{#if _3w_validValuesNotSynced (_3w_expandParams "personal.someArr.*" this)}}<i class="notched circle loading icon"></i>{{/if}}
-                                {{#if _3w_focusedFieldUpdatedOnServer (_3w_expandParams "personal.someArr.*" this)}}<i class="warning icon"></i>{{/if}}
-                                &nbsp;&nbsp;&nbsp;
-                            {{/each}}
-                        </div>
-                        <div style="color: blue; font-size: 0.8em; max-width: 95%;">
-                            Note that on selecting an item #1 and #2 are created later (via <code>setTimeout</code>) and are soon data bound via dynamic data binding.
-                        </div>
-                        <div style="color: brown; font-size: 0.8em; max-width: 95%;">
-                            Note also that sub-objects can be challenging. Because, <a href="http://docs.meteor.com/#/full/observe_changes" target="_blank"><code>cursor.observeChanges</code></a> sends entire sub-objects even if there was a small change to a primitive deeply nested within.
-                        </div>
-                        <div style="color: brown; font-size: 0.8em; max-width: 95%;">
-                            <strong>As such, large sub-documents and data-binding are not an ideal implementation pattern.</strong>
-                        </div>
-                        <div style="color: brown; font-size: 0.8em; max-width: 95%;">
-                            There are some little tricks in <code>ThreeWay</code> such as "expecting data sent out to come back eventually". But still, don't do "large sub-documents" if it can be helped.
-                        </div>
-                    </td>
-                </tr>
-                {{#each range (length (_3w_getWithDefault 'personal.otherArr' emptyArray))}}
-                    <tr>
-                        <td><strong><code>personal.otherArr[{{this}}]</code></strong></td>
-                        <td>
-                            <strong>a</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.{{this}}.a">
-                            {{#if _3w_validValuesNotSynced (_3w_expandParams 'personal.otherArr.*.*' (arrayify2Args this 'a'))}}<i class="notched circle loading icon"></i>{{/if}}
-                            {{#if _3w_focusedFieldUpdatedOnServer (_3w_expandParams 'personal.otherArr.*.*' (arrayify2Args this 'a'))}}<i class="warning icon"></i>{{/if}}
-                            &nbsp;&nbsp;&nbsp;
-
-                            <strong>b</strong>: <input style="width: 25%;" data-bind="value: personal.otherArr.{{this}}.b">
-                            {{#if _3w_validValuesNotSynced (_3w_expandParams 'personal.otherArr.*.*' (arrayify2Args this 'b'))}}<i class="notched circle loading icon"></i>{{/if}}
-                            {{#if _3w_focusedFieldUpdatedOnServer (_3w_expandParams 'personal.otherArr.*.*' (arrayify2Args this 'b'))}}<i class="warning icon"></i>{{/if}}
-                            &nbsp;&nbsp;&nbsp;
+                            {{#if _3w_validValuesNotSynced 'emailPrefs'}}<i class="notched circle loading icon"></i>{{/if}}
+                            {{#if _3w_focusedFieldUpdatedOnServer 'emailPrefs'}}<i class="warning icon"></i>{{/if}}
                         </td>
                     </tr>
-                {{/each}}
-            </table>
+                    <tr>
+                        <td><strong>Age</strong></td>
+                        <td>
+                            <div class="inline fields">
+                                {{#each repackageDictionaryAsArray ageRanges}}
+                                    <div class="ui radio checkbox">
+                                        <input type="radio" name="age" value="{{key}}" data-bind="checked: age">
+                                        <label>{{value}}</label>
+                                    </div>
+                                {{/each}}
+                                &nbsp;&nbsp;&nbsp;
+                                {{#if _3w_validValuesNotSynced 'age'}}<i class="notched circle loading icon"></i>{{/if}}
+                                {{#if _3w_focusedFieldUpdatedOnServer 'age'}}<i class="warning icon"></i>{{/if}}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Notes</strong></td>
+                        <td>
+                            <table border=0 style="width: 100%;">
+                                <tr>
+                                    <td style="width: 85%; border: none;">
+                                        <textarea data-bind="value#donotupdateon-input: notes" style="border: 0; width: 100%;"></textarea>
+                                    </td>
+                                    <td style="border: none;">
+                                        {{#if _3w_validValuesNotSynced 'notes'}}<i class="notched circle loading icon"></i>{{/if}}
+                                        {{#if _3w_focusedFieldUpdatedOnServer 'notes'}}<i class="warning icon"></i>{{/if}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="font-size: 90%; color: blue;">
+                                        <p>This element updates the view model only at the usual change handler (via <code>data-bind="value#donotupdateon-input: notes"</code>).</p>
+
+                                        <p>It is thus the best element to use for testing "remote update of focused field" features. Click the button on the right and quickly select the <code>notes</code> field. The document will be updated on the server.</p>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <button class="ui button icon regenerate-document">
+                                            <i class="big refresh icon"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|isNonEmptyString|grayIfTrue}">
+                            <strong>Tags</strong>
+                            <br>
+                            (Valid tags begin with "tag")
+                            <br>
+                            (... also, Semantic UI dropdowns don't play well with focus)
+                        </td>
+                        <td style="color: #440;" data-bind="style: {background-color: tagsValidationErrorText|isNonEmptyString|grayIfTrue}">
+                            <table border=0 style="width: 100%;">
+                                <tr>
+                                    <td style="width: 85%; border: none;">
+                                        <div class="ui fluid multiple search selection dropdown">
+                                            <input name="tags" type="hidden" data-bind="value: tags|updateSemanticUIDropdown">
+                                            <i class="dropdown icon"></i>
+                                            <div class="default text">Select Tags</div>
+                                            <div class="menu">
+                                                {{#each allTags}}
+                                                    <div class="item" data-value="{{this}}">{{this}}</div>
+                                                {{/each}}
+                                            </div>
+                                        </div>
+                                        <div data-bind="text: tagsValidationErrorText; visible: tagsValidationErrorText|isNonEmptyString; style: {color: tagsValidationErrorText|isNonEmptyString|redIfTrue}"></div>
+                                    </td>
+                                    <td style="border: none;">
+                                        {{#if _3w_validValuesNotSynced 'tags'}}<i class="notched circle loading icon"></i>{{/if}}
+                                        {{#if _3w_focusedFieldUpdatedOnServer 'tags'}}<i class="warning icon"></i>{{/if}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                {{#if (length (_3w_get 'updatedFieldData'))}}
+                    <h4>Recent Fields Updated While Focused</h4>
+                    <table class="ui table celled">
+                        <thead>
+                            <tr>
+                                <th>Field Path</th>
+                                <th>New Value</th>
+                                <th>Last Value</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each _3w_get 'updatedFieldData'}}
+                                <tr>
+                                    <td>{{fieldMatchParams.fieldPath}}</td>
+                                    <td>{{newValue}}</td>
+                                    <td>{{prevValue}}</td>
+                                    <td>{{time}}</td>
+                                </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+
+                    <p>This data was recorded by the <code>updateOfFocusedFieldCallback</code> option of <code>ThreeWay.prepare</code>. Clearly, one might decide what to do with the data, whether it be updating the view model immediately (with a notice), or storing the data away and allowing the user to decide. More on this later.</p>
+                {{/if}}
+            </div>
 
         </section>
 
         <div style="min-height: 20px"></div>
 
         <section>
-            <h3>....</h3>
+            <h3>The Configuration</h3>
 
-https://github.com/convexset/meteor-three-way/blob/master/README.md#my-data
+            <p>Without further ado, here is the configuration that was used. Have a quick look and we will touch on the specifics of each of the three items.</p>
 
-isSyncedToServer(prop): returns true if ThreeWay can be sure that data for the field with name prop has been received and written by the server.
+            <pre class="javascript">
+                ThreeWay.prepare(Template.ThreeWayGuide_DataSyncFeedback, {
+                    collection: GuideData.collection,
+                    updatersForServer: {
+                        'name': 'three-way-guide/update/name',
+                        'emailPrefs': 'three-way-guide/update/emailPrefs',
+                        'age': 'three-way-guide/update/age',
+                        'tags': 'three-way-guide/update/tags',
+                        'notes': 'three-way-guide/update/notes',
+                    },
+                    dataTransformToServer: {
+                        tags: ThreeWay.transformations.arrayFromCommaDelimitedString,
+                    },
+                    dataTransformFromServer: {
+                        tags: ThreeWay.transformations.arrayToCommaDelimitedString,
+                    },
+                    validatorsServer: {
+                        tags: {
+                            validator: function(value, matchInformation, vmData) {
+                                // tags must begin with "tag"
+                                return value.filter(x => x.substr(0, 3).toLowerCase() !== 'tag').length === 0;
+                            },
+                            success: function(value, matchInformation, vmData) {
+                                Template.instance()._3w_.set('tagsValidationErrorText', '');
+                            },
+                            failure: function(value, matchInformation, vmData) {
+                                Template.instance()._3w_.set('tagsValidationErrorText', 'Each tag should begin with \"tag\".');
+                            },
+                        },
+                    },
+                    preProcessors: {
+                        grayIfTrue: x => (!!x) ? "#ccc" : "",
+                        redIfTrue: x => (!!x) ? "red" : "",
+                    },
+                    // Reports updates of focused fields
+                    updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
+                        var instance = Template.instance();
+                        var updatedFieldData = instance._3w_.get('updatedFieldData');
 
-allSyncedToServer: returns true if ThreeWay can be sure that all data has been received and written by the server.
+                        updatedFieldData.push({
+                            fieldMatchParams: fieldMatchParams,
+                            newValue: newValue,
+                            prevValue: currentValue,
+                            time: new Date(),
+                        });
+                        instance._3w_.set('updatedFieldData', updatedFieldData);
+                        console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
+                    },
+                    viewModelToViewOnly: {
+                        updatedFieldData: [],
+                    }
+                });
+            </pre>
+        </section>
 
-isNotInvalid(prop): returns true if data is not invalid (i.e.: available validators return true).
+        <div style="min-height: 20px"></div>
 
-focusedField(): returns the currently focused field.
+        <section>
+            <h3>Is Data Synchronized?</h3>
 
-focusedFieldUpdatedOnServer(prop): indicates whether field prop was updated on the server while the relevant field was in focus (and a updateOfFocusedFieldCallback callback was defined in options) and hence the field is out of sync
+            <p>
+                The markup for checking whether data is synchronized is similar for all fields. Here is an example:
+            </p>
 
-https://github.com/convexset/meteor-three-way/blob/master/README.md#additional-template-helpers
+            <pre class="handlebars">&lbrace;&lbrace;#if _3w_validValuesNotSynced 'name'&rbrace;&rbrace;&lt;i class=&quot;notched circle loading icon&quot;&gt;&lt;/i&gt;&lbrace;&lbrace;/if&rbrace;&rbrace;</pre>
 
-_3w_isSyncedToServer: See previous section.
+            <p>
+                Simply speaking, invalid values are not going to be synchronized, so invalid values don't result in a true response. Only when there is a non-invalid (a value that did not fail validation) value that has been/will be sent to the server and has not yet come back (via MiniMongo) will the helper return true.
+            </p>
 
-_3w_notSyncedToServer: The negation of _3w_isSyncedToServer. See previous section.
+            <p>
+                There are a number of <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#my-data" target="_blank">methods</a> and <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#additional-template-helpers" target="_blank">helpers</a> that relate to the state of data validation, synchronization and the like.
+            </p>
+        </section>
 
-_3w_allSyncedToServer: See previous section.
+        <div style="min-height: 20px"></div>
 
-_3w_isNotInvalid: See previous section.
+        <section>
+            <h3>Focus</h3>
 
-_3w_isInvalid: The negation of _3w_isNotInvalid. See previous section.
+            <p>
+                There is a <code>focus</code> binding that is linked to an element:
+            </p>
 
-_3w_validValuesSynced(prop): true if synced or data is not valid. (See previous section.)
+            <pre>&lt;input name=&quot;name&quot; data-bind=&quot;value: name; focus: nameHasFocus&quot;&gt;</pre>
 
-_3w_validValuesNotSynced(prop): true if data is not invalid (ok, valid) and not synced. (See previous section.)
+            <p>
+                Recall the little hand icon that, when clicked, placed focus on the <code>input</code> element for the <code>name</code> field? This was the Blaze event handler that dealt with the click.
+            </p>
 
-_3w_focusedField: returns the currently focused field.
+            <pre class="javascript">
+                "click a#focus-name": function(event) {
+                    event.preventDefault();
+                    Template.instance()._3w_.set('nameHasFocus', true);
+                },
+            </pre>
 
-_3w_focusedFieldUpdatedOnServer(prop): indicates whether field prop was updated on the server while the relevant field was in focus (and a updateOfFocusedFieldCallback callback was defined in options) and hence the field is out of sync
+            <p>
+                .... and when the element had focus, remember the text "(has focus)" that appeared? This was the relevant code:
+            </p>
 
+            <pre class="html">
+                &lt;span data-bind=&quot;visible: nameHasFocus&quot;&gt;(has focus)&lt;/span&gt;
+            </pre>
 
+            <p>
+                So yes, <code>focus</code> is an honest binding (read/write). On that note, there is no "file binding", because one cannot construct a file in memory and place it in an <code>input</code> element.
+            </p>
 
+            <p>
+                Returning to the topic of focus, it may be of interest whether a field with focus has a value binding and what field it is bound to. These were used in the heading just above the form fields.
+            </p>
 
-    updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
-        console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
-    }
+            <pre class="handlebars">
+                &lbrace;&lbrace;#if _3w_focusedField&rbrace;&rbrace;(Focused: &lbrace;&lbrace;_3w_focusedField&rbrace;&rbrace;)&lbrace;&lbrace;/if&rbrace;&rbrace;
+            </pre>
 
+            <p>
+                Of course, the helper has an <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#my-data" target="_blank">associated method</a>.
+            </p>
+        </section>
+
+        <div style="min-height: 20px"></div>
+
+        <section>
+            <h3>Reacting to Focused Fields Being Updated Elsewhere</h3>
+
+            <p>
+                Consider a user hard at work updating a long description when it gets updated on the server. One of the last things you want to have happen is for that user to lose all his/her work and get really annoyed. But one cannot stop the march of progress and halt all work. And one might not want to do "Mongo Locking" either. One answer is adding more intelligence to the client.
+            </p>
+
+            <p>
+                In the configuration above, the following callback was specified:
+            </p>
+
+            <pre class="javascript">
+                // Reports updates of focused fields
+                updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
+                    var instance = Template.instance();
+                    var updatedFieldData = instance._3w_.get('updatedFieldData');
+
+                    updatedFieldData.push({
+                        fieldMatchParams: fieldMatchParams,
+                        newValue: newValue,
+                        prevValue: currentValue,
+                        time: new Date(),
+                    });
+                    instance._3w_.set('updatedFieldData', updatedFieldData);
+                    console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
+                },
+            </pre>
+
+            <p>
+                Note that <code>Template.instance()</code> is accessible (like in ThreeWay helpers, pre-processors and event handlers). In the callback function, handles updates for all fields, one can choose to update the view model immediately, or to do something more complex. Like doing a "merge".
+            </p>
+
+            <p>
+                In any event, the helper that was used:
+            </p>
+
+            <pre class="handlebars">
+                &lbrace;&lbrace;#if _3w_focusedFieldUpdatedOnServer &#039;name&#039;&rbrace;&rbrace;&lt;i class=&quot;warning icon&quot;&gt;&lt;/i&gt;&lbrace;&lbrace;/if&rbrace;&rbrace;
+            </pre>
+
+            <p>
+                Of course, the helper has an <a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#my-data" target="_blank">associated method</a>. (Yes, I copied and pasted.)
+            </p>
+
+            <p>
+                And that's all folks!
+            </p>
         </section>
 
         <div style="min-height: 20px"></div>

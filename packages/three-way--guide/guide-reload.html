@@ -14,8 +14,6 @@
             On to the demo.
         </p>
 
-        <div><ul id="toc"></ul></div>
-
         {{> ThreeWayGuide_Reload}}
     </div>
 
@@ -25,10 +23,10 @@
 <template name="ThreeWayGuide_Reload">
     <div class="column">
         <section>
-            <h3>Reload and Migration</h3>
+            <h3>Reload and Migration Proper</h3>
 
             <p>
-                In principle, the feature could be tested by comparing the following two actions:
+                Compare the following two actions:
             </p>
 
             <h4>Browser Reload</h4>
@@ -56,7 +54,7 @@
 
             <div style="width: 100%; text-align: center;">
                 <div style="border-radius: 10px; padding: 10px 20px; width: 80%; margin: auto;" data-bind="style: {background-color: colR#colG#colB|toRGB}">
-                    <h3 data-bind="style: {color: colR#colG#colB|toInvRGB}">Multivariable Display Binding: <code>(R, G, B)</code> to <code>background-color</code></h3>
+                    <h4 data-bind="style: {color: colR#colG#colB|toInvRGB}">Multivariable Display Binding: <code>(R, G, B)</code> to <code>background-color</code></h4>
                     <input data-bind="value: colR" type="range" style="width: 100%" max=239 min=16>
                     <input data-bind="value: colG" type="range" style="width: 100%" max=239 min=16>
                     <input data-bind="value: colB" type="range" style="width: 100%" max=239 min=16>

@@ -2,7 +2,7 @@
 /* global GuideData: true */
 /* global getRandomId: true */
 
-ThreeWay.prepare(Template.ThreeWayGuide_DataSyncFeedback_Wrapper, {
+ThreeWay.prepare(Template.ThreeWayGuide_DataSyncFeedback, {
 	collection: GuideData.collection,
 	updatersForServer: {
 		'name': 'three-way-guide/update/name',
@@ -10,31 +10,12 @@ ThreeWay.prepare(Template.ThreeWayGuide_DataSyncFeedback_Wrapper, {
 		'age': 'three-way-guide/update/age',
 		'tags': 'three-way-guide/update/tags',
 		'notes': 'three-way-guide/update/notes',
-		'points': 'three-way-guide/update/points',
-		'points.*.*': 'three-way-guide/update/points.*.*',
-		'someArray': 'three-way-guide/update/someArray',
-		'someArray.*': 'three-way-guide/update/someArray.*',
 	},
 	dataTransformToServer: {
 		tags: ThreeWay.transformations.arrayFromCommaDelimitedString,
-		'points.*.*': x => Number(x),
 	},
 	dataTransformFromServer: {
 		tags: ThreeWay.transformations.arrayToCommaDelimitedString,
-		'points.*.*': x => x.toString(),
-	},
-	validatorsVM: {
-		'someArray.*': {
-			validator: function(value, matchInformation, vmData) {
-				return !Number.isNaN(Number(value));
-			},
-			success: function(value, matchInformation, vmData) {
-				Template.instance()._3w_.set('someArrValidationErrorText.' + matchInformation.params[0], '');
-			},
-			failure: function(value, matchInformation, vmData) {
-				Template.instance()._3w_.set('someArrValidationErrorText.' + matchInformation.params[0], 'Invalid Value: ' + value + ' (Numbers only please.)');
-			},
-		}
 	},
 	validatorsServer: {
 		tags: {
@@ -50,31 +31,61 @@ ThreeWay.prepare(Template.ThreeWayGuide_DataSyncFeedback_Wrapper, {
 			},
 		},
 	},
+	preProcessors: {
+		grayIfTrue: x => (!!x) ? "#ccc" : "",
+		redIfTrue: x => (!!x) ? "red" : "",
+	},
+	// Reports updates of focused fields
+	updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
+		var instance = Template.instance();
+		var updatedFieldData = instance._3w_.get('updatedFieldData');
+
+		updatedFieldData.push({
+			fieldMatchParams: fieldMatchParams,
+			newValue: newValue,
+			prevValue: currentValue,
+			time: new Date(),
+		});
+		instance._3w_.set('updatedFieldData', updatedFieldData);
+		console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
+
+		instance._3w_.set(fieldMatchParams.fieldPath, newValue);
+	},
+	viewModelToViewOnly: {
+		updatedFieldData: [],
+	}
 });
 
-Template.ThreeWayGuide_DataSyncFeedback_Wrapper.onCreated(function() {
+Template.ThreeWayGuide_DataSyncFeedback.onCreated(function() {
 	var instance = this;
 	instance.subscribe('guide-pub');
 });
 
-Template.ThreeWayGuide_DataSyncFeedback_Wrapper.onRendered(function() {
+Template.ThreeWayGuide_DataSyncFeedback.onRendered(function() {
 	var instance = this;
 
 	instance.autorun(function() {
 		var id = getRandomId(instance);
 		if (!!id) {
 			instance._3w_.setId(id);
+			instance._3w_.set('updatedFieldData', []);
 		}
 	});
+
+	instance.$('.ui.dropdown')
+		.dropdown({
+			allowAdditions: true
+		});
 });
 
-Template.ThreeWayGuide_DataSyncFeedback_Wrapper.helpers(GuideData.helperBundle);
+Template.ThreeWayGuide_DataSyncFeedback.helpers(GuideData.helperBundle);
 
-Template.ThreeWayGuide_DataSyncFeedback_Wrapper.events({
+Template.ThreeWayGuide_DataSyncFeedback.events({
 	'click button.select-document': function(event, instance) {
 		var id = event.target.getAttribute('data-id');
 		if (!!id) {
 			instance._3w_.setId(id);
+			instance._3w_.set('updatedFieldData', []);
 
 			setTimeout(function() {
 				$('html, body').animate({
@@ -82,5 +93,19 @@ Template.ThreeWayGuide_DataSyncFeedback_Wrapper.events({
 				}, 500);
 			}, 50);
 		}
-	}
+	},
+	'click button.regenerate-document': function(event, instance) {
+		var id = instance._3w_.getId();
+		console.info('Will make request to regenerate document with id ' + id + ' in 3 seconds.');
+		if (!!id) {
+			setTimeout(function() {
+				console.info('Call to regenerate document with id ' + id + ' dispatched.');
+				Meteor.call('regenerate-one--guide', id);
+			}, 3000);
+		}
+	},
+	"click a#focus-name": function(event) {
+		event.preventDefault();
+		Template.instance()._3w_.set('nameHasFocus', true);
+	},
 });

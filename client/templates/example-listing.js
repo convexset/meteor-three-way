@@ -18,27 +18,27 @@ Template.guideAndExamplesListing.helpers({
 			},
 			{
 				item: "Guide: More Bindings: style, class, attr, visible, disabled, focus, event; multi-variate bindings",
-				done: false
+				done: true
 			},
 			{
 				item: "Guide: Data Validation",
-				done: false
+				done: true
 			},
 			{
 				item: "Guide: Parent-Child Data Access",
-				done: false
+				done: true
 			},
 			{
 				item: "Guide: Dynamic Data-binding; Usage with Family Trees",
-				done: false
+				done: true
 			},
 			{
 				item: "Guide: Reload and View Model Data Persistence",
-				done: false
+				done: true
 			},
 			{
 				item: "Guide: Limited Data Synchronization Feedback (updated on server; focused field changed)",
-				done: false
+				done: true
 			},
 			{
 				item: "Guide: Declarative data->display. A Pure Side-effects Pre-Processor Example: Rotate a Canvas Plot",
@@ -46,7 +46,7 @@ Template.guideAndExamplesListing.helpers({
 			},
 			{
 				item: "Guide: Customizing How the UI Updates the View Model",
-				done: false
+				done: true
 			},
 		];
 	}

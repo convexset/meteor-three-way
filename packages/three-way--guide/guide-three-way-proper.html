@@ -12,6 +12,7 @@
 
 		{{> ThreeWayGuide_ThreeWay_Objects}}
 	</div>
+	<div style="min-height: 20px"></div>
 </template>
 
 <template name="ThreeWayGuide_ThreeWay_Simple">
@@ -123,6 +124,55 @@
 					</tr>
 				</table>
 			</div>
+		</section>
+
+		<section>
+			<h3>Selecting a Document</h3>
+		
+			<p>
+				One thing that seems to have been missed out is how to select a document. Let's get right to that.
+			</p>
+
+			<p>
+				Once ready to bind to a document with id <code>_id</code> in the database on a template instance <code>instance</code>, simply call:
+			</p>
+
+			<pre class="javascript">
+				instance._3w_setId(_id);
+			</pre>
+
+			<p>... for example...</p>
+
+			<pre class="javascript">
+				Template.MyTemplate.onRendered(function() {
+					var instance = this;
+					var _id = magicGetIdFunction();  // or something...
+					instance._3w_setId(_id);
+				});
+			</pre>
+
+			<p>... or instantiate the relevant template like so:</p>
+
+			<pre class="handlebars">
+				&lbrace;&lbrace;> MyTemplate _3w_id="the-relevant-item-id"&rbrace;&rbrace;
+			</pre>
+
+			<p>... or...</p>
+
+			<pre class="handlebars">
+				&lbrace;&lbrace;> MyTemplate _id="the-relevant-item-id"&rbrace;&rbrace;
+			</pre>
+			
+			<p>... or...</p>
+
+			<pre class="handlebars">
+				<!-- assuming someObject is an object with an _id property -->
+				&lbrace;&lbrace;> MyTemplate someObject&rbrace;&rbrace;
+			</pre>
+
+			<p>... and things will happen.</p>
+
+			<p><strong>Note:</strong> <code>_3w_id</code> takes precedence over <code>_id</code> for "reasonable reasons". For example, an existing template might take as input an object with an <code>_id</code> property, but that might not be the desired <code>_id</code> since data passed in is typically "static" and probably comes from another collection.</p>
 
 		</section>
 
@@ -420,6 +470,6 @@
 
 		</section>
 
-		<div style="min-height: 50px"></div>
+		<div style="min-height: 20px"></div>
 	</div>
 </template>

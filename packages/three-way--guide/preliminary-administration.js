@@ -59,6 +59,17 @@ Meteor.startup(function() {
 		});
 	}
 
+	function gotoHash() {
+		var instance = this;
+		setTimeout(function() {
+			if ((!!location.hash) && $(location.hash).length) {
+				$('html, body').animate({
+					scrollTop: Math.max(0, instance.$(location.hash).offset().top - 120)
+				}, 500);
+			}
+		}, 50);
+	}
+
 	Object.keys(Template)
 		.filter(function(x) {
 			var xs = x.split('_');
@@ -69,6 +80,7 @@ Meteor.startup(function() {
 		})
 		.forEach(function(templateName) {
 			Template[templateName].onRendered(generateTOC);
+			Template[templateName].onRendered(gotoHash);
 		});
 
 	Object.keys(Template)

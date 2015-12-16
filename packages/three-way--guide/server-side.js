@@ -50,6 +50,42 @@ Meteor.methods({
 var lastRegenTimestamp = 0;
 var emailPrefsValues = _.map(GuideData.emailPrefsAll, (v, k) => k);
 var ageRangeValues = _.map(GuideData.ageRanges, (v, k) => k);
+
+function generateDocument() {
+	var user = Fake.user();
+	var tags = [];
+	GuideData.allTags.forEach(function(tag) {
+		if (Math.random() < 0.4) {
+			tags.push(tag);
+		}
+	});
+	var _emPrefs = [];
+	emailPrefsValues.forEach(function(x) {
+		if (Math.random() < 0.6) {
+			_emPrefs.push(x);
+		}
+	});
+	var doc = {
+		name: user.fullname,
+		emailPrefs: _emPrefs,
+		age: Fake.fromArray(ageRangeValues),
+		someArray: [
+			Math.floor(Math.random() * 10), ((Math.random() < 0.33) ? '!!!' : Math.floor(Math.random() * 10)),
+			Math.floor(Math.random() * 10)
+		],
+		points: _.range(2 + Math.round(Math.random() * 5)).map(function() {
+			return {
+				x: Math.round(Math.random() * 20 - 10) / 10,
+				y: Math.round(Math.random() * 20 - 10) / 10,
+			};
+		}),
+		rotationAngle: Math.round(Math.random() * 200 - 100) / 100,
+		notes: Fake.sentence(5),
+		tags: tags,
+	};
+	return doc;
+}
+
 Meteor.methods({
 	'regenerate-data--guide': function() {
 		var currTimestamp = (new Date()).getTime();
@@ -59,44 +95,20 @@ Meteor.methods({
 			lastRegenTimestamp = currTimestamp;
 			GuideData.collection.remove({});
 			_.range(num_items).forEach(function(idx) {
-				var user = Fake.user();
-				var tags = [];
-				GuideData.allTags.forEach(function(tag) {
-					if (Math.random() < 0.4) {
-						tags.push(tag);
-					}
-				});
-				var _emPrefs = [];
-				emailPrefsValues.forEach(function(x) {
-					if (Math.random() < 0.6) {
-						_emPrefs.push(x);
-					}
-				});
-				var doc = {
-					name: user.fullname,
-					emailPrefs: _emPrefs,
-					age: Fake.fromArray(ageRangeValues),
-					someArray: [
-						Math.floor(Math.random() * 10), ((Math.random() < 0.33) ? '!!!' : Math.floor(Math.random() * 10)),
-						Math.floor(Math.random() * 10)
-					],
-					points: _.range(2 + Math.round(Math.random() * 5)).map(function() {
-						return {
-							x: Math.round(Math.random() * 20 - 10) / 10,
-							y: Math.round(Math.random() * 20 - 10) / 10,
-						};
-					}),
-					rotationAngle: Math.round(Math.random() * 200 - 100) / 100,
-					notes: Fake.sentence(5),
-					tags: tags,
-				};
+				var doc = generateDocument();
 				if (idx === num_items - 1) {
 					doc._id = "__last_id__";
 				}
 				return GuideData.collection.insert(doc);
 			});
 		}
-	}
+	},
+	'regenerate-one--guide': function(id) {
+		var doc = generateDocument();
+		return GuideData.collection.update(id, {
+			$set: doc
+		});
+	},
 });
 
 Meteor.call('regenerate-data--guide');
