@@ -34,6 +34,7 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
     - [Using Dynamic Data Binding with Multiple `ThreeWay` instances](#using-dynamic-data-binding-with-multiple-threeway-instances)
   - [Updaters to the Server](#updaters-to-the-server)
     - [Extended Notation for Updaters](#extended-notation-for-updaters)
+    - [Database Update Parameters](#database-update-parameters)
   - [Transforms: Translation from/to Database to/from View Model](#transforms-translation-fromto-database-tofrom-view-model)
   - [Binding to the View](#binding-to-the-view)
     - [Binding: `html` and `text`](#binding-html-and-text)
@@ -410,7 +411,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     debounceInterval: 300, // default: 500
     // "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
     throttleInterval: 500, // default: 500
-    // Fields for which updaters are throttle'd instead of debounce'ed
+    // Fields for which updaters are throttle'd instead of debounce'd
     throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
 
     // Reports updates of focused fields
@@ -614,6 +615,24 @@ In the latter case, `info` takes the form:
 
 ... admittedly, that is a little excessive.
 
+#### Database Update Parameters
+
+Update methods are, by default, [debounced](http://underscorejs.org/#debounce). These can be customized. The example below should be reasonably self-explanatory:
+
+```javascript
+{
+    ...
+    // Database Update Parameters
+    // "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
+    debounceInterval: 300, // default: 500
+    // "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
+    throttleInterval: 500, // default: 500
+    // Fields for which updaters are throttle'd instead of debounce'd
+    throttledUpdaters: ['emailPrefs', 'personal.particulars.age'],
+    ...
+}
+```
+
 ### Transforms: Translation from/to Database to/from View Model
 
 The format that data is stored in a database might not be the most convenient for use in the view model (e.g.: sparse representation "at rest"), as such it may be necessary to do some translation between database and view model.
@@ -703,8 +722,10 @@ For the `comment` input element, updates can happen as one is typing (due to upd
 The following modifiers are available and are applied in the form `<binding>#<modifier>-<option>#<modifier>-<option>: <view model field>`:
  - `updateon`: also updates the view model when a given event fires (e.g. `updateon-<event name>`)
  - `donotupdateon`: do not update the view model when a given event fires (e.g. `donotupdateon-<event name>`); the only valid option is `input` and this only applies to `value` bindings.
- - `throttle`: throttles (e.g. `throttle-<interval in ms>`)
- - `debounce`: (e.g. `debounce-<interval in ms>`)
+ - `throttle`: throttles (e.g. `throttle-<interval in ms>`); does not apply to `checked` bindings
+ - `debounce`: (e.g. `debounce-<interval in ms>`); does not apply to `checked` bindings
+
+(For `checked` bindings, it would be rather sketchy to apply throttling or debouncing due multiple elements forming a composite `checked` widget.)
 
 #### Bindings: `visible` and `disabled` (modern necessities)
 

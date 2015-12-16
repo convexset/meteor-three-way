@@ -309,12 +309,13 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				} else {
 					new_value = (!!curr_value ? curr_value : []).map(x => x); // copy
 					if (!elem_checked) {
-						var idx = new_value.indexOf(elem_value);
-						if (idx > -1) {
-							new_value.splice(idx, 1);
+						while (new_value.indexOf(elem_value) > -1) {
+							new_value.splice(new_value.indexOf(elem_value), 1);
 						}
 					} else {
-						new_value.push(elem_value);
+						if (new_value.indexOf(elem_value) === -1) {
+							new_value.push(elem_value);
+						}
 					}
 				}
 
@@ -345,20 +346,20 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			};
 
 			// Apply options to changeHandler
-			_.forEach(elemBindings.bindings.checked.itemOptions, function(v, opt) {
-				if (opt === "throttle") {
-					if (IN_DEBUG_MODE_FOR('checked')) {
-						console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
-					}
-					checkedChangeHandler = _.throttle(checkedChangeHandler, v);
-				}
-				if (opt === "debounce") {
-					if (IN_DEBUG_MODE_FOR('checked')) {
-						console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
-					}
-					checkedChangeHandler = _.debounce(checkedChangeHandler, v);
-				}
-			});
+			// _.forEach(elemBindings.bindings.checked.itemOptions, function(v, opt) {
+			// 	if (opt === "throttle") {
+			// 		if (IN_DEBUG_MODE_FOR('checked')) {
+			// 			console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
+			// 		}
+			// 		checkedChangeHandler = _.throttle(checkedChangeHandler, v);
+			// 	}
+			// 	if (opt === "debounce") {
+			// 		if (IN_DEBUG_MODE_FOR('checked')) {
+			// 			console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
+			// 		}
+			// 		checkedChangeHandler = _.debounce(checkedChangeHandler, v);
+			// 	}
+			// });
 
 			// Bind change handler
 			bindEventToThisElem('change', checkedChangeHandler);
