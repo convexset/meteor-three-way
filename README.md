@@ -145,17 +145,17 @@ instance._3w_setId(_id);
 ```
 or
 ```html
-{{> DemoThreeWay _id=this._id}}
+{{> DemoThreeWay _id="the-relevant-item-id"}}
 ```
 or 
 ```html
-<!-- assuming this is an object with an _id property -->
-{{> DemoThreeWay this}}
+<!-- assuming someObject is an object with an _id property -->
+{{> DemoThreeWay someObject}}
 ```
 
 ... and things will happen.
 
-**Note:** When a document `_id` is passed in through the data context, `_3w_id` takes precedence over `_id`.
+**Note:** When a document `_id` is passed in through the data context, `_3w_id` takes precedence over `_id` for "reasonable reasons". For example, an existing template might take as input an object with an `_id` property, but that might not be the desired `_id` since data passed in is typically "static" and probably comes from another collection.
 
 Here is a sample data-binding string:
 ```html
