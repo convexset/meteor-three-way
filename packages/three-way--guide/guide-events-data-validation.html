@@ -29,9 +29,9 @@
                 tabindex="1">
                 <!-- the tabindex attribute is needed so the div accepts keypress events -->
                 <h4 data-bind="style: {color: sliderR#sliderG#sliderB|toInvRGB}">Multi-variable Display Binding: <code>(R, G, B)</code> to <code>background-color</code></h4>
-                <input data-bind="value: sliderR; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=255 min=0>
-                <input data-bind="value: sliderG; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=255 min=0>
-                <input data-bind="value: sliderB; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=255 min=0>
+                <input data-bind="value: sliderR; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=239 min=16>
+                <input data-bind="value: sliderG; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=239 min=16>
+                <input data-bind="value: sliderB; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}" type="range" style="width: 100%" max=239 min=16>
 
                 <p><strong>A Little Log</strong></p>
                 <textarea style="width: 80%;" rows="12" data-bind="value: logText"></textarea>
@@ -56,9 +56,9 @@
                 ThreeWay.prepare(Template.ThreeWayGuide_Events, {
                     viewModelToViewOnly: {
                         logText: "Logged messages will appear here.\n\n",
-                        sliderR: Math.floor(64 + 192 * Math.random()),
-                        sliderG: Math.floor(64 + 192 * Math.random()),
-                        sliderB: Math.floor(64 + 192 * Math.random()),
+                        sliderR: Math.floor(16 + 224 * Math.random()),
+                        sliderG: Math.floor(16 + 224 * Math.random()),
+                        sliderB: Math.floor(16 + 224 * Math.random()),
                     },
                     preProcessors: {
                         toRGB: function(r, g, b) {
@@ -108,9 +108,9 @@
                     data-bind=&quot;event: {f1Key: saySomethingHappy, f2Key: invertColors, keyup: clearLogOnX}; style: {background-color: sliderR#sliderG#sliderB|toRGB}&quot; tabindex=&quot;1&quot;&gt;
                     &lt;!-- the tabindex attribute is needed so the div accepts keypress events --&gt;
                     &lt;h4 data-bind=&quot;style: {color: sliderR#sliderG#sliderB|toInvRGB}&quot;&gt;Multi-variable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h4&gt;
-                    &lt;input data-bind=&quot;value: sliderR; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
-                    &lt;input data-bind=&quot;value: sliderG; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
-                    &lt;input data-bind=&quot;value: sliderB; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;
+                    &lt;input data-bind=&quot;value: sliderR; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=239 min=16&gt;
+                    &lt;input data-bind=&quot;value: sliderG; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=239 min=16&gt;
+                    &lt;input data-bind=&quot;value: sliderB; event: {mousedown: dragStartHandler, mouseup: dragEndHandler|saySomethingHappy}&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=239 min=16&gt;
 
                     &lt;p&gt;&lt;strong&gt;A Little Log&lt;/strong&gt;&lt;/p&gt;
                     &lt;textarea cols=&quot;80&quot; rows=&quot;10&quot; data-bind=&quot;value: logText&quot;&gt;&lt;/textarea&gt;

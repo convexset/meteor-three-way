@@ -12,6 +12,7 @@ function lessLeadingCharacters(s, n) {
 	return s.substr(n);
 }
 
+
 hljsProcessPreBlocks = function hljsProcessPreBlocks() {
 	$('pre').each(function(i, elem) {
 		if (Array.prototype.indexOf.call(elem.classList, 'hljs') !== -1) {

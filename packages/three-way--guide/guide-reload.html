@@ -1,27 +1,72 @@
 <template name="ThreeWayGuide_Reload_Wrapper">
     <div class="ui container">    
-        <h1>....</h1>
+        <h1>Reload and Migration</h1>
 
-        <p>...</p>
+        <p>
+            Meteor developers may have heard of <a href="http://info.meteor.com/blog/meteor-hot-code-push" target="_blank">hot code push and data migration</a>. ThreeWay includes very basic functionality for this. In particular, view model only data is migrated on hot-code-push-triggered reload (actually <code>Reload._reload()</code>-triggered reload).
+        </p>
+
+        <p>
+            For more nuanced needs, consider the use of <a href="https://atmospherejs.com/convexset/migration" target="_blank"><code>convexset:migration</code></a> which supports both "application-level" migrations and "template-level" migrations. (Please do report any <a href="https://github.com/convexset/meteor-migration/issues" target="_blank">issues</a>.)
+        </p>
+        
+        <p>
+            On to the demo.
+        </p>
 
         <div><ul id="toc"></ul></div>
 
         {{> ThreeWayGuide_Reload}}
     </div>
+
+    <div style="min-height: 30px"></div>
 </template>
 
 <template name="ThreeWayGuide_Reload">
     <div class="column">
         <section>
-            <h3>....</h3>
+            <h3>Reload and Migration</h3>
+
+            <p>
+                In principle, the feature could be tested by comparing the following two actions:
+            </p>
+
+            <h4>Browser Reload</h4>
+            <ol>
+                <li>Reload the browser and note default Syntax Highlighting Theme</li>
+                <li>Change the theme</li>
+                <li>Reload the browser and note that the default theme is what shows up</li>
+            </ol>
+
+            <h4><code>Reload._reload()</code> (as used in Hot Code Push)</h4>
+            <ol>
+                <li>Change the theme Syntax Highlighting Theme</li>
+                <li>Enter <code>Reload._reload()</code> in the console or use the button below</li>
+            </ol>
+
+            <div style="width: 100%; text-align: center;">
+                <button class="ui button icon reload">
+                    <i class="icon refresh"></i>
+                    Click to Reload
+                </button>
+            </div>
+            
+            <p></p>
+            <p>Of course, people like things that are more visual, here is the workhorse example again:</p>
+
+            <div style="width: 100%; text-align: center;">
+                <div style="border-radius: 10px; padding: 10px 20px; width: 80%; margin: auto;" data-bind="style: {background-color: colR#colG#colB|toRGB}">
+                    <h3 data-bind="style: {color: colR#colG#colB|toInvRGB}">Multivariable Display Binding: <code>(R, G, B)</code> to <code>background-color</code></h3>
+                    <input data-bind="value: colR" type="range" style="width: 100%" max=239 min=16>
+                    <input data-bind="value: colG" type="range" style="width: 100%" max=239 min=16>
+                    <input data-bind="value: colB" type="range" style="width: 100%" max=239 min=16>
+                </div>
+            </div>
+
+            <p></p>
+            <p>Enjoy.</p>
         </section>
 
         <div style="min-height: 20px"></div>
-
-        <section>
-            <h3>....</h3>
-        </section>
-
-        <div style="min-height: 50px"></div>
     </div>
 </template>

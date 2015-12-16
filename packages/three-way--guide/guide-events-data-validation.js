@@ -56,9 +56,9 @@ var happySayings = [
 ThreeWay.prepare(Template.ThreeWayGuide_Events, {
 	viewModelToViewOnly: {
 		logText: "Logged messages will appear here.\n\n",
-		sliderR: Math.floor(64 + 192 * Math.random()),
-		sliderG: Math.floor(64 + 192 * Math.random()),
-		sliderB: Math.floor(64 + 192 * Math.random()),
+		sliderR: Math.floor(16 + 224 * Math.random()),
+		sliderG: Math.floor(16 + 224 * Math.random()),
+		sliderB: Math.floor(16 + 224 * Math.random()),
 	},
 	preProcessors: {
 		toRGB: function(r, g, b) {

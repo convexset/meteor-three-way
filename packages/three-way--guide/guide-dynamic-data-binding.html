@@ -60,15 +60,15 @@
                 <tbody>
                     <tr>
                         <td>colR</td>
-                        <td><input id="input-r" type=number min=0 max=255></td>
+                        <td><input id="input-r" type=number min=16 max=239></td>
                     </tr>
                     <tr>
                         <td>colG</td>
-                        <td><input id="input-g" type=number min=0 max=255></td>
+                        <td><input id="input-g" type=number min=16 max=239></td>
                     </tr>
                     <tr>
                         <td>colB</td>
-                        <td><input id="input-b" type=number min=0 max=255></td>
+                        <td><input id="input-b" type=number min=16 max=239></td>
                     </tr>
                 </tbody>
             </table>
@@ -81,9 +81,9 @@
             <p>Now go to the console and enter the following:</p>
             <pre class="javascript">
                 $(&#039;#put-stuff-here&#039;).append(&#039;&lt;h3&gt;Multivariable Display Binding: &lt;code&gt;(R, G, B)&lt;/code&gt; to &lt;code&gt;background-color&lt;/code&gt;&lt;/h3&gt;&#039;);
-                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colR&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
-                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colG&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
-                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colB&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=255 min=0&gt;&#039;);
+                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colR&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=239 min=16&gt;&#039;);
+                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colG&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=239 min=16&gt;&#039;);
+                $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: colB&quot; type=&quot;range&quot; style=&quot;width: 100%&quot; max=239 min=16&gt;&#039;);
                 $(&#039;#put-stuff-here&#039;).attr(&#039;data-bind&#039;, &#039;style: {background-color: colR#colG#colB|toRGB}&#039;);
             </pre>
 
@@ -136,13 +136,7 @@
             <pre class="javascript">
                 function randomWalk(n) {
                     var _n = Number(n);
-                    if (_n === 0) {
-                        return 1;
-                    }
-                    if (_n === 255) {
-                        return 254;
-                    }
-                    return (Math.random() &lt; 0.5) ? (_n - 1) : (_n + 1);
+                    return (Math.random() &lt; 0.5) ? ((_n === 16) ? 16 : (_n - 1)) : ((_n === 239) ? 239 : (_n + 1));
                 }
                 setInterval(function() { $(&quot;#input-r&quot;).val(randomWalk($(&quot;#input-r&quot;).val())).trigger('change'); }, 100);
                 setInterval(function() { $(&quot;#input-g&quot;).val(randomWalk($(&quot;#input-g&quot;).val())).trigger('change'); }, 100);
@@ -193,7 +187,6 @@
             <p>In the event that the user would (inexplicably) like to respond to changes in disjoint parts of a template, the <code>_3w_setRoots(selectorString)</code> method should be used to select root nodes (via a template-level jQuery selector). This might be done in an <code>onRendered</code> hook or after rendering completes. </p>
 
             <p>For even more specificity, the <code>restrict-template-type</code> attribute can be set (with a comma separated list of template names) on DOM elements to specify which ThreeWay-linked template types should be used to data bind individual elements.</p>
-
         </section>
 
         <div style="min-height: 20px"></div>

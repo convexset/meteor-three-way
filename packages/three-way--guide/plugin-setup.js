@@ -90,8 +90,8 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
     methods: {
         info: function() {
             return {
-                name: '(Coming Soon) Reload and Migration',
-                description: 'Reload and View Model Data Persistence',
+                name: 'Reload and Migration',
+                description: 'Reload and View Model Data Persistence. A really short demo.',
                 routeName: 'reload',
                 templateName: 'ThreeWayGuide_Reload_Wrapper',
                 order: 7,

@@ -10,9 +10,9 @@ ThreeWay.prepare(Template.ThreeWayGuide_PreProcessorsMoreBindings, {
 	viewModelToViewOnly: {
 		'option': 'o1',
 		'selection': [],
-		'sliderR': Math.floor(64 + 192 * Math.random()),
-		'sliderG': Math.floor(64 + 192 * Math.random()),
-		'sliderB': Math.floor(64 + 192 * Math.random()),
+		'sliderR': Math.floor(16 + 224 * Math.random()),
+		'sliderG': Math.floor(16 + 224 * Math.random()),
+		'sliderB': Math.floor(16 + 224 * Math.random()),
 		'tags': 'tag5',
 	},
 	preProcessors: {
