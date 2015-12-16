@@ -43,6 +43,8 @@ Package.onUse(function(api) {
         'guide-three-way-proper.js',
         'guide-pre-processors-and-more-bindings.html',
         'guide-pre-processors-and-more-bindings.js',
+        'guide-pure-side-effects.html',
+        'guide-pure-side-effects.js',
         'guide-events-data-validation.html',
         'guide-events-data-validation.js',
         'guide-family-data-access.html',
@@ -51,12 +53,10 @@ Package.onUse(function(api) {
         'guide-dynamic-data-binding.js',
         'guide-reload.html',
         'guide-reload.js',
+        'guide-customizing-vm-db-updates.html',
+        'guide-customizing-vm-db-updates.js',
         'guide-data-sync-feedback.html',
         'guide-data-sync-feedback.js',
-        'guide-pure-side-effects.html',
-        'guide-pure-side-effects.js',
-        'guide-customizing-vm-updates.html',
-        'guide-customizing-vm-updates.js',
     ], 'client');
 
     api.addFiles('plugin-setup.js', 'client');

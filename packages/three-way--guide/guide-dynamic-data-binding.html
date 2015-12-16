@@ -129,6 +129,8 @@
             <pre class="javascript">
                 $(&#039;#put-stuff-here&#039;).append(&#039;&lt;input data-bind=&quot;value: item&quot; id=&quot;my-item&quot;&gt;&#039;);
                 setInterval(function() { $(&quot;#my-item&quot;).val(Math.random()).trigger('change'); }, 1000);
+                // Try: setInterval(function() { $(&quot;#my-item&quot;).val(Math.random()); }, 1000);
+                // ... and note the difference
             </pre>
 
             <p>... while we are at it, if you have performed the previous steps...</p>

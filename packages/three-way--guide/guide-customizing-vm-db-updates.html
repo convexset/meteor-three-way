@@ -1,0 +1,285 @@
+<template name="ThreeWayGuide_CustomizingVMDBUpdates_Wrapper">
+    <div class="ui container">
+        <h1>Customizing UI&rarr;VM Updates and VM&rarr;DB Updates</h1>
+
+        <p>This part of the guide will help those with more particular data updating requirements. We will touch on specifying detailed instructions (at least, "more detailed" than the usual) on how the UI updates the view model and then on how the view model updates the database.</p>
+
+        <div><ul id="toc"></ul></div>
+
+        {{> ThreeWayGuide_CustomizingVMUpdates}}
+        {{> ThreeWayGuide_CustomizingDBUpdates}}
+    </div>
+    <div style="min-height: 30px"></div>
+</template>
+
+<template name="ThreeWayGuide_CustomizingVMUpdates">
+    <div class="column">
+        <section>
+            <h3>Customizing UI&rarr;VM Updates</h3>
+
+            <p>
+                Updates from the UI to the View Model are customized through the data binding specifications in markup. [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#binding-modifiers-for-value-and-checked" target="_blank">Documentation</a>] Specifically, <strong>these apply only to <code>value</code> and <code>checked</code> bindings</strong>.
+            </p>
+
+            <p>
+                Consider the following...
+            </p>
+
+            <pre>
+                &lt;input name=&quot;name&quot; data-bind=&quot;value#donotupdateon-input: name&quot;&gt;
+                &lt;input name=&quot;comment&quot; data-bind=&quot;value#throttle-1000: name&quot;&gt;
+            </pre>
+
+            <p>
+                By default, value bindings update the view model on <code>change</code> and <code>input</code>. But the latter can be suppressed with a <code>donotupdateon-input</code> option. In the first example, the view model is only updated "on change" such as a loss of focus after a... change is made.
+            </p>
+
+            <p>
+                For the comment input element, updates can happen as one is typing (due to updates being made on input), however, those updates to the view model are <a href="http://underscorejs.org/#throttle" target="_blank">throttled</a> with a 1 second interval.
+            </p>
+
+            <p>
+                The following modifiers are available and are applied in the form &lt;binding&gt;#&lt;modifier&gt;-&lt;option&gt;#&lt;modifier&gt;-&lt;option&gt;: &lt;view model field&gt;:
+            </p>
+
+            <ul>
+                <li><code>updateon</code>: also updates the view model when a given event fires for the same element (e.g. updateon-&lt;event name&gt;)</li>
+                <li><code>donotupdateon</code>: do not update the view model when a given event fires (e.g. donotupdateon-&lt;event name&gt;); the only valid option is <code>input</code> and this only applies to <code>value</code> bindings.</li>
+                <li><code>throttle</code>: <a href="http://underscorejs.org/#throttle" target="_blank">throttles</a> (e.g. <code>throttle-&lt;interval in ms&gt;</code>); does not apply to <code>checked</code> bindings</li>
+                <li><code>debounce</code>: <a href="http://underscorejs.org/#debounce" target="_blank">debounces</a> (e.g. <code>debounce-&lt;interval in ms&gt;</code>); does not apply to <code>checked</code> bindings</li>
+            </ul>
+
+            <p>(For <code>checked</code> bindings, it would be rather sketchy to apply throttling or debouncing due multiple elements forming a composite <code>checked</code> widget.)</p>
+
+            <p>We will begin with the usual set-up...</p>
+
+            <pre class="javascript">
+                ThreeWay.prepare(Template.ThreeWayGuide_CustomizingVMUpdates, {
+                    collection: GuideData.collection,
+                    updatersForServer: {
+                        'name': 'three-way-guide/update/name',
+                        'notes': 'three-way-guide/update/notes',
+                    },
+                });
+            </pre>
+
+            <table class="ui celled table form" data-bind="class: {loading: ready|not}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Notes</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each data}}
+                        <tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
+                            <td>{{name}}</td>
+                            <td>{{notes}}</td>
+                            <td>
+                                <button class="select-document" data-id="{{_id}}">Edit</button>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+
+            <div data-bind="visible: _3w_hasData">
+                <p>
+                    For now, ignore the data base and look at the content of the view model below. What you will notice is that:
+                </p>
+                <ul>
+                    <li><code>name</code> field no longer updates whenever there is keyboard input (the element must lose focus)</li>
+                    <li>The first <code>notes</code> field is debounced with an interval of 1 second (the view model only gets updated 1 second after input stops)</li>
+                    <li>The second <code>notes</code> field is throttled with an interval of 1 second (keep typing and note that updates only appear every second)</li>
+                    <li>The throttling/debouncing operate at an "element-level" rather than at a "field-level"</li>
+                </ul>
+
+                <table class="ui table celled">
+                    <thead>
+                        <tr><th>Field</th>
+                        <th>Value</th></tr>
+                    </thead>
+                    <tbody>
+                        {{#each repackageDictionaryAsArray _3w_getAll}}
+                            <tr>
+                                <td>{{key}}</td>
+                                <td>{{value}}</td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+
+                <table class="ui celled table edit-table">
+                    <tr>
+                        <td style="width: 400px;">
+                            <strong>Name</strong>
+                            <pre class="html">data-bind="value#donotupdateon-input: name"</pre>
+                        </td>
+                        <td>
+                            <input name="name" style="border: 0; width: 100%;" data-bind="value#donotupdateon-input: name">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 400px;">
+                            <strong>Notes</strong>
+                            <pre class="html">data-bind="value#debounce-1000: notes"</pre>
+                        </td>
+                        <td>
+                            <textarea data-bind="value#debounce-1000: notes" style="border: 0; width: 100%;"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 400px;">
+                            <strong>Notes</strong>
+                            <pre class="html">data-bind="value#throttle-1000: notes"</pre>
+                        </td>
+                        <td>
+                            <textarea data-bind="value#throttle-1000: notes" style="border: 0; width: 100%;"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <p></p>
+            <p>With that, let us move on to VM to DB updating.</p>
+
+        </section>
+
+        <div style="min-height: 20px"></div>
+
+    </div>
+</template>
+
+<template name="ThreeWayGuide_CustomizingDBUpdates">
+    <div class="column">
+        <section>
+            <h3>Customizing VM&rarr;DB Updates</h3>
+
+            <p>
+                It feels a bit strange to be creating a guide entry for this now. In fact, this was one of the first features in ThreeWay (and customizing UI&rarr;VM updates was among the last).
+            </p>
+
+            <p>
+                Updates from the View Model to the Database are customized through the configuration. [<a href="https://github.com/convexset/meteor-three-way/blob/master/README.md#database-update-parameters" target="_blank">Documentation</a>]
+            </p>
+
+            <pre class="javascript">
+                ThreeWay.prepare(Template.ThreeWayGuide_CustomizingDBUpdates, {
+                    collection: GuideData.collection,
+                    updatersForServer: {
+                        'name': 'three-way-guide/update/name',
+                        'emailPrefs': 'three-way-guide/update/emailPrefs',
+                        'age': 'three-way-guide/update/age',
+                        'notes': 'three-way-guide/update/notes',
+                    },
+                    // Database Update Parameters
+                    // "Debounce Interval" for Meteor calls; See: http://underscorejs.org/#debounce
+                    debounceInterval: 5000, // default: 500
+                    // "Throttle Interval" for Meteor calls; See: http://underscorejs.org/#throttle ; fields used for below...
+                    throttleInterval: 5000, // default: 500
+                    // Fields for which updaters are throttle'd instead of debounce'd
+                    throttledUpdaters: ['age', 'notes'],
+                });
+            </pre>
+
+            <p>
+                Note that the view model is updated immediately, but updates to the database are <a href="http://underscorejs.org/#debounce" target="_blank">debounced</a> (<code>name</code> and <code>emailPrefs</code>) or <a href="http://underscorejs.org/#throttle" target="_blank">throttled</a> (<code>age</code> and <code>notes</code>). This time, the debouncing and throttling are done with an interval of 5 seconds, so it should be clear that it is not just latency keeping you waiting.
+            </p>
+
+            <table class="ui celled table form" data-bind="class: {loading: ready|not}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>e-mail Preferences</th>
+                        <th>Age</th>
+                        <th>Notes</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each data}}
+                        <tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
+                            <td>{{name}}</td>
+                            <td>{{emailPrefsToCSL emailPrefs}}</td>
+                            <td>{{getProperty age ageRanges}}</td>
+                            <td>{{notes}}</td>
+                            <td>
+                                <button class="select-document" data-id="{{_id}}">Edit</button>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+
+            <div data-bind="visible: _3w_hasData">
+
+                <table class="ui table celled">
+                    <thead>
+                        <tr><th>Field</th>
+                        <th>Value</th></tr>
+                    </thead>
+                    <tbody>
+                        {{#each repackageDictionaryAsArray _3w_getAll}}
+                            <tr>
+                                <td>{{key}}</td>
+                                <td>{{value}}</td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+
+                <table class="ui celled table edit-table">
+                    <tr>
+                        <td>
+                            <strong>Name</strong>
+                        </td>
+                        <td>
+                            <input name="name" style="border: 0; width: 100%;" data-bind="value: name">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>e-mail Preferences</strong>
+                        </td>
+                        <td>
+                            {{#each repackageDictionaryAsArray emailPrefsAll}}
+                                <div class="ui checkbox">
+                                    <input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
+                                    <label>{{value}}</label>
+                                </div>
+                            {{/each}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Age</strong>
+                        </td>
+                        <td>
+                            <div class="inline fields">
+                                {{#each repackageDictionaryAsArray ageRanges}}
+                                    <div class="ui radio checkbox">
+                                        <input type="radio" name="age" value="{{key}}" data-bind="checked: age">
+                                        <label>{{value}}</label>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Notes</strong></td>
+                        <td>
+                            <textarea data-bind="value: notes" style="border: 0; width: 100%;"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <p></p>
+            <p>Hope you got what you needed.</p>
+
+        </section>
+
+        <div style="min-height: 20px"></div>
+    </div>
+</template>
