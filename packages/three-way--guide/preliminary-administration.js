@@ -54,7 +54,7 @@ Meteor.startup(function() {
 			}
 			allIds.push(sectionHash);
 
-			instance.$("#toc").append("<li><a href=#" + sectionHash + ">" + sectionName + "</a></li>");
+			instance.$("#toc").append("<li><a href=\"#" + sectionHash + "\" class=\"three-way-toc\">" + sectionName + "</a></li>");
 			$(elem.parentElement).attr('id', sectionHash);
 		});
 	}
@@ -66,6 +66,8 @@ Meteor.startup(function() {
 				$('html, body').animate({
 					scrollTop: Math.max(0, instance.$(location.hash).offset().top - 120)
 				}, 500);
+			} else {
+				$('html, body').scrollTop(0);
 			}
 		}, 50);
 	}
@@ -81,6 +83,19 @@ Meteor.startup(function() {
 		.forEach(function(templateName) {
 			Template[templateName].onRendered(generateTOC);
 			Template[templateName].onRendered(gotoHash);
+
+			Template[templateName].events({
+				'click a.three-way-toc': function(event, instance) {
+					var href = event.target.getAttribute('href');
+					var hash = href && href.split('#').pop();
+					if (!!hash) {
+						event.preventDefault();
+						$('html, body').animate({
+							scrollTop: Math.max(0, instance.$('#' + hash).offset().top - 120)
+						}, 500);
+					}
+				},
+			});
 		});
 
 	Object.keys(Template)

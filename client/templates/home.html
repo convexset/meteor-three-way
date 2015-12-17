@@ -2,20 +2,33 @@
 	<div class="column" style="text-align: justify;">
 		<h1>ThreeWay</h1>
 
-		<a href="https://atmospherejs.com/convexset/three-way" target=_blank><code>ThreeWay</code></a> is a <a href="https://www.meteor.com" target=_blank>Meteor</a> package providing a "reasonably fully featured" three-way data-binding solution that is very Blaze friendly.
+		<a href="https://atmospherejs.com/convexset/three-way" target=_blank>ThreeWay</a> is a <a href="https://www.meteor.com" target=_blank>Meteor</a> package providing a "reasonably fully featured" three-way data-binding solution that is very Blaze friendly.
 
-		<h3>Installation / Getting <code>ThreeWay</code></h3>
+		<h3>Installation / Getting ThreeWay</h3>
 		In the console:
 		<pre class="bash">meteor add convexset:three-way</pre>
 
 		Available on <a href="https://atmospherejs.com/convexset/three-way" target=_blank>Atmosphere</a>, and also on <a href="https://github.com/convexset/meteor-three-way" target=_blank>GitHub</a>.
 
+		<h3>Guide to ThreeWay</h3>
+		<ul>
+			{{#each listThreeWayGuideItems}}
+				<li>
+					<a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a>
+				</li>
+			{{/each}}
+		</ul>
+
 		<h3>Description</h3>
 		{{> ThreeWayDescription}}
 
-		<h3>The Architecture of <code>ThreeWay</code> in Bad Drawings</h3>
+		<h3>The Architecture of ThreeWay in Bad Drawings</h3>
 		<p>
-			<img style="width: 100%;" src="https://s3-ap-southeast-1.amazonaws.com/convexset/development/three-way/overview_3.jpg">
+			<img style="max-width: 100%;" src="https://s3-ap-southeast-1.amazonaws.com/convexset/development/three-way/overview_3.jpg">
+		</p>
+
+		<p>
+			<img style="max-width: 100%;" src="https://s3-ap-southeast-1.amazonaws.com/convexset/development/three-way/dataflow-and-binding-overview.jpg">
 		</p>
 		
         <div style="min-height: 50px"></div>

@@ -17,7 +17,7 @@
 			<p>Set up is as simple as:</p>
 			<pre class="javascript">ThreeWay.prepare(Template.ThreeWayGuide_BasicsVMOnly);</pre>
 			<p>Totally zero-fuss... ish.</p>
-			<p>Most of the <code>ThreeWay</code> is set-up by the <a href="http://docs.meteor.com/#/full/template_onRendered" target=_blank><code>onRendered</code></a> stage of the <a href="http://docs.meteor.com/#/full/templates_api" target=_blank>template life cycle</a> so initialization can be done there.</p>
+			<p>Most of the <code>ThreeWay</code> instance is set-up by the <a href="http://docs.meteor.com/#/full/template_onRendered" target=_blank><code>onRendered</code></a> stage of the <a href="http://docs.meteor.com/#/full/templates_api" target=_blank>template life cycle</a> so initialization can be done at that point <strong>if necessary</strong>.</p>
 
 			<pre class="javascript">
 				Template.ThreeWayGuide_BasicsVMOnly.onRendered(function() {
@@ -30,7 +30,7 @@
 				});
 			</pre>
 
-			<p><strong>Point of Note:</strong> This is probably not the way you want to do things. It works, but... Anyway, let's move on.</p>
+			<p><strong>Point of Note:</strong> This is <em>not really needed</em>. View model data will be <code>undefined</code> until set by an element that binds to it. Leave that be for now and let's move on.</p>
 		</section>
 
 		<div style="min-height: 20px"></div>

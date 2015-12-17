@@ -12,7 +12,7 @@
 
 		{{> ThreeWayGuide_ThreeWay_Objects}}
 	</div>
-	<div style="min-height: 20px"></div>
+	<div style="min-height: 30px"></div>
 </template>
 
 <template name="ThreeWayGuide_ThreeWay_Simple">
@@ -123,8 +123,15 @@
 						</td>
 					</tr>
 				</table>
+				
+				<p></p>
+				<p>
+					You might notice a bit more latency than expected. If you do, you are extremely perceptive. By default, database updates are <a href="underscorejs.org/#debounce" target="_blank">"debounced"</a> and get sent only half a second (<a href="{{pathFor 'customizing-vm-db-updates'}}">configurable</a>) after the most recent update so a continuous stream of updates does not result in one Meteor method call at every input character.
+				</p>
 			</div>
 		</section>
+
+        <div style="min-height: 20px"></div>		
 
 		<section>
 			<h3>Selecting a Document</h3>
@@ -134,7 +141,7 @@
 			</p>
 
 			<p>
-				Once ready to bind to a document with id <code>_id</code> in the database on a template instance <code>instance</code>, simply call:
+				Once ready to bind to a document with id <code>_id</code> in the database on a template instance, <code>instance</code>, simply call:
 			</p>
 
 			<pre class="javascript">
