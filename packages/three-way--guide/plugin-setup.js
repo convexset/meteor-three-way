@@ -141,3 +141,17 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
         },
     },
 });
+
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
+    methods: {
+        info: function() {
+            return {
+                name: 'Usage with convexset:collection-tools',
+                description: 'Usage with convexset:collection-tools for reduced boilerplate and increased developer productivity.',
+                routeName: 'with-collection-tools',
+                templateName: 'ThreeWayGuide_ThreeWayCT_Wrapper',
+                order: 11,
+            };
+        },
+    },
+});

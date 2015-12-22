@@ -25,12 +25,6 @@ ThreeWay.prepare(Template.ThreeWayGuide_ThreeWay_Wildcards, {
 		'points': 'three-way-guide/update/points',
 		'points.*.*': 'three-way-guide/update/points.*.*',
 	},
-	dataTransformToServer: {
-		'points.*.*': x => Number(x),
-	},
-	dataTransformFromServer: {
-		'points.*.*': x => x.toString(),
-	},
 });
 
 [

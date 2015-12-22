@@ -217,6 +217,7 @@
 					},
 					/////////////////////////////////////////////
 					// Some Stuff on "Transformations" Goes Here
+					// ... if necessary
 					/////////////////////////////////////////////
 				});
 			</pre>
@@ -251,7 +252,10 @@
 			</p>
 
 			<p>
-				But... though <code>points</code> is an object of... points, comprising objects like <code>{x: 1, y: 0}</code>, values are stored in the DOM as strings. We want data to be stored in the data as numbers. So we transform the data that is being sent back. (We may also transform inbound data.) Transformations are useful for converting data from a representation convenient for manipulation in the view model to one appropriate for storage (and back). Here is the configuration with transformations:
+				(<em>The content in next few sentences is stale, but the idea remains sound.</em>)
+				But... though <code>points</code> is an object of... points, comprising objects like <code>{x: 1, y: 0}</code>, values are stored in the DOM as strings. We want data to be stored in the data as numbers. So we transform the data that is being sent back. We may also transform inbound data.
+				(<em>Presently, <code>input</code> elements of type <code>range</code> and <code>number</code> have values represented as <code>number</code> types in the view model rather than <code>string</code> types.</em>)
+				Transformations are useful for converting data from a representation convenient for manipulation in the view model to one appropriate for storage (and back). For example, spare matrix representation on server, dense matrix representation on client. Here is the configuration with transformations:
 			</p>
 
 			<pre class="javascript">
@@ -274,10 +278,10 @@
 						'points.*.*': 'three-way-guide/update/points.*.*',
 					},
 					dataTransformToServer: {
-						'points.*.*': x => Number(x),
+						// 'points.*.*': x => Number(x),
 					},
 					dataTransformFromServer: {
-						'points.*.*': x => x.toString(),
+						// 'points.*.*': x => x.toString(),
 					},
 				});
 			</pre>

@@ -48,6 +48,10 @@ Template.guideAndExamplesListing.helpers({
 				item: "Guide: Customizing How the UI Updates the View Model",
 				done: true
 			},
+			{
+				item: "Guide: Using convexset:collection-tools",
+				done: false
+			},
 		];
 	}
 });

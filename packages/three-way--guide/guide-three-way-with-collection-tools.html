@@ -1,0 +1,325 @@
+<template name="ThreeWayGuide_ThreeWayCT_Wrapper">
+	<div class="ui container">    
+		<h1>Three-Way with <code>convexset:collection-tools</code></h1>
+
+		<p>Here, we illustrate how to use <a href="https://atmospherejs.com/convexset/collection-tools" target="_blank"><code>convexset:collection-tools</code></a>, an experimental package to make ThreeWay usage relatively boiler-plate free.</p>
+
+		<div><ul id="toc"></ul></div>
+
+		{{> ThreeWayGuide_ThreeWayCT}}
+	</div>
+	<div style="min-height: 30px"></div>
+</template>
+
+<template name="ThreeWayGuide_ThreeWayCT">
+
+    <div class="column">
+        <section>
+            <h3>Setting Up</h3>
+
+			<p>Here are some of the preliminaries.</p>
+
+            <pre class="javascript">
+				var dataRecordSettings = {
+					allTags: ['tag1', 'tag2', 'tag3', 'tag4', 'tag5'],
+					ageRanges: {
+						'0_12': '0 to 12',
+						'13_20': '13 to 20',
+						'21_35': '21 to 35',
+						'36_65': '36 to 65',
+						'66_plus': '66 and over',
+					},
+					emailPrefsAll: {
+						'opt1': 'Spam Away',
+						'opt2': 'Only My Orders',
+						'opt3': 'Just Don\'t',
+					},
+				};
+            </pre>
+
+			<p>... and the main set-up for CollectionTools, first as an overview...</p>
+
+			<pre class="javascript">
+				DataRecord = CollectionTools.build({
+					collectionName: 'data-guide',
+					constructorName: 'DataRecord',
+					schema: { /* Schema in simple-schema format */ },
+					prototypeExtension: { /* Additional items to place on the prototype */ },
+					constructorExtension: { /* Additional properties to place on the constructor */ },,
+					globalAuthFunction: () => true,
+					methodPrefix: 'guide--collection-tools/',
+				});
+			</pre>
+
+			<p>... and now the details...</p>
+
+			<p>The <code>globalAuthFunction</code> parameter is an authentication function that takes in a <code>userId</code> and returns <code>true</code> if the user is authorized to execute a method or subscribe to a publication (<code>false</code> otherwise).</p>
+
+			<pre class="javascript">
+				DataRecord = CollectionTools.build({
+					collectionName: 'data-guide',
+					constructorName: 'DataRecord',
+					schema: {
+						_id: {
+							type: String,
+							regEx: /^[0-9a-zA-Z]{17,24}$/,
+							optional: true,
+						},
+						name: {
+							type: String,
+							defaultValue: "New Person",
+						},
+						emailPrefs: {
+							type: [String],
+							defaultValue: [],
+						},
+						age: {
+							type: String,
+							allowedValues: Object.keys(dataRecordSettings.ageRanges),
+							defaultValue: Object.keys(dataRecordSettings.ageRanges)[0],
+						},
+						notes: {
+							type: String,
+							defaultValue: "Enter Notes Here.",
+						},
+						tags: {
+							type: [String],
+							defaultValue: [],
+						},
+						"someArray": {
+							type: [String],
+							defaultValue: () => _.range(3).map(() => (Math.round(10 * Math.random()).toString())),
+						},
+						"points": {
+							type: Array,
+							defaultValue: () => _.range(Math.round(2 + 4 * Math.random())).map(() => ({
+								x: Math.round(20 * Math.random() - 10) / 10,
+								y: Math.round(20 * Math.random() - 10) / 10
+							})),
+						},
+						"points.$": {
+							type: Object,
+						},
+						"points.$.x": {
+							type: Number,
+							defaultValue: () => (Math.round(20 * Math.random() - 10) / 10),
+						},
+						"points.$.y": {
+							type: Number,
+							defaultValue: () => (Math.round(20 * Math.random() - 10) / 10),
+						},
+						rotationAngle: {
+							type: Number,
+							defaultValue: 0,
+						},
+					},
+					prototypeExtension: {
+						cleanPoints: function() {
+							var clean = v => ((typeof v === "undefined") || (Number.isNaN(Number(v)))) ? (Math.random() * 2 - 1) : Number(v);
+							return this.points.map(function(p) {
+								return {
+									x: clean(p.x),
+									y: clean(p.y)
+								};
+							});
+						},
+						rotatedPoints: function(angle) {
+							var _angle = Number(angle) * Math.PI;
+							if (Number.isNaN(_angle)) {
+								_angle = 0;
+							}
+							var points = this.cleanPoints();
+							return points.map(function(pt) {
+								var xx = pt.x * Math.cos(_angle) + pt.y * Math.sin(_angle);
+								var yy = -pt.x * Math.sin(_angle) + pt.y * Math.cos(_angle);
+								return {
+									x: xx,
+									y: yy
+								};
+							});
+						},
+						bounds: function() {
+							return this.rotatedBounds(0);
+						},
+						boundsRotatedPoints: function(angle) {
+							var points = this.rotatedPoints(angle);
+							return _.object(['x', 'y']
+								.map(c => [c, points.map(x => x[c])])
+								.map(z => [z[0],
+									[Math.min.apply({}, z[1].concat(-1)), Math.max.apply({}, z[1].concat(1))]
+								])
+							);
+						},
+					},
+					constructorExtension: (constructorFunction, collection) => _.extend(dataRecordSettings, {
+						helperBundle: {
+							ready: () => Template.instance().subscriptionsReady(),
+							data: () => collection.find(),
+							allTags: () => dataRecordSettings.allTags,
+							ageRanges: () => dataRecordSettings.ageRanges,
+							emailPrefsAll: () => dataRecordSettings.emailPrefsAll,
+							emailPrefsToCSL: function(arr) {
+								return arr.map(x => dataRecordSettings.emailPrefsAll[x]).join(", ");
+							},
+						}
+					}),
+					globalAuthFunction: () => true,
+					methodPrefix: 'guide--collection-tools/',
+				});
+			</pre>
+
+			<p>It might seem more tedious than previously, but note that there was no schema described and somehow the code on the prototype was never shown till now.</p>
+
+			<p>Much work has been done, but not a single method or publication has been written. Now we generate the publications and methods...</p>
+
+			<pre class="javascript">
+				DataRecord.makePublication('guide-data-collection-tools');
+				// DataRecord.makeMethod_add();
+				// DataRecord.makeMethod_add({
+				// 	field: 'points',
+				// 	entryName: 'add-points',
+				// });
+				// DataRecord.makeMethod_remove();
+				// DataRecord.makeMethod_remove({
+				// 	field: 'points',
+				// 	entryName: 'remove-points',
+				// });
+				DataRecord.makeGenericMethod_updaters();
+			</pre>
+
+			<p>
+				We are skipping over the "add" and "remove" methods for this demo. Have a look at the members of the <code>DataRecord</code> object, in particular, the <code>DataRecord.updateMethods</code> property, which should look familiar.
+			</p>
+
+			<pre>
+				ThreeWay.prepare(Template.ThreeWayGuide_ThreeWayCT, {
+					collection: DataRecord.collection,
+					updatersForServer: DataRecord.updateMethods,
+				});
+			</pre>
+
+			<p>
+				It's time to mention a possible inconvenience which is not entirely resolved. Since one can bind to sub-documents and their members, there might be a bit of a consistency problem when transformations are involved. It may become a necessity in certain circumstances to do transformations "at various levels" (i.e.: the entire object, sub-objects down to the lowest level of binding).
+			</p>
+
+			<p>
+				One thing to note about MiniMongo is that any update in a sub-document results in the entire sub-document being sent to the client. Therefore, if it can be helped, schemas should be designed "as flat as possible".
+			</p>
+
+		</section>
+
+		<div style="min-height: 20px"></div>
+
+        <section>
+            <h3>The Demo</h3>
+
+            <p>... and here is the demo. It should behave as expected.</p>
+
+            <table class="ui celled table form" data-bind="class: {loading: ready|not}">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>e-mail Preferences</th>
+                        <th>Age</th>
+                        <th>Points</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each data}}
+                        <tr class="{{#if _3w_id}}{{#if equalTo _3w_id _id}}active{{/if}}{{/if}}">
+                            <td>{{name}}</td>
+                            <td>{{emailPrefsToCSL emailPrefs}}</td>
+                            <td>{{getProperty age ageRanges}}</td>
+							<td>
+								<ol start="0">
+									{{#each points}}
+										<li>x: {{x}}; y: {{y}}</li>
+									{{/each}}
+								</ol>
+							</td>
+                            <td>
+                                <button class="select-document" data-id="{{_id}}">Edit</button>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+
+            <div data-bind="visible: _3w_hasData">
+                <h4>Document Id: {{_3w_id}} {{#if _3w_focusedField}}(Focused: {{_3w_focusedField}}){{/if}}</h4>
+                <table class="ui celled table edit-table">
+                    <tr>
+                        <td>
+                            <strong>Name</strong>
+                        </td>
+                        <td>
+                            <input name="name" style="border: 0; width: 85%;" data-bind="value: name; focus: nameHasFocus">
+                            &nbsp;&nbsp;&nbsp;
+                            {{#if _3w_validValuesNotSynced 'name'}}<i class="notched circle loading icon"></i>{{/if}}
+                            {{#if _3w_focusedFieldUpdatedOnServer 'name'}}<i class="warning icon"></i>{{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>e-mail Preferences</strong></td>
+                        <td>
+                            {{#each repackageDictionaryAsArray emailPrefsAll}}
+                                <div class="ui checkbox">
+                                    <input type="checkbox" name="emailPrefs" value="{{key}}" data-bind="checked: emailPrefs">
+                                    <label>{{value}}</label>
+                                </div>
+                            {{/each}}
+                            &nbsp;&nbsp;&nbsp;
+                            {{#if _3w_validValuesNotSynced 'emailPrefs'}}<i class="notched circle loading icon"></i>{{/if}}
+                            {{#if _3w_focusedFieldUpdatedOnServer 'emailPrefs'}}<i class="warning icon"></i>{{/if}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Age</strong></td>
+                        <td>
+                            <div class="inline fields">
+                                {{#each repackageDictionaryAsArray ageRanges}}
+                                    <div class="ui radio checkbox">
+                                        <input type="radio" name="age" value="{{key}}" data-bind="checked: age">
+                                        <label>{{value}}</label>
+                                    </div>
+                                {{/each}}
+                                &nbsp;&nbsp;&nbsp;
+                                {{#if _3w_validValuesNotSynced 'age'}}<i class="notched circle loading icon"></i>{{/if}}
+                                {{#if _3w_focusedFieldUpdatedOnServer 'age'}}<i class="warning icon"></i>{{/if}}
+                            </div>
+                        </td>
+                    </tr>
+					{{#each range (length (_3w_getWithDefault 'points' emptyArray))}}
+						<tr>
+							<td><strong><code>points[{{this}}]</code></strong></td>
+							<td>
+								<table border=0>
+									<tr>
+										<td>
+											<strong>x</strong>: <input type="number" step="0.1" data-bind="value: points.{{this}}.x">
+										</td>
+										<td style="width: 100px;">
+			                                {{#if _3w_validValuesNotSynced (_3w_expandParams 'points.*.x' this)}}<i class="notched circle loading icon"></i>{{/if}}
+			                                {{#if _3w_focusedFieldUpdatedOnServer (_3w_expandParams 'points.*.x' this)}}<i class="warning icon"></i>{{/if}}
+										</td>
+										<td>
+											<strong>y</strong>: <input type="number" step="0.1" data-bind="value: points.{{this}}.y">
+										</td>
+										<td style="width: 100px;">
+			                                {{#if _3w_validValuesNotSynced (_3w_expandParams 'points.*.y' this)}}<i class="notched circle loading icon"></i>{{/if}}
+			                                {{#if _3w_focusedFieldUpdatedOnServer (_3w_expandParams 'points.*.y' this)}}<i class="warning icon"></i>{{/if}}
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+					{{/each}}
+                 </table>
+            </div>
+        </section>
+
+        <div style="min-height: 20px"></div>
+    </div>
+
+</template>
