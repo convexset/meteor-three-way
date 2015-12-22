@@ -173,10 +173,24 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		if (!!elemBindings.bindings.value) {
 
 			var valueChangeHandler = function valueChangeHandler() { // function(event)
-				var value = $(elem).val();
+				var rawValue = $(elem).val();
+				var value;
 				var pipelineSplit = elemBindings.bindings.value.source.split('|').map(x => x.trim()).filter(x => x !== "");
 				var fieldName = pipelineSplit[0];
 				var curr_value = threeWayMethods.get(fieldName);
+
+				if ((elem.tagName && elem.tagName.toLowerCase() || '') === 'input') {
+					var inputType = elem.getAttribute('type') && elem.getAttribute('type').toLowerCase() || '';
+					if (['number', 'range'].indexOf(inputType) !== -1) {
+						value = Number(rawValue);
+					} else if (['date', 'datetime-local', 'month'].indexOf(inputType) !== -1) {
+						value = new Date(rawValue);
+					} else {
+						value = rawValue;
+					}
+				} else {
+					value = rawValue;
+				}
 
 				if (IN_DEBUG_MODE_FOR('value')) {
 					console.log('[.value] Change', elem);
