@@ -207,7 +207,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 							console.log('[.value] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
 						}
 						threeWayMethods.set(fieldName, value);
-						updateRelatedFields(fieldName, value);
 						updateServerUpdatedStatus(fieldName);
 					} else {
 						if (IN_DEBUG_MODE_FOR('value')) {
@@ -321,7 +320,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				if (isRadio) {
 					new_value = elem_value;
 				} else {
-					new_value = (!!curr_value ? curr_value : []).map(x => x); // copy
+					new_value = (_.isArray(curr_value) ? curr_value : []).map(x => x); // copy
 					if (!elem_checked) {
 						while (new_value.indexOf(elem_value) > -1) {
 							new_value.splice(new_value.indexOf(elem_value), 1);
@@ -349,7 +348,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 							console.log('[.checked] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 						}
 						threeWayMethods.set(fieldName, new_value);
-						updateRelatedFields(fieldName, new_value);
 						updateServerUpdatedStatus(fieldName);
 					} else {
 						if (IN_DEBUG_MODE_FOR('checked')) {
@@ -522,7 +520,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 							console.log('[.focus] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
 						}
 						threeWayMethods.set(fieldName, focus);
-						updateRelatedFields(fieldName, focus);
 						updateServerUpdatedStatus(fieldName);
 					} else {
 						if (IN_DEBUG_MODE_FOR('focus')) {
