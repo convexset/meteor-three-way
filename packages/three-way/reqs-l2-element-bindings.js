@@ -10,7 +10,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 	var threeWay = instance[THREE_WAY_NAMESPACE];
 	var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
 
-	var updateRelatedFields = ThreeWayDependencies.instanceUtils.generateUpdateRelatedFieldsFunction(options, instance);
+	// var updateRelatedFields = ThreeWayDependencies.instanceUtils.generateUpdateRelatedFieldsFunction(options, instance);
 	var updateServerUpdatedStatus = ThreeWayDependencies.instanceUtils.generateUpdateServerUpdatedStatusFunction(options, instance);
 	var doFieldMatch = threeWayMethods._doFieldMatch;
 	var processInTemplateContext = threeWayMethods._processInTemplateContext;
@@ -183,15 +183,16 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					var inputType = elem.getAttribute('type') && elem.getAttribute('type').toLowerCase() || '';
 					if (['number', 'range'].indexOf(inputType) !== -1) {
 						value = Number(rawValue);
-					} else if (['date', 'datetime-local', 'month'].indexOf(inputType) !== -1) {
+					} else if (['date', 'datetime-local'].indexOf(inputType) !== -1) {
 						value = new Date(rawValue);
+					} else if (inputType === 'month') {
+						value = new Date(rawValue + '-01');
 					} else {
 						value = rawValue;
 					}
 				} else {
 					value = rawValue;
 				}
-
 				if (IN_DEBUG_MODE_FOR('value')) {
 					console.log('[.value] Change', elem);
 					console.log('[.value] Field: ' + fieldName + '; data-bind | ' + dataBind);
@@ -270,16 +271,30 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					processorsMutateValue: false,
 					additionalFailureCondition: () => false,
 					allowWholeDocumentAsSource: false,
-				});  // helpers not used and pipelines do not manipulate value
-
+				}); // helpers not used and pipelines do not manipulate value
 				// Validate here
 				var isValid = threeWay.validateInput(source, value);
 				threeWay.__dataIsNotInvalid.set(source, isValid);
 
-				if (!_.isEqual($(elem).val(), value)) {
-					$(elem).val(value);
+				var newValue;
+				var inputType = elem.getAttribute('type') && elem.getAttribute('type').toLowerCase() || '';
+				if (['number', 'range'].indexOf(inputType) !== -1) {
+					newValue = value.toString();
+				} else if (inputType === 'date') {
+					newValue = ThreeWayDependencies.extras.transformations.dateToString(value);
+				} else if (inputType === 'datetime-local') {
+					newValue = ThreeWayDependencies.extras.transformations.datetimeToString(value);
+				} else if (inputType === 'month') {
+					newValue = ThreeWayDependencies.extras.transformations.dateToString(value).split('-').splice(0, 2).join('-');
+				} else {
+					newValue = value;
+				}
+
+				if (!_.isEqual($(elem).val(), newValue)) {
+					$(elem).val(newValue);
+
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log('[.value] Setting .value to \"' + value + '\" for', elem);
+						console.log('[.value] Setting .value to \"' + newValue + '\" for', elem);
 					}
 				} else {
 					if (IN_DEBUG_MODE_FOR('value')) {

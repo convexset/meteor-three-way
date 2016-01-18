@@ -1265,10 +1265,18 @@ Similar to the above, but these are generators for pre-processors: they each acc
 
 Built-in transformations, for mapping from server to view model and back, may be accessed via the `ThreeWay.transformations` namespace. (e.g.: `ThreeWay.transformations.dateToString` or `ThreeWay.transformations.dateFromString`) Generally, the naming convention is understood to be "server-side value" on left and "view model value" on right.
 
-- `dateFromString`: maps a string of the form "YYYY-MM-DD" to a `Date`
-- `dateToString`: maps a `Date` to a string of the form "YYYY-MM-DD"
 - `arrayFromCommaDelimitedString`: maps a comma delimited string to an array of a separated values (empty string maps to empty array)
 - `arrayToCommaDelimitedString`: maps an array to a comma delimited string
+
+The following are available but unnecessary because one can use `input` elements of `type=date`, `type=month`, `type=datetime-local` and `ThreeWay` will make things work with `Date`-typed view-model values.
+
+- `dateFromString`: maps a string of the form "YYYY-MM-DD" to a `Date`
+- `dateToString`: maps a `Date` to a string of the form "YYYY-MM-DD"
+- `datetimeFromString`: maps a string of the form "YYYY-MM-DDThh:mm" to a `Date`
+- `datetimeToString`: maps a `Date` to a string of the form "YYYY-MM-DDThh:mm"
+- `monthFromString`: maps a string of the form "YYYY-MM" to a `Date`
+- `monthToString`: maps a `Date` to a string of the form "YYYY-MM"
+
 
 ### Extra Transformation Generators
 

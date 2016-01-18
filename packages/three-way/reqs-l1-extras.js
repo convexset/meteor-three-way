@@ -164,7 +164,47 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'transf
 });
 
 PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'transformations', {
+	datetimeFromString: function datetimeFromString(dts) {
+		if (typeof dts !== "string") {
+			dts = "";
+		}
+		var dt = new Date();
+		var spltDT = dts.split('T');
+		if (spltDT.length === 2) {
+			var spltD = spltDT[0].split('-');
+			var spltT = spltDT[1].split(':');
+			if ((spltD.length === 3) && (spltT.length === 2)) {
+				var day = Number(spltD[2]);
+				var mth = Number(spltD[1]);
+				var yr = Number(spltD[0]);
+				var hr = Number(spltT[0]);
+				var min = Number(spltT[1]);
+				if (!Number.isNaN(day) && !Number.isNaN(mth) && !Number.isNaN(yr) && !Number.isNaN(hr) && !Number.isNaN(min)) {
+					dt = new Date(yr, mth - 1, day, hr, min);
+				}
+			}
+		}
+		return dt;
+	},
+	datetimeToString: function datetimeToString(dt) {
+		if (!(dt instanceof Date)) {
+			dt = new Date();
+		}
+		var mm = dt.getMonth() + 1;
+		var dd = dt.getDate();
+		mm = mm < 10 ? '0' + mm : mm;
+		dd = dd < 10 ? '0' + dd : dd;
+
+		var hrs = dt.getHours() < 10 ? '0' + dt.getHours() : dt.getHours();
+		var mins = dt.getMinutes() < 10 ? '0' + dt.getMinutes() : dt.getMinutes();
+
+		var ds = dt.getFullYear() + '-' + mm + '-' + dd + 'T' + hrs + ":" + mins;
+		return ds;
+	},
 	dateFromString: function dateFromString(ds) {
+		if (typeof ds !== "string") {
+			ds = "";
+		}
 		var splt = ds.split('-');
 		var dt = new Date();
 		if (splt.length === 3) {
@@ -187,6 +227,12 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'transf
 		dd = dd < 10 ? '0' + dd : dd;
 		var ds = dt.getFullYear() + '-' + mm + '-' + dd;
 		return ds;
+	},
+	monthFromString: function monthFromString(ds) {
+		return ThreeWayDependencies.extras.transformations.dateFromString(ds + '-01');
+	},
+	monthToString: function monthToString(dt) {
+		return ThreeWayDependencies.extras.transformations.dateToString(dt).split('-').splice(0, 2).join('-');
 	},
 	arrayFromCommaDelimitedString: ThreeWayDependencies.extras.transformationGenerators.arrayFromDelimitedString(","),
 	arrayToCommaDelimitedString: ThreeWayDependencies.extras.transformationGenerators.arrayToDelimitedString(","),
