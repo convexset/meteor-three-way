@@ -379,3 +379,24 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'clear
 PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'pushToEndOfEventQueue', function pushToEndOfEventQueue(fn, context) {
 	setTimeout(() => fn.apply(context), 0);
 });
+
+// Filter dictionary of methods and keep only some keys
+PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'filterForKeys', function filterForKeys(o, keys) {
+	return _.object(_.map(o, function(v, k) {
+		return [k, v];
+	}).filter(function(kvp) {
+		return keys.indexOf(kvp[0]) !== -1;
+	}));
+});
+
+// Filter dictionary of methods and keep only some keys
+PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'generateDoNothingMethods', function generateDoNothingMethods(fieldList) {
+	return _.object(
+		fieldList.map(function(f) {
+			return [
+				f,
+				function doNothing() {}
+			];
+		})
+	);
+});
