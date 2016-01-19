@@ -376,8 +376,8 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'clear
 });
 
 // Created to extricate event handlers that flush from computations
-PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'pushToEndOfEventQueue', function pushToEndOfEventQueue(fn, context) {
-	setTimeout(() => fn.apply(context), 0);
+PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'pushToEndOfEventQueue', function pushToEndOfEventQueue(fn, context, dt = 0) {
+	setTimeout(() => fn.apply(context), dt);
 });
 
 // Filter dictionary of methods and keep only some keys

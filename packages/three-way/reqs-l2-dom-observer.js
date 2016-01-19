@@ -6,6 +6,13 @@ if (typeof ThreeWayDependencies === "undefined") {
 //////////////////////////////////////////////////////////////////////
 // For Observing the DOM
 //////////////////////////////////////////////////////////////////////
+
+// Its a hack to ensure eager parent mutation observers do not steal nodes
+// from their children before child instances set up mutation observers to
+// defend what is theirs. Imposes a short delay between "registering intent
+// to bind", and the auction that "allocates the element".
+var OBSERVE_TO_AUCTION_DELAY = 5;
+
 ThreeWayDependencies.domObserver = function(options, instance) {
 	var threeWay = instance[THREE_WAY_NAMESPACE];
 	var lastGCOfComputations = 0;
@@ -33,7 +40,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 
 			function processSoCalledBindAuction(node) {
 				var eligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
-				if (!!eligibleLevel) {
+				if (eligibleLevel !== null) {
 					if (threeWay.__level >= Number(eligibleLevel)) {
 						if (IN_DEBUG_MODE_FOR('bind')) {
 							console.log("[bind|bind auction] ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") eligible (eligibility cut-off: " + eligibleLevel + "). Attempting to bind...", node);
@@ -74,19 +81,25 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 										// this enables child templates created later to stake their legitimate claims on new nodes
 										currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
 										if (IN_DEBUG_MODE_FOR('bind')) {
-											console.log("[bind|bind auction] Current eligibility level: " + currEligibleLevel, node);
+											console.log("[bind|bind auction] (Node Added) Current eligibility level: " + currEligibleLevel, node);
 										}
-										if (!currEligibleLevel || (Number(currEligibleLevel) < threeWay.__level)) {
+										if ((currEligibleLevel === null) || (Number(currEligibleLevel) < threeWay.__level)) {
 											node.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL, threeWay.__level);
 											if (IN_DEBUG_MODE_FOR('bind')) {
-												console.log("[bind|bind auction] ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+												console.log("[bind|bind auction] (Node Added) Updating current eligibility level to: " + threeWay.__level, node);
+												console.log("[bind|bind auction] (Node Added) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
 											}
-
 											// push onto event queue
-											ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {});
+											ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {}, OBSERVE_TO_AUCTION_DELAY);
+										} else if (Number(currEligibleLevel) === threeWay.__level) {
+											if (IN_DEBUG_MODE_FOR('bind')) {
+												console.log("[bind|bind auction] (Node Added) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+											}
+											// push onto event queue
+											ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {}, OBSERVE_TO_AUCTION_DELAY);
 										} else {
 											if (IN_DEBUG_MODE_FOR('bind')) {
-												console.log("[bind|bind auction] ThreeWay instance " + instanceId + " not eligible", node);
+												console.log("[bind|bind auction] (Node Added) ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") not eligible", node);
 											}
 										}
 									}
@@ -160,11 +173,27 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 							// don't bind now, instead state own level as a "bind auction bid"
 							// this enables child templates created later to stake their legitimate claims on new nodes
 							var currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
-							if (!currEligibleLevel || (Number(currEligibleLevel) < threeWay.__level)) {
+							if (IN_DEBUG_MODE_FOR('bind')) {
+								console.log("[bind|bind auction] (Bind Attr Change) Current eligibility level: " + currEligibleLevel, node);
+							}
+							if ((currEligibleLevel === null) || (Number(currEligibleLevel) < threeWay.__level)) {
 								node.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL, threeWay.__level);
-
+								if (IN_DEBUG_MODE_FOR('bind')) {
+									console.log("[bind|bind auction] (Bind Attr Change) Updating current eligibility level to: " + threeWay.__level, node);
+									console.log("[bind|bind auction] (Bind Attr Change) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+								}
 								// push onto event queue
-								ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {});
+								ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {}, OBSERVE_TO_AUCTION_DELAY);
+							} else if (Number(currEligibleLevel) === threeWay.__level) {
+								if (IN_DEBUG_MODE_FOR('bind')) {
+									console.log("[bind|bind auction] (Bind Attr Change) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+								}
+								// push onto event queue
+								ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {}, OBSERVE_TO_AUCTION_DELAY);
+							} else {
+								if (IN_DEBUG_MODE_FOR('bind')) {
+									console.log("[bind|bind auction] (Bind Attr Change) ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") not eligible", node);
+								}
 							}
 						}
 					}

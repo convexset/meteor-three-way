@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:three-way',
-	version: '0.2.20_4',
+	version: '0.2.21',
 	summary: 'Flexible and Blaze-friendly three-way data-binding (V-VM-DB) for Meteor',
 	git: 'https://github.com/convexset/meteor-three-way',
 	documentation: '../../README.md'
