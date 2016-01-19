@@ -36,13 +36,13 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 				if (!!eligibleLevel) {
 					if (threeWay.__level >= Number(eligibleLevel)) {
 						if (IN_DEBUG_MODE_FOR('bind')) {
-							console.log("[bind|bind auction] ThreeWay instance " + instanceId + " eligible. Attempting to bind...", node);
+							console.log("[bind|bind auction] ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") eligible (eligibility cut-off: " + eligibleLevel + "). Attempting to bind...", node);
 						}
 						bindElem(node);
 						node.removeAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
 					} else {
 						if (IN_DEBUG_MODE_FOR('bind')) {
-							console.log("[bind|bind auction] ThreeWay instance " + instanceId + " does not bind (does not meet cut-off).", node);
+							console.log("[bind|bind auction] ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") does not bind (does not meet eligibility cut-off: " + eligibleLevel + ").", node);
 						}
 					}
 				} else {
