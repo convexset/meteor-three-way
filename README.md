@@ -1229,24 +1229,25 @@ One may pass `_3w_ignoreReloadData` (boolean) into the data context of each temp
  - `'parse'`
  - `'bind'`
  - `'tracker'`
- - `'new'`
+ - `'new-id'`
  - `'observer'`
  - `'db'`
- - `'default'`
+ - `'default-values'`
  - `'validation'`
- - `'data'`
- - `'vm'`
+ - `'data-mirror'`
+ - `'vm-only'`
  - `'reload'`
  - `'bindings'`
  - `'value'`
  - `'checked'`
  - `'focus'`
- - `'html'`
- - `'visible'`
+ - `'html-text'`
+ - `'visible-and-disabled'`
  - `'style'`
  - `'attr'`
  - `'class'`
  - `'event'`
+ - `'process'`
 
 The above is obtainable from `ThreeWay.DEBUG_MODE.MESSAGE_HEADINGS`.
 
