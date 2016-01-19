@@ -45,10 +45,10 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, '_prev
 Meteor.startup(function() {
 	setTimeout(function() {
 		if (!_preventInstanceEnumeration_called) {
-			console.warn('[ThreeWay] ThreeWay.utils._preventInstanceEnumeration was not called. This is recommended when going into production. See the documentation for more details.');
+			console.warn('[ThreeWay] ThreeWay.utils._preventInstanceEnumeration was not called. This is recommended when going into production. See the documentation (Usage > Going Into Production) for more details.');
 		}
 	}, 10000);
-})
+});
 
 
 //////////////////////////////////////////////////////////////////////

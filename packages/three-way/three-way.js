@@ -44,10 +44,10 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWay, '_preventSubsequentPrepa
 Meteor.startup(function() {
 	setTimeout(function() {
 		if (!_preventSubsequentPrepareCalls_called) {
-			console.warn('[ThreeWay] ThreeWay._preventSubsequentPrepareCalls was not called. This is recommended when going into production. See the documentation for more details.');
+			console.warn('[ThreeWay] ThreeWay._preventSubsequentPrepareCalls was not called. This is recommended when going into production. See the documentation (Usage > Going Into Production) for more details.');
 		}
 	}, 10000);
-})
+});
 
 
 //////////////////////////////////////////////////////////////////////

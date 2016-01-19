@@ -27,6 +27,7 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
   - [Basic Set Up](#basic-set-up)
   - ["Intermediate-level" Set Up](#intermediate-level-set-up)
   - [Set Up: The Full Parameter Set](#set-up-the-full-parameter-set)
+  - [Going Into Production](#going-into-production)
 - [Documentation](#documentation)
   - [Referring to Fields in Documents](#referring-to-fields-in-documents)
   - [Default Values](#default-values)
@@ -449,6 +450,22 @@ Meteor.startup(function() {
 ```
 
 If one wants to do this adaptively, then pass in a function that returns a truthy value. For instance, a function that checks `Meteor.settings` and returns `true` (to block subsequent uses) and `false` (to allow, for instance, in development).
+
+But the simplest way to do this would be something like...
+
+```javascript
+    Meteor.startup(function() {
+        if (Meteor.isClient) {
+            if (Meteor.settings.public.appName.indexOf('(Development)') !== -1) {
+                ThreeWay._preventSubsequentPrepareCalls(false);
+                ThreeWay.utils._preventInstanceEnumeration(false);
+            } else {
+                ThreeWay._preventSubsequentPrepareCalls(true);
+                ThreeWay.utils._preventInstanceEnumeration(true);
+            }
+        }
+    });
+```
 
 ## Documentation
 
