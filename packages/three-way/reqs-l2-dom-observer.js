@@ -35,8 +35,19 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 				var eligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
 				if (!!eligibleLevel) {
 					if (threeWay.__level >= Number(eligibleLevel)) {
+						if (IN_DEBUG_MODE_FOR('bind')) {
+							console.log("[bind|bind auction] ThreeWay instance " + instanceId + " eligible. Attempting to bind...", node);
+						}
 						bindElem(node);
 						node.removeAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
+					} else {
+						if (IN_DEBUG_MODE_FOR('bind')) {
+							console.log("[bind|bind auction] ThreeWay instance " + instanceId + " does not bind (does not meet cut-off).", node);
+						}
+					}
+				} else {
+					if (IN_DEBUG_MODE_FOR('bind')) {
+						console.warn("[bind|bind auction] Eligiblity Level is not defined.", node);
 					}
 				}
 			}
@@ -62,11 +73,21 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 										// don't bind now, instead state own level as a "bind auction bid"
 										// this enables child templates created later to stake their legitimate claims on new nodes
 										currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
+										if (IN_DEBUG_MODE_FOR('bind')) {
+											console.log("[bind|bind auction] Current eligibility level: " + currEligibleLevel, node);
+										}
 										if (!currEligibleLevel || (Number(currEligibleLevel) < threeWay.__level)) {
 											node.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL, threeWay.__level);
+											if (IN_DEBUG_MODE_FOR('bind')) {
+												console.log("[bind|bind auction] ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+											}
 
 											// push onto event queue
 											ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {});
+										} else {
+											if (IN_DEBUG_MODE_FOR('bind')) {
+												console.log("[bind|bind auction] ThreeWay instance " + instanceId + " not eligible", node);
+											}
 										}
 									}
 								}
