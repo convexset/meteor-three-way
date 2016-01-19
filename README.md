@@ -438,6 +438,18 @@ And we are back to that example:
 ... the example options above are a little disjoint from this snippet, but it should be clear that defining a validator will inform `ThreeWay` of whether input is valid or not, and then set `emailValidationErrorText` to a non-empty string if there is a validation error. So when there is a validation error, the error message will be displayed and the color of the input field will be set to red.
 
 
+### Going Into Production
+
+To prevent debug and preparation functions from being misused by end users, one can block their use. One way is to call "irreversible stopping functions" after all `ThreeWay.prepare` calls are done. `Meteor.startup` works in this case:
+```javascript
+Meteor.startup(function() {
+    ThreeWay._preventSubsequentPrepareCalls(true);
+    ThreeWay.utils._preventInstanceEnumeration(true);
+});
+```
+
+If one wants to do this adaptively, then pass in a function that returns a truthy value. For instance, a function that checks `Meteor.settings` and returns `true` (to block subsequent uses) and `false` (to allow, for instance, in development).
+
 ## Documentation
 
 ### Referring to Fields in Documents

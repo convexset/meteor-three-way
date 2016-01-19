@@ -11,23 +11,44 @@ ThreeWayDependencies.utils = {};
 //////////////////////////////////////////////////////////////////////
 ThreeWayDependencies._allThreeWayInstances = [];
 PackageUtilities.addPropertyGetter(ThreeWayDependencies.utils, 'allInstances', () => ThreeWayDependencies._allThreeWayInstances.map(function(instance) {
-	var instanceId, dataId, doc;
-	Tracker.nonreactive(function() {
-		instanceId = instance._3w_.get3wInstanceId();
-		dataId = instance._3w_.getId();
-		doc = instance[THREE_WAY_NAMESPACE].collection.findOne(dataId);
-	});
-	return {
-		instanceId: instanceId,
-		dataId: dataId,
-		data: instance._3w_.getAll_NR(),
-		document: doc,
-		template: instance,
-		templateType: instance.view.name,
-	};
+	if (_allowInstanceEnumeration) {
+		var instanceId, dataId, doc;
+		Tracker.nonreactive(function() {
+			instanceId = instance._3w_.get3wInstanceId();
+			dataId = instance._3w_.getId();
+			doc = instance[THREE_WAY_NAMESPACE].collection.findOne(dataId);
+		});
+		return {
+			instanceId: instanceId,
+			dataId: dataId,
+			data: instance._3w_.getAll_NR(),
+			document: doc,
+			template: instance,
+			templateType: instance.view.name,
+		};
+	} else {
+		throw new Meteor.Error("instance-enumeration-forbidden");
+	}
 }));
 
 PackageUtilities.addPropertyGetter(ThreeWayDependencies.utils, 'allInstancesByTemplateType', () => _.groupBy(ThreeWayDependencies.utils.allInstances, item => item.templateType));
+
+var _allowInstanceEnumeration = true;
+var _preventInstanceEnumeration_called = false;
+PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, '_preventInstanceEnumeration', function _preventInstanceEnumeration(prevent) {
+	_preventInstanceEnumeration_called = true;
+	if (_.isFunction(prevent) ? !!prevent() : !!prevent) {
+		_allowInstanceEnumeration = false;
+	}
+});
+
+Meteor.startup(function() {
+	setTimeout(function() {
+		if (!_preventInstanceEnumeration_called) {
+			console.warn('[ThreeWay] ThreeWay.utils._preventInstanceEnumeration was not called. This is recommended when going into production. See the documentation for more details.');
+		}
+	}, 10000);
+})
 
 
 //////////////////////////////////////////////////////////////////////
