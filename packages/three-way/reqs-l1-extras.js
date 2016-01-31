@@ -29,7 +29,6 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'prePro
 	toLowerCase: x => ((typeof x === "undefined") || (x === null)) ? "" : x.toString().toLowerCase(),
 	updateSemanticUIDropdown: function updateSemanticUIDropdown(x, elem) {
 		if ((typeof x !== "undefined") && (x !== null)) {
-
 			// check for correct element
 			var validElement = !!elem && !!elem.parentElement && !!elem.parentElement.tagName && (elem.parentElement.tagName.toUpperCase() === "DIV");
 			var parentElementClassList;
@@ -51,63 +50,78 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'prePro
 			var dropdownObject = $(elem.parentElement).dropdown('get');
 			var selectedItems;
 
-			if (isMultipleSelectDropdown) {
-				// Multi-select dropdown
-				var selection = (x.toString().trim() === "") ? [] : x.toString().trim().split(',').map(x => x.trim());
-				var theIcon = dropdown.find('i.dropdown.icon');
-				// Remove labels
-				dropdown.find('a.ui.label').remove();
-				// Reset selection status
-				dropdown.find('div.item').removeClass("selected active filtered");
-				var items = "";
-				var genLabel = (id, label) => "<a class=\"ui label transition visible\" data-value=\"" + id + "\" style=\"display: inline-block !important;\">" + label + "<i class=\"delete icon\"></i></a>\n";
-				selectedItems = selection.map(id => [id, Array.prototype.filter.call(dropdown.find('div.item'), elem => ((elem.getAttribute('data-value') || "").trim() === id))]);
-				selectedItems.forEach(function(item) {
-					var id = item[0];
-					var elems = item[1];
-					elems.forEach(function(elem) {
-						// Set selection status
-						$(elem).addClass("active filtered");
-						// Prepare to create labels
-						items += genLabel(id, elem.getAttribute('data-text') || elem.innerText);
-					});
+			var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 
-					if (elems.length === 0) {
-						if ((!!dropdownObject.userValues()) && (dropdownObject.userValues().indexOf(id) !== -1)) {
-							items += genLabel(id, id);
+			var doDirectDOMManipulation = isChrome;
+
+			if (doDirectDOMManipulation) {
+				if (isMultipleSelectDropdown) {
+					// Multi-select dropdown
+					var selection = (x.toString().trim() === "") ? [] : x.toString().trim().split(',').map(x => x.trim());
+					var theIcon = dropdown.find('i.dropdown.icon');
+					// Remove labels
+					dropdown.find('a.ui.label').remove();
+					// Reset selection status
+					dropdown.find('div.item').removeClass("selected active filtered");
+					var items = "";
+					var genLabel = (id, label) => "<a class=\"ui label transition visible\" data-value=\"" + id + "\" style=\"display: inline-block !important;\">" + label + "<i class=\"delete icon\"></i></a>\n";
+					selectedItems = selection.map(id => [id, Array.prototype.filter.call(dropdown.find('div.item'), elem => ((elem.getAttribute('data-value') || "").trim() === id))]);
+					selectedItems.forEach(function(item) {
+						var id = item[0];
+						var elems = item[1];
+						elems.forEach(function(elem) {
+							// Set selection status
+							$(elem).addClass("active filtered");
+							// Prepare to create labels
+							items += genLabel(id, elem.getAttribute('data-text') || elem.innerText);
+						});
+
+						if (elems.length === 0) {
+							if ((!!dropdownObject.userValues()) && (dropdownObject.userValues().indexOf(id) !== -1)) {
+								items += genLabel(id, id);
+							}
 						}
-					}
-				});
-				// Create labels
-				theIcon.after(items);
-			} else {
-				// Single selection dropdown
-				var selectedItem = x.toString().trim();
-				// Reset selection status
-				dropdown.find('div.item').removeClass("selected active");
-				var textValue;
-				selectedItems = Array.prototype.filter.call(dropdown.find('div.item'), elem => ((elem.getAttribute('data-value') || "").trim() === selectedItem));
-				selectedItems.forEach(function(elem) {
-					// Set selection status
-					$(elem).addClass("selected active");
-					// Get label text
-					textValue = elem.innerText;
-				});
-				// Update value
-				if (!!textValue) {
-					dropdown
-						.find('div.text')
-						.removeClass('default')
-						.text(textValue);
+					});
+					// Create labels
+					theIcon.after(items);
 				} else {
-					if (!!dropdownObject.defaultText()) {
+					// Single selection dropdown
+					var selectedItem = x.toString().trim();
+					// Reset selection status
+					dropdown.find('div.item').removeClass("selected active");
+					var textValue;
+					selectedItems = Array.prototype.filter.call(dropdown.find('div.item'), elem => ((elem.getAttribute('data-value') || "").trim() === selectedItem));
+					selectedItems.forEach(function(elem) {
+						// Set selection status
+						$(elem).addClass("selected active");
+						// Get label text
+						textValue = elem.innerText;
+					});
+					// Update value
+					if (!!textValue) {
 						dropdown
 							.find('div.text')
-							.addClass('default')
-							.text(dropdownObject.defaultText());
+							.removeClass('default')
+							.text(textValue);
+					} else {
+						if (!!dropdownObject.defaultText()) {
+							dropdown
+								.find('div.text')
+								.addClass('default')
+								.text(dropdownObject.defaultText());
+						}
 					}
 				}
+			} else {
+				if (x.toString().trim() === "") {
+					$(elem.parentElement)
+						.dropdown('set exactly', []);
+				} else {
+					$(elem.parentElement)
+						.dropdown('set exactly', x.toString().split(',').map(x => x.trim()));
+				}
 			}
+
 		}
 		$(elem.parentElement)
 			.dropdown('refresh');
