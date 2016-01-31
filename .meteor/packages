@@ -34,6 +34,7 @@ convexset:package-utils
 convexset:flow-router-tree
 convexset:plugins
 convexset:highlight-js-themes
+convexset:webshim
 
 # Examples
 convexset:three-way--guide

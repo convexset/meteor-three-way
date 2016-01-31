@@ -9,4 +9,7 @@ Template.ThreeWayGuide_BasicsVMOnly.onRendered(function() {
     instance._3w_.set('checkedValue', []);
     instance._3w_.set('radioValue', '');
     instance._3w_.set('sliderValue', 0);
+    instance._3w_.set('month', new Date());
+    instance._3w_.set('date', new Date());
+    instance._3w_.set('dateTime', new Date());
 });

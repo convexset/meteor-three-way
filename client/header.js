@@ -21,3 +21,5 @@ Template.Header.helpers({
 		name: v
 	})).sort((x, y) => (x.id > y.id))
 });
+
+webshim.polyfill('forms forms-ext');
