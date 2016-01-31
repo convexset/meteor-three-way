@@ -1,5 +1,6 @@
 /* global ThreeWay: true */
 /* global HighlightJSThemes: true */
+/* global webshim: true */
 
 ThreeWay.prepare(Template.Header, {
 	viewModelToViewOnly: {
@@ -23,3 +24,8 @@ Template.Header.helpers({
 });
 
 webshim.polyfill('forms forms-ext');
+
+setTimeout(function updatePolyfill() {
+	$('html').updatePolyfill();
+	setTimeout(updatePolyfill, 500);
+}, 500);
