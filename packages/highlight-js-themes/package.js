@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:highlight-js-themes',
-	version: '0.1.0',
+	version: '0.1.1',
 	summary: 'HighlightJS with Easy Theme Switching',
 	documentation: 'README.md'
 });

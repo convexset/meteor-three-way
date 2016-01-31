@@ -87,21 +87,35 @@ var themeNames = _.object(
 );
 
 
-function loadJsCssFile(link) {
-	var fileref;
+function loadJsCssFile_ScriptOrLinkTag(link) {
+	// creates SCRIPT or LINK elements in HEAD
+	// does not work in FireFox, unfortunately
+	var scriptOrLinkElement;
 	var fileExt = link.toString().split('.').pop().toLowerCase();
 	if (fileExt === "js") {
-		fileref = document.createElement('script');
-		fileref.setAttribute("type", "text/javascript");
-		fileref.setAttribute("src", link);
+		scriptOrLinkElement = document.createElement('script');
+		scriptOrLinkElement.setAttribute("type", "text/javascript");
+		scriptOrLinkElement.setAttribute("src", link);
 	} else if (fileExt === "css") {
-		fileref = document.createElement("link");
-		fileref.setAttribute("rel", "stylesheet");
-		fileref.setAttribute("type", "text");
-		fileref.setAttribute("href", link);
+		scriptOrLinkElement = document.createElement("link");
+		scriptOrLinkElement.setAttribute("rel", "stylesheet");
+		scriptOrLinkElement.setAttribute("type", "text");
+		scriptOrLinkElement.setAttribute("href", link);
 	}
-	if (typeof fileref !== "undefined") {
-		return document.getElementsByTagName("head")[0].appendChild(fileref);
+	if (typeof scriptOrLinkElement !== "undefined") {
+		return document.getElementsByTagName("head")[0].appendChild(scriptOrLinkElement);
+	}
+}
+
+function loadCssFile_StyleBlock(link) {
+	var styleElement;
+	var fileExt = link.toString().split('.').pop().toLowerCase();
+	if (fileExt === "css") {
+		styleElement = document.createElement("style");
+		styleElement.textContent = '@import "' + link + '"';
+	}
+	if (typeof styleElement !== "undefined") {
+		return document.getElementsByTagName("head")[0].appendChild(styleElement);
 	}
 }
 
@@ -137,11 +151,20 @@ PackageUtilities.addImmutablePropertyFunction(HighlightJSThemes, 'setTheme', fun
 	}
 
 	var link = getLink(themeName);
+
+	// Replace element
+	// if (!!cssElement) {
+	// 	cssElement.setAttribute('href', link);
+	// } else {
+	// 	cssElement = loadJsCssFile_ScriptOrLinkTag(link);
+	// }
+
+	// Remove and add new STYLE element
 	if (!!cssElement) {
-		cssElement.setAttribute('href', link);
-	} else {
-		cssElement = loadJsCssFile(link);
+		document.getElementsByTagName("head")[0].removeChild(cssElement);
 	}
+	cssElement = loadCssFile_StyleBlock(link);
+
 	currTheme = themeName;
 });
 PackageUtilities.addImmutablePropertyFunction(HighlightJSThemes, 'setRandomTheme', function setRandomTheme() {
