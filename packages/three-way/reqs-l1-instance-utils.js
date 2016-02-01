@@ -17,9 +17,12 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 	var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
 
 	return function updateRelatedFields(fieldName, value, calledFromObserver = false) {
-		var childFields = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length > fieldName.length) && (match.fieldPath.substr(0, fieldName.length) === fieldName));
-		var parentFields = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length < fieldName.length) && (fieldName.substr(0, match.fieldPath.length + 1) === match.fieldPath + '.'));
 		var fieldSplit = fieldName.split('.');
+		var childFields_Candidates = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length > fieldName.length) && (match.fieldPath.substr(0, fieldName.length) === fieldName));
+		var parentFields_Candidates = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length < fieldName.length) && (fieldName.substr(0, match.fieldPath.length + 1) === match.fieldPath + '.'));
+		var childFields = _.filter(childFields_Candidates, match => match.fieldPath.split('.').length > fieldSplit.length);
+		var parentFields = _.filter(parentFields_Candidates, match => match.fieldPath.split('.').length < fieldSplit.length);
+
 		childFields.forEach(function(match) {
 			var matchSplit = match.fieldPath.split('.');
 			var curr_v = value;

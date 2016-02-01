@@ -21,6 +21,8 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 	}
 
 	return function bindElem(elem) {
+		var instanceId;
+
 		if (!elem.getAttribute) {
 			throw new Meteor.Error('unexpected-error-not-elem', elem);
 		}
@@ -28,7 +30,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		if (!!elem.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID)) {
 			// Already data-bound
 			if (IN_DEBUG_MODE_FOR('bind')) {
-				var instanceId;
 				var thisTemplateName = instance.view.name.split('.').pop().trim();
 				Tracker.nonreactive(function() {
 					instanceId = threeWay.instanceId.get();
@@ -38,7 +39,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			return;
 		}
 
-		var instanceId;
 		Tracker.nonreactive(function() {
 			instanceId = threeWay.instanceId.get();
 		});

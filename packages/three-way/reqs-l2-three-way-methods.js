@@ -349,13 +349,11 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 	////////////////////////////////////////////////////////////
 	// Call helpers and pre-processors in template context
 	threeWayMethods._processInTemplateContext = function processInTemplateContext(source, mappings, elem, {
-		useHelpers, processorsMutateValue, additionalFailureCondition, allowWholeDocumentAsSource
-	} = {
-		useHelpers: true,
-		processorsMutateValue: true,
-		additionalFailureCondition: () => false,
-		allowWholeDocumentAsSource: false,
-	}) {
+		useHelpers = true,
+		processorsMutateValue = true,
+		additionalFailureCondition = () => false,
+		allowWholeDocumentAsSource = false
+	} = {}) {
 		var thisTemplate = instance.view.template;
 
 		if (!_.isFunction(additionalFailureCondition)) {
