@@ -24,8 +24,4 @@ Template.Header.helpers({
 });
 
 webshim.polyfill('forms forms-ext');
-
-setTimeout(function updatePolyfill() {
-	$('html').updatePolyfill();
-	setTimeout(updatePolyfill, 500);
-}, 500);
+webshim.createMutationObserverToUpdatePolyfills();
