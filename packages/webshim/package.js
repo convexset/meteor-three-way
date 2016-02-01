@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:webshim',
-	version: '1.15.10',
+	version: '1.15.10_1',
 	summary: 'The Webshim polyfill library for using HTML5 features across browsers',
 	documentation: 'README.md'
 });
@@ -168,4 +168,5 @@ Package.onUse(function(api) {
 
 	api.addFiles('polyfiller.js', 'client');
 	api.addFiles('set-path.js', 'client');
+	api.addFiles('mutation-observer-update.js', 'client');
 });
