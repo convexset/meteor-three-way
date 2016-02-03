@@ -33,7 +33,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayReload, '_haveReloadPayloa
 });
 PackageUtilities.addImmutablePropertyFunction(ThreeWayReload, '_getReloadPayload', function _getReloadPayload(reloadId) {
 	if (IN_DEBUG_MODE_FOR('reload')) {
-		console.info('[ThreeWay|Reload] Getting payload for ' + reloadId + '.');
+		console.info('[ThreeWay|Reload] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Getting payload for ' + reloadId + '.');
 	}
 	var ret;
 	if (!!threeWayMigrationData && !!threeWayMigrationData._unreadData && !!threeWayMigrationData._unreadData[reloadId]) {
@@ -47,7 +47,7 @@ var _newThreeWayMigrationData;
 Reload._onMigrate(THREE_WAY_MIGRATION_NAME, function(retry) {
 	if (_reloadStatus.ready) {
 		if (IN_DEBUG_MODE_FOR('reload')) {
-			console.info('[ThreeWay|Reload] Storing migration data and reloading...');
+			console.info('[ThreeWay|Reload] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Storing migration data and reloading...');
 		}
 
 		var now = new Date();
@@ -68,7 +68,7 @@ Reload._onMigrate(THREE_WAY_MIGRATION_NAME, function(retry) {
 		}];
 	} else {
 		if (IN_DEBUG_MODE_FOR('reload')) {
-			console.info('[ThreeWay|Reload] Reload triggered. Preparing...');
+			console.info('[ThreeWay|Reload] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Reload triggered. Preparing...');
 		}
 		_reloadStatus.ready = true;
 		_reloadStatus.reloadRetry = retry;
@@ -77,23 +77,23 @@ Reload._onMigrate(THREE_WAY_MIGRATION_NAME, function(retry) {
 			// Flush and then do things
 			// Done here so things don't happen within a computation/flush
 			if (IN_DEBUG_MODE_FOR('reload')) {
-				console.info('[ThreeWay|Reload] Flushing...');
+				console.info('[ThreeWay|Reload] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Flushing...');
 			}
 			Tracker.flush();
 
 			// Populate Migration Data
 			if (IN_DEBUG_MODE_FOR('reload')) {
-				console.info('[ThreeWay|Reload] Preparing migration data...');
+				console.info('[ThreeWay|Reload] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Preparing migration data...');
 			}
 			_newThreeWayMigrationData = _.object(_.map(_reloadRegistration, (instance, id) => [id, instance[THREE_WAY_NAMESPACE_METHODS].getAll_NR()]));
 
 			// Retry reload
 			if (IN_DEBUG_MODE_FOR('reload')) {
-				console.info('[ThreeWay|Reload] Ready to reload...');
+				console.info('[ThreeWay|Reload] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Ready to reload...');
 			}
 
 			if (IN_DEBUG_MODE_FOR('reload')) {
-				console.info('[ThreeWay|Reload] Waiting 5 sec...');
+				console.info('[ThreeWay|Reload] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Waiting 5 sec...');
 				setTimeout(_reloadStatus.reloadRetry, 5000);
 			} else {
 				_reloadStatus.reloadRetry();

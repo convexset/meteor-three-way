@@ -15,6 +15,7 @@ var OBSERVE_TO_AUCTION_DELAY = 5;
 
 ThreeWayDependencies.domObserver = function(options, instance) {
 	var threeWay = instance[THREE_WAY_NAMESPACE];
+	var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
 	var lastGCOfComputations = 0;
 
 	var bindElem = ThreeWayDependencies.createBindElementFunction(options, instance);
@@ -54,7 +55,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 					}
 				} else {
 					if (IN_DEBUG_MODE_FOR('bind')) {
-						console.warn("[bind|bind auction] Eligiblity Level is not defined.", node);
+						console.warn("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Eligiblity Level is not defined.", node);
 					}
 				}
 			}
@@ -72,7 +73,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 							node_arr.forEach(function(node) {
 								if (!node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID)) {
 									if (IN_DEBUG_MODE_FOR('bind')) {
-										console.log("[bind] Node added on " + instanceId, node);
+										console.log("[bind] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Node added on " + instanceId, node);
 									}
 									var templateRestrictionsAttr = node.getAttribute(RESTRICT_TEMPLATE_TYPE_ATTRIBUTE);
 									var templateRestrictions = templateRestrictionsAttr && templateRestrictionsAttr.split(',').map(x => x.trim()).filter(x => x !== "") || [];
@@ -81,25 +82,25 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 										// this enables child templates created later to stake their legitimate claims on new nodes
 										currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
 										if (IN_DEBUG_MODE_FOR('bind')) {
-											console.log("[bind|bind auction] (Node Added) Current eligibility level: " + currEligibleLevel, node);
+											console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Node Added) Current eligibility level: " + currEligibleLevel, node);
 										}
 										if ((currEligibleLevel === null) || (Number(currEligibleLevel) < threeWay.__level)) {
 											node.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL, threeWay.__level);
 											if (IN_DEBUG_MODE_FOR('bind')) {
-												console.log("[bind|bind auction] (Node Added) Updating current eligibility level to: " + threeWay.__level, node);
-												console.log("[bind|bind auction] (Node Added) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+												console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Node Added) Updating current eligibility level to: " + threeWay.__level, node);
+												console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Node Added) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
 											}
 											// push onto event queue
 											ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {}, OBSERVE_TO_AUCTION_DELAY);
 										} else if (Number(currEligibleLevel) === threeWay.__level) {
 											if (IN_DEBUG_MODE_FOR('bind')) {
-												console.log("[bind|bind auction] (Node Added) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+												console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Node Added) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
 											}
 											// push onto event queue
 											ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {}, OBSERVE_TO_AUCTION_DELAY);
 										} else {
 											if (IN_DEBUG_MODE_FOR('bind')) {
-												console.log("[bind|bind auction] (Node Added) ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") not eligible", node);
+												console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Node Added) ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") not eligible", node);
 											}
 										}
 									}
@@ -137,7 +138,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 							var numComputationsEnd = threeWay.computations.length;
 							lastGCOfComputations = (new Date()).getTime();
 							if (IN_DEBUG_MODE_FOR('bind')) {
-								console.log("[bind] GC. # active computations: " + numComputationsEnd + " (# removed: " + (numComputationsStart - numComputationsEnd) + ")");
+								console.log("[bind] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] GC. # active computations: " + numComputationsEnd + " (# removed: " + (numComputationsStart - numComputationsEnd) + ")");
 							}
 						}
 					}
@@ -152,7 +153,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 							if (node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE) === instanceId) {
 								var thisElemId = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID);
 								if (IN_DEBUG_MODE_FOR('bind')) {
-									console.log("[bind] Node removed on " + instanceId + " (twbId: " + thisElemId + ")", node);
+									console.log("[bind] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Node removed on " + instanceId + " (twbId: " + thisElemId + ")", node);
 								}
 								stopBindingToNode(node);
 							}
@@ -165,7 +166,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 						var node = mutation.target;
 						if (node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE) === instanceId) {
 							if (IN_DEBUG_MODE_FOR('bind')) {
-								console.log("[bind] " + DATA_BIND_ATTRIBUTE + " attribute changed (bound to: " + instanceId + ")", node);
+								console.log("[bind] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] " + DATA_BIND_ATTRIBUTE + " attribute changed (bound to: " + instanceId + ")", node);
 							}
 							stopBindingToNode(node);
 							bindElem(node);
@@ -174,25 +175,25 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 							// this enables child templates created later to stake their legitimate claims on new nodes
 							var currEligibleLevel = node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL);
 							if (IN_DEBUG_MODE_FOR('bind')) {
-								console.log("[bind|bind auction] (Bind Attr Change) Current eligibility level: " + currEligibleLevel, node);
+								console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Bind Attr Change) Current eligibility level: " + currEligibleLevel, node);
 							}
 							if ((currEligibleLevel === null) || (Number(currEligibleLevel) < threeWay.__level)) {
 								node.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_LEVEL, threeWay.__level);
 								if (IN_DEBUG_MODE_FOR('bind')) {
-									console.log("[bind|bind auction] (Bind Attr Change) Updating current eligibility level to: " + threeWay.__level, node);
-									console.log("[bind|bind auction] (Bind Attr Change) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+									console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Bind Attr Change) Updating current eligibility level to: " + threeWay.__level, node);
+									console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Bind Attr Change) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
 								}
 								// push onto event queue
 								ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {}, OBSERVE_TO_AUCTION_DELAY);
 							} else if (Number(currEligibleLevel) === threeWay.__level) {
 								if (IN_DEBUG_MODE_FOR('bind')) {
-									console.log("[bind|bind auction] (Bind Attr Change) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
+									console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Bind Attr Change) ThreeWay instance " + instanceId + " still eligible (level: " + threeWay.__level + ")", node);
 								}
 								// push onto event queue
 								ThreeWayDependencies.utils.pushToEndOfEventQueue(() => processSoCalledBindAuction(node), {}, OBSERVE_TO_AUCTION_DELAY);
 							} else {
 								if (IN_DEBUG_MODE_FOR('bind')) {
-									console.log("[bind|bind auction] (Bind Attr Change) ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") not eligible", node);
+									console.log("[bind|bind auction] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] (Bind Attr Change) ThreeWay instance " + instanceId + " (level: " + threeWay.__level + ") not eligible", node);
 								}
 							}
 						}
@@ -211,7 +212,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 			if (!instanceId) {
 				instanceId = "~~id-unassigned~~";
 			}
-			console.log("[bind] Starting Mutation Observer for " + instanceId + " (" + thisTemplateName + ") on ", rootNodes);
+			console.log("[bind] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Starting Mutation Observer for " + instanceId + " (" + thisTemplateName + ") on ", rootNodes);
 		}
 		rootNodes.forEach(function(rn) {
 			threeWay.mutationObserver.observe(rn, {

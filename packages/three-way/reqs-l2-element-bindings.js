@@ -34,7 +34,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				Tracker.nonreactive(function() {
 					instanceId = threeWay.instanceId.get();
 				});
-				console.warn("[bind] Not binding to " + instanceId + " (" + thisTemplateName + "). Element already bound.", elem);
+				console.warn("[bind] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Not binding to " + instanceId + " (" + thisTemplateName + "). Element already bound.", elem);
 			}
 			return;
 		}
@@ -150,11 +150,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		});
 
 		if (IN_DEBUG_MODE_FOR('parse')) {
-			console.log('[parse] Parsed:', elem, elemBindings);
+			console.log('[parse] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Parsed:', elem, elemBindings);
 		}
 
 		if (IN_DEBUG_MODE_FOR('bindings')) {
-			console.log("[bindings] Creating Bindings for ", elem, elemBindings.bindings);
+			console.log("[bindings] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Creating Bindings for ", elem, elemBindings.bindings);
 		}
 
 		//////////////////////////////////////////////////////
@@ -202,24 +202,24 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					value = rawValue;
 				}
 				if (IN_DEBUG_MODE_FOR('value')) {
-					console.log('[.value] Change', elem);
-					console.log('[.value] Field: ' + fieldName + '; data-bind | ' + dataBind);
+					console.log('[.value] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Change', elem);
+					console.log('[.value] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] : ' + fieldName + '; data-bind | ' + dataBind);
 				}
 
 				if (elemGlobals.suppressChangesToSSOT) {
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log('[.value] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
+						console.log('[.value] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
 					}
 				} else {
 					if (value !== curr_value) {
 						if (IN_DEBUG_MODE_FOR('value')) {
-							console.log('[.value] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
+							console.log('[.value] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', value);
 						}
 						threeWayMethods.set(fieldName, value);
 						updateServerUpdatedStatus(fieldName);
 					} else {
 						if (IN_DEBUG_MODE_FOR('value')) {
-							console.log('[.value] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
+							console.log('[.value] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
 						}
 					}
 				}
@@ -229,13 +229,13 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			_.forEach(elemBindings.bindings.value.itemOptions, function(v, opt) {
 				if (opt === "throttle") {
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
+						console.log("[.value] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Binding with option " + opt + "=" + v + " for", elem);
 					}
 					valueChangeHandler = _.throttle(valueChangeHandler, v);
 				}
 				if (opt === "debounce") {
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
+						console.log("[.value] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Binding with option " + opt + "=" + v + " for", elem);
 					}
 					valueChangeHandler = _.debounce(valueChangeHandler, v);
 				}
@@ -254,7 +254,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			_.forEach(elemBindings.bindings.value.itemOptions, function(v, opt) {
 				if (opt === "updateon") {
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log("[.value] Binding with option " + opt + "=" + v + " for", elem);
+						console.log("[.value] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Binding with option " + opt + "=" + v + " for", elem);
 					}
 					bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
 						$(elem).trigger('change');
@@ -269,7 +269,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (c.firstRun) {
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log("[.value] Preparing .value binding (to " + source + ") for", elem);
+						console.log("[.value] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .value binding (to " + source + ") for", elem);
 					}
 				}
 
@@ -302,11 +302,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					$(elem).val(newValue);
 
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log('[.value] Setting .value to \"' + newValue + '\" for', elem);
+						console.log('[.value] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .value to \"' + newValue + '\" for', elem);
 					}
 				} else {
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log('[.value] Not updating .value of', elem);
+						console.log('[.value] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .value of', elem);
 					}
 				}
 				elemGlobals.suppressChangesToSSOT = false;
@@ -356,25 +356,25 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				}
 
 				if (IN_DEBUG_MODE_FOR('checked')) {
-					console.log('[.checked] Change', elem);
-					console.log('[.checked] Field: ' + fieldName + '; data-bind | ' + dataBind);
-					console.log('[.checked] data-bind | ' + dataBind);
+					console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Change', elem);
+					console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Field: ' + fieldName + '; data-bind | ' + dataBind);
+					console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] data-bind | ' + dataBind);
 				}
 
 				if (elemGlobals.suppressChangesToSSOT) {
 					if (IN_DEBUG_MODE_FOR('checked')) {
-						console.log('[.checked] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
+						console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 					}
 				} else {
 					if (!_.isEqual(new_value, curr_value)) {
 						if (IN_DEBUG_MODE_FOR('checked')) {
-							console.log('[.checked] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
+							console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
 						}
 						threeWayMethods.set(fieldName, new_value);
 						updateServerUpdatedStatus(fieldName);
 					} else {
 						if (IN_DEBUG_MODE_FOR('checked')) {
-							console.log('[.checked] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
+							console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
 						}
 					}
 				}
@@ -384,13 +384,13 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			// _.forEach(elemBindings.bindings.checked.itemOptions, function(v, opt) {
 			// 	if (opt === "throttle") {
 			// 		if (IN_DEBUG_MODE_FOR('checked')) {
-			// 			console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
+			// 			console.log("[.checked] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Binding with option " + opt + "=" + v + " for", elem);
 			// 		}
 			// 		checkedChangeHandler = _.throttle(checkedChangeHandler, v);
 			// 	}
 			// 	if (opt === "debounce") {
 			// 		if (IN_DEBUG_MODE_FOR('checked')) {
-			// 			console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
+			// 			console.log("[.checked] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Binding with option " + opt + "=" + v + " for", elem);
 			// 		}
 			// 		checkedChangeHandler = _.debounce(checkedChangeHandler, v);
 			// 	}
@@ -403,7 +403,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			_.forEach(elemBindings.bindings.checked.itemOptions, function(v, opt) {
 				if (opt === "updateon") {
 					if (IN_DEBUG_MODE_FOR('checked')) {
-						console.log("[.checked] Binding with option " + opt + "=" + v + " for", elem);
+						console.log("[.checked] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Binding with option " + opt + "=" + v + " for", elem);
 					}
 					bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
 						$(elem).trigger('change');
@@ -418,7 +418,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (c.firstRun) {
 					if (IN_DEBUG_MODE_FOR('checked')) {
-						console.log("[.checked] Preparing .checked binding (to " + source + ") for", elem);
+						console.log("[.checked] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .checked binding (to " + source + ") for", elem);
 					}
 				}
 
@@ -441,11 +441,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 						if (!elem.checked) {
 							elem.checked = true;
 							if (IN_DEBUG_MODE_FOR('checked')) {
-								console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
+								console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .checked to ' + elem.checked + ' for', elem);
 							}
 						} else {
 							if (IN_DEBUG_MODE_FOR('checked')) {
-								console.log('[.checked] Not updating .checked of', elem);
+								console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .checked of', elem);
 							}
 						}
 					} else {
@@ -453,11 +453,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 						if (elem.checked) {
 							elem.checked = false;
 							if (IN_DEBUG_MODE_FOR('checked')) {
-								console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
+								console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .checked to ' + elem.checked + ' for', elem);
 							}
 						} else {
 							if (IN_DEBUG_MODE_FOR('checked')) {
-								console.log('[.checked] Not updating .checked of', elem);
+								console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .checked of', elem);
 							}
 						}
 					}
@@ -469,11 +469,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 							if (!elem.checked) {
 								elem.checked = true;
 								if (IN_DEBUG_MODE_FOR('checked')) {
-									console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
+									console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .checked to ' + elem.checked + ' for', elem);
 								}
 							} else {
 								if (IN_DEBUG_MODE_FOR('checked')) {
-									console.log('[.checked] Not updating .checked of', elem);
+									console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .checked of', elem);
 								}
 							}
 						} else {
@@ -481,17 +481,17 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 							if (elem.checked) {
 								elem.checked = false;
 								if (IN_DEBUG_MODE_FOR('checked')) {
-									console.log('[.checked] Setting .checked to ' + elem.checked + ' for', elem);
+									console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .checked to ' + elem.checked + ' for', elem);
 								}
 							} else {
 								if (IN_DEBUG_MODE_FOR('checked')) {
-									console.log('[.checked] Not updating .checked of', elem);
+									console.log('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .checked of', elem);
 								}
 							}
 						}
 					} else {
 						if (IN_DEBUG_MODE_FOR('checked')) {
-							console.warn('[.checked] Not bound to an array:', elem);
+							console.warn('[.checked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not bound to an array:', elem);
 						}
 					}
 
@@ -529,24 +529,24 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				var curr_value = !!threeWayMethods.get(fieldName);
 
 				if (IN_DEBUG_MODE_FOR('focus')) {
-					console.log('[.focus] Focus Change', elem);
-					console.log('[.focus] Field: ' + fieldName + '; data-bind | ' + dataBind);
+					console.log('[.focus] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Focus Change', elem);
+					console.log('[.focus] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Field: ' + fieldName + '; data-bind | ' + dataBind);
 				}
 
 				if (elemGlobals.suppressChangesToSSOT) {
 					if (IN_DEBUG_MODE_FOR('focus')) {
-						console.log('[.focus] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
+						console.log('[.focus] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
 					}
 				} else {
 					if (focus !== curr_value) {
 						if (IN_DEBUG_MODE_FOR('focus')) {
-							console.log('[.focus] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
+							console.log('[.focus] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', focus);
 						}
 						threeWayMethods.set(fieldName, focus);
 						updateServerUpdatedStatus(fieldName);
 					} else {
 						if (IN_DEBUG_MODE_FOR('focus')) {
-							console.log('[.focus] Unchanged focus: ' + fieldName + ';', curr_value, '(in mirror)');
+							console.log('[.focus] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Unchanged focus: ' + fieldName + ';', curr_value, '(in mirror)');
 						}
 					}
 				}
@@ -562,7 +562,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (c.firstRun) {
 					if (IN_DEBUG_MODE_FOR('focus')) {
-						console.log("[.focus] Preparing .focus binding (to " + source + ") for", elem);
+						console.log("[.focus] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .focus binding (to " + source + ") for", elem);
 					}
 				}
 
@@ -585,11 +585,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 						$(elem).blur();
 					}
 					if (IN_DEBUG_MODE_FOR('value')) {
-						console.log('[.focus] Setting .focus to \"' + focus + '\" for', elem);
+						console.log('[.focus] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .focus to \"' + focus + '\" for', elem);
 					}
 				} else {
 					if (IN_DEBUG_MODE_FOR('focus')) {
-						console.log('[.focus] Not updating .focus of', elem);
+						console.log('[.focus] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .focus of', elem);
 					}
 				}
 				elemGlobals.suppressChangesToSSOT = false;
@@ -610,8 +610,8 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (c.firstRun) {
 					if (IN_DEBUG_MODE_FOR('html-text')) {
-						console.log("[.html] Preparing .html binding for", elem);
-						console.log("[.html] Field: " + source + "; Mappings: ", mappings);
+						console.log("[.html] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .html binding for", elem);
+						console.log("[.html] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Field: " + source + "; Mappings: ", mappings);
 					}
 				}
 
@@ -619,7 +619,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (elem.innerHTML !== html) {
 					if (IN_DEBUG_MODE_FOR('html-text')) {
-						console.log('[.html] Setting .innerHTML to \"' + html + '\" for', elem);
+						console.log('[.html] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .innerHTML to \"' + html + '\" for', elem);
 					}
 					elem.innerHTML = html;
 				}
@@ -638,8 +638,8 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (c.firstRun) {
 					if (IN_DEBUG_MODE_FOR('html-text')) {
-						console.log("[.text] Preparing .text binding for", elem);
-						console.log("[.text] Field: " + source + "; Mappings: ", mappings);
+						console.log("[.text] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .text binding for", elem);
+						console.log("[.text] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Field: " + source + "; Mappings: ", mappings);
 					}
 				}
 
@@ -647,7 +647,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if ($(elem).text() !== text) {
 					if (IN_DEBUG_MODE_FOR('html-text')) {
-						console.log('[.text] Setting .text to \"' + text + '\" for', elem);
+						console.log('[.text] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .text to \"' + text + '\" for', elem);
 					}
 					$(elem).text(text);
 				}
@@ -666,7 +666,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (c.firstRun) {
 					if (IN_DEBUG_MODE_FOR('process')) {
-						console.log("[process] Preparing \"process\" binding with " + source + " for", elem);
+						console.log("[process] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing \"process\" binding with " + source + " for", elem);
 					}
 				}
 
@@ -691,7 +691,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (c.firstRun) {
 					if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-						console.log("[.visible] Preparing .visible binding with " + source + " for", elem);
+						console.log("[.visible] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .visible binding with " + source + " for", elem);
 					}
 				}
 
@@ -700,7 +700,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (elem.style.display !== visible) {
 					if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-						console.log('[.visible] Setting .style[visible] to \"' + visible + '\" for', elem);
+						console.log('[.visible] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .style[visible] to \"' + visible + '\" for', elem);
 					}
 					elem.style.display = visible;
 				}
@@ -719,7 +719,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (c.firstRun) {
 					if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-						console.log("[.disabled] Preparing .disabled binding with " + source + " for", elem);
+						console.log("[.disabled] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .disabled binding with " + source + " for", elem);
 					}
 				}
 
@@ -728,7 +728,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				if (elem.disabled !== disabled) {
 					if (IN_DEBUG_MODE_FOR('visible-and-disabled')) {
-						console.log('[.disabled] Setting .disabled to \"' + disabled + '\" for', elem);
+						console.log('[.disabled] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .disabled to \"' + disabled + '\" for', elem);
 					}
 					elem.disabled = disabled;
 				}
@@ -748,8 +748,8 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 					if (c.firstRun) {
 						if (IN_DEBUG_MODE_FOR('style')) {
-							console.log("[.style|" + key + "] Preparing .style binding for", elem);
-							console.log("[.style|" + key + "] Field: " + source + "; Mappings: ", mappings);
+							console.log("[.style|" + key + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .style binding for", elem);
+							console.log("[.style|" + key + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Field: " + source + "; Mappings: ", mappings);
 						}
 					}
 
@@ -758,7 +758,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					// Update Style
 					if (elem.style[key] !== value) {
 						if (IN_DEBUG_MODE_FOR('style')) {
-							console.log('[.style|' + key + '] Setting style.' + key + ' to \"' + value + '\" for', elem);
+							console.log('[.style|' + key + '] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting style.' + key + ' to \"' + value + '\" for', elem);
 						}
 						elem.style[key] = value;
 					}
@@ -779,8 +779,8 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 					if (c.firstRun) {
 						if (IN_DEBUG_MODE_FOR('attr')) {
-							console.log("[.attr|" + key + "] Preparing attribute binding for", elem);
-							console.log("[.attr|" + key + "] Field: " + source + "; Mappings: ", mappings);
+							console.log("[.attr|" + key + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing attribute binding for", elem);
+							console.log("[.attr|" + key + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Field: " + source + "; Mappings: ", mappings);
 						}
 					}
 
@@ -789,7 +789,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					// Update Style
 					if ($(elem).attr(key) !== value) {
 						if (IN_DEBUG_MODE_FOR('attr')) {
-							console.log('[.attr|' + key + '] Setting attribute ' + key + ' to \"' + value + '\" for', elem);
+							console.log('[.attr|' + key + '] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting attribute ' + key + ' to \"' + value + '\" for', elem);
 						}
 						$(elem).attr(key, value);
 					}
@@ -810,8 +810,8 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 					if (c.firstRun) {
 						if (IN_DEBUG_MODE_FOR('class')) {
-							console.log("[.class|" + key + "] Preparing class binding for", elem);
-							console.log("[.class|" + key + "] Field: " + source + "; Mappings: ", mappings);
+							console.log("[.class|" + key + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing class binding for", elem);
+							console.log("[.class|" + key + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Field: " + source + "; Mappings: ", mappings);
 						}
 					}
 
@@ -821,7 +821,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					// Update Style
 					if ($(elem).hasClass(key) !== value) {
 						if (IN_DEBUG_MODE_FOR('class')) {
-							console.log('[.class|' + key + '] Setting class ' + key + ' to \"' + value + '\" for', elem);
+							console.log('[.class|' + key + '] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting class ' + key + ' to \"' + value + '\" for', elem);
 						}
 						if (value) {
 							$(elem).addClass(key);
@@ -844,15 +844,15 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 					if (c.firstRun) {
 						if (IN_DEBUG_MODE_FOR('event')) {
-							console.log("[.event|" + eventName + "] Preparing event binding for", elem);
-							console.log("[.event|" + eventName + "] Handlers: ", handlerNames);
+							console.log("[.event|" + eventName + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing event binding for", elem);
+							console.log("[.event|" + eventName + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Handlers: ", handlerNames);
 						}
 					}
 
 					handlerNames.forEach(function(m) {
 						var handler = threeWayMethods.getInheritedEventHandler(m);
 						if (!_.isFunction(handler)) {
-							console.error('[ThreeWay] No such event handler: ' + m, elem);
+							console.error('[ThreeWay] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] No such event handler: ' + m, elem);
 							return;
 						}
 						var compositeHandlerUsed = false;
@@ -888,7 +888,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 							if ((eventName.toLowerCase() === _eventName.toLowerCase()) || (eventName.toLowerCase() === 'keyup_' + _eventName.toLowerCase())) {
 								bindEventToThisElem('keyup', ThreeWayDependencies.extras.eventGenerators.keypressHandlerGenerator(function(event) {
 									if (IN_DEBUG_MODE_FOR('event')) {
-										console.log("[.event|keyup=" + _eventName + "] Firing " + m + " for", elem);
+										console.log("[.event|keyup=" + _eventName + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Firing " + m + " for", elem);
 									}
 									instance.callFunctionWithTemplateContext(function() {
 										handler.call(this, event, instance, threeWayMethods.getAll_NR());
@@ -898,7 +898,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 							} else if (eventName.toLowerCase() === 'keydown_' + _eventName.toLowerCase()) {
 								bindEventToThisElem('keydown', ThreeWayDependencies.extras.eventGenerators.keypressHandlerGenerator(function(event) {
 									if (IN_DEBUG_MODE_FOR('event')) {
-										console.log("[.event|keydown=" + _eventName + "] Firing " + m + " for", elem);
+										console.log("[.event|keydown=" + _eventName + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Firing " + m + " for", elem);
 									}
 									instance.callFunctionWithTemplateContext(function() {
 										handler.call(this, event, instance, threeWayMethods.getAll_NR());
@@ -914,7 +914,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 						bindEventToThisElem(eventName, function(event) {
 							if (IN_DEBUG_MODE_FOR('event')) {
-								console.log("[.event|" + eventName + "] Firing " + m + " for", elem);
+								console.log("[.event|" + eventName + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Firing " + m + " for", elem);
 							}
 							instance.callFunctionWithTemplateContext(function() {
 								handler.call(this, event, instance, threeWayMethods.getAll_NR());
@@ -934,7 +934,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			var instanceId = threeWay.instanceId.get();
 			if (!!instanceId) {
 				if (IN_DEBUG_MODE_FOR('bind')) {
-					console.log("[bind] Element bound to " + instanceId + " (twbId: " + elem.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID) + ")", elem);
+					console.log("[bind] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Element bound to " + instanceId + " (twbId: " + elem.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID) + ")", elem);
 				}
 				elem.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_INSTANCE, instanceId);
 				c.stop();

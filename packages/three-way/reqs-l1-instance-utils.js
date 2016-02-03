@@ -176,7 +176,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					__id = threeWay.id.get();
 				});
 				if (IN_DEBUG_MODE_FOR('bindings')) {
-					console.log('[bindings] Field: ' + curr_f + "; id: " + __id + "; Value:", value);
+					console.log('[bindings] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Field: ' + curr_f + "; id: " + __id + "; Value:", value);
 				}
 
 				// Skip update if subsidiary update
@@ -197,7 +197,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					if (typeof debouncedOrThrottledUpdaters[curr_f] === "undefined") {
 						var updater = function updater(v) {
 							if (IN_DEBUG_MODE_FOR('db')) {
-								console.log('[db|update] Performing update... ' + curr_f + ' -> ', v);
+								console.log('[db|update] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Performing update... ' + curr_f + ' -> ', v);
 							}
 							threeWay.__mostRecentDatabaseEntry[curr_f] = v;
 							threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
@@ -219,7 +219,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 						var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
 
 						if (IN_DEBUG_MODE_FOR('db')) {
-							console.log('[db|update] Initiating update... ' + curr_f + ' -> ', value, ' (Value for server:', valueToSend, ')');
+							console.log('[db|update] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Initiating update... ' + curr_f + ' -> ', value, ' (Value for server:', valueToSend, ')');
 						}
 
 						// Store recent states to avoid the "reversion" problem
@@ -244,7 +244,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 										ts: (new Date()).getTime(),
 									});
 									if (IN_DEBUG_MODE_FOR('db')) {
-										console.log('[db|update-recents] Storing recent (client-side) value for ' + f + ':', thisClientSideValue, ' (Value for server:', valueToSend, ')');
+										console.log('[db|update-recents] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Storing recent (client-side) value for ' + f + ':', thisClientSideValue, ' (Value for server:', valueToSend, ')');
 									}
 								}
 							}
@@ -253,14 +253,14 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 						debouncedOrThrottledUpdaters[curr_f](valueToSend);
 					} else {
 						if (IN_DEBUG_MODE_FOR('db') || IN_DEBUG_MODE_FOR('validation')) {
-							console.log('[db/validation] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
+							console.log('[db/validation] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Validation failed. No update. Field: ' + curr_f + '; Value:', value);
 							threeWay.__dataIsNotInvalid.set(curr_f, false);
 						}
 					}
 
 				} else {
 					if (IN_DEBUG_MODE_FOR('db')) {
-						console.log('[db|update] No update for ' + curr_f + '; value:', value);
+						console.log('[db|update] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] No update for ' + curr_f + '; value:', value);
 
 						if(!__id) {
 							console.log('\tReason: No ID');
@@ -358,7 +358,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					didValidationWork = true;
 
 					if (IN_DEBUG_MODE_FOR('validation')) {
-						console.log('[validation] Doing validation (VM)... Field: ' + field + '; Value:', value, '; Validation Info (VM):', threeWay.fieldMatchParamsForValidationVM[field]);
+						console.log('[validation] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Doing validation (VM)... Field: ' + field + '; Value:', value, '; Validation Info (VM):', threeWay.fieldMatchParamsForValidationVM[field]);
 					}
 
 					passed = validator.call(instance, valueToUse, threeWay.fieldMatchParamsForValidationVM[field], vmData);
@@ -374,7 +374,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					};
 				} else {
 					if (IN_DEBUG_MODE_FOR('validation')) {
-						console.log('[validation] Not doing validation (VM) due to repeat value... Field: ' + field + '; Value:', value, '; Validation Info (VM):', threeWay.fieldMatchParamsForValidationVM[field]);
+						console.log('[validation] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not doing validation (VM) due to repeat value... Field: ' + field + '; Value:', value, '; Validation Info (VM):', threeWay.fieldMatchParamsForValidationVM[field]);
 					}
 					passed = threeWay.__mostRecentValidationValueVM[field].outcome;
 				}
@@ -390,7 +390,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					didValidationWork = true;
 
 					if (IN_DEBUG_MODE_FOR('validation')) {
-						console.log('[validation] Doing validation (Server)... Field: ' + field + '; Value:', value, '; Validation Info (Server):', threeWay.fieldMatchParamsForValidationServer[field]);
+						console.log('[validation] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Doing validation (Server)... Field: ' + field + '; Value:', value, '; Validation Info (Server):', threeWay.fieldMatchParamsForValidationServer[field]);
 					}
 
 					passed = validator.call(instance, valueToUse, threeWay.fieldMatchParamsForValidationServer[field], vmData);
@@ -407,7 +407,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					};
 				} else {
 					if (IN_DEBUG_MODE_FOR('validation')) {
-						console.log('[validation] Not doing validation (Server) due to repeat value... Field: ' + field + '; Value:', value, '; Validation Info (Server):', threeWay.fieldMatchParamsForValidationServer[field]);
+						console.log('[validation] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not doing validation (Server) due to repeat value... Field: ' + field + '; Value:', value, '; Validation Info (Server):', threeWay.fieldMatchParamsForValidationServer[field]);
 					}
 					passed = threeWay.__mostRecentValidationValueServer[field].outcome;
 				}
@@ -415,7 +415,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 		}, this);
 
 		if (didValidationWork && IN_DEBUG_MODE_FOR('validation')) {
-			console.log('[validation] Validation result. Field: ' + field + '; Value:', value, '; Passed: ' + passed);
+			console.log('[validation] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Validation result. Field: ' + field + '; Value:', value, '; Passed: ' + passed);
 		}
 
 		return passed;

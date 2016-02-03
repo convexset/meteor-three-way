@@ -54,7 +54,7 @@ ThreeWayDependencies.templateOnRendered = function(options) {
 		// Set root node if not already set
 		if (!!instance.data && !!instance.data._3w_rootElementSelector) {
 			if (IN_DEBUG_MODE_FOR('bind')) {
-				console.log("[bind] Setting root node for instance of " + thisTemplateName + " via selector " + instance.data._3w_rootElementSelector + ". (Prev: " + threeWay.rootNodes.toString().split('|')[0] + ")");
+				console.log('[bind] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting root node for instance of ' + thisTemplateName + ' via selector ' + instance.data._3w_rootElementSelector + '. (Prev: ' + threeWay.rootNodes.toString().split('|')[0] + ')');
 			}
 			threeWayMethods.setRoots(instance.data._3w_rootElementSelector);
 		} else {
@@ -71,7 +71,7 @@ ThreeWayDependencies.templateOnRendered = function(options) {
 		//  - Parent gets the rest
 		//////////////////////////////////////////////////////////////////
 		if (IN_DEBUG_MODE_FOR('bind')) {
-			console.log("[bind] Init on " + myId + ": Checking for new elements to bind.");
+			console.log("[bind] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Init on " + myId + ": Checking for new elements to bind.");
 		}
 		Array.prototype.forEach.call(instance.$("[data-bind]"), ThreeWayDependencies.createBindElementFunction(options, instance));
 
@@ -87,7 +87,7 @@ ThreeWayDependencies.templateOnRendered = function(options) {
 		if (!!instance.data && (!!instance.data._3w_id || !!instance.data._id)) {
 			var _id_fromDataContext = instance.data._3w_id || instance.data._id;
 			if (IN_DEBUG_MODE_FOR('new-id')) {
-				console.log("[new-id] Setting initial id for instance of " + thisTemplateName + " to " + _id_fromDataContext);
+				console.log("[new-id] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Setting initial id for instance of " + thisTemplateName + " to " + _id_fromDataContext);
 			}
 			threeWayMethods.setId(_id_fromDataContext);
 		}

@@ -15,10 +15,10 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 
 	if (!!_id) {
 		if (IN_DEBUG_MODE_FOR('new-id')) {
-			console.log('Current id: ' + _id);
+			console.log('[new-id] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Current id: ' + _id);
 		}
 		if (IN_DEBUG_MODE_FOR('observer')) {
-			console.log('[Observer] Creating new cursor: ' + _id);
+			console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Creating new cursor: ' + _id);
 		}
 
 		// Retrieve only the necessary fields
@@ -47,7 +47,7 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 				if ((!match) && (!psuedoMatched)) {
 					// Skip if unnecessary branch
 					if (IN_DEBUG_MODE_FOR('observer')) {
-						console.log('[Observer] Skipping ' + curr_f + ' and children.');
+						console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Skipping ' + curr_f + ' and children.');
 					}
 					return;
 				}
@@ -59,12 +59,12 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 					// Indicate field is touched and update matches
 					threeWay.fieldMatchParams[curr_f] = match;
 					if (IN_DEBUG_MODE_FOR('db')) {
-						console.log('[db|match] Field match:', curr_f, match);
-						console.log('[db|match] All matches:', threeWay.fieldMatchParams);
+						console.log('[db|match] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Field match:', curr_f, match);
+						console.log('[db|match] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] All matches:', threeWay.fieldMatchParams);
 					}
 
 					if (IN_DEBUG_MODE_FOR('observer')) {
-						console.log('[Observer] Field match -- ' + curr_f, ':', v);
+						console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Field match -- ' + curr_f, ':', v);
 					}
 
 					// Update data if changed
@@ -72,19 +72,19 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 					var newValue = options.dataTransformFromServer[match.match](v, doc);
 					if (_.isEqual(mostRecentValue, newValue)) {
 						if (IN_DEBUG_MODE_FOR('db')) {
-							console.log('[db|receive] Most recent value matches for ' + curr_f + '. No change to view model.');
+							console.log('[db|receive] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Most recent value matches for ' + curr_f + '. No change to view model.');
 						}
 						threeWay._focusedFieldUpdatedOnServer.set(curr_f, false);
 					} else {
 						ThreeWayDependencies.utils.removeOldItems(threeWay.__recentDBUpdates[curr_f], AGE_THRESHOLD_OLD_ITEM);
 						if (ThreeWayDependencies.utils.popItemWithValue(threeWay.__recentDBUpdates[curr_f], newValue, 'valueOnClient', true) > 0) {
 							if (IN_DEBUG_MODE_FOR('db')) {
-								console.log('[db|receive] Matches value from recent update for ' + curr_f + '. No change to view model.');
+								console.log('[db|receive] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Matches value from recent update for ' + curr_f + '. No change to view model.');
 							}
 						} else {
 
 							if (IN_DEBUG_MODE_FOR('db')) {
-								console.log('[db|receive] Updating view model value for ' + curr_f + ' to', newValue);
+								console.log('[db|receive] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Updating view model value for ' + curr_f + ' to', newValue);
 							}
 							var focusedField;
 							var currentValue;
@@ -127,7 +127,7 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 					// Parent of field we are binding to
 					// Object or array
 					if (IN_DEBUG_MODE_FOR('observer')) {
-						console.log('[Observer] Descending -- ' + curr_f + (fieldPrefix === '' ? '' : ' (' + fieldPrefix + ' + ' + f + ')') + ' :', v);
+						console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Descending -- ' + curr_f + (fieldPrefix === '' ? '' : ' (' + fieldPrefix + ' + ' + f + ')') + ' :', v);
 					}
 					descendInto(v, doc, addedRun, curr_f + '.');
 				}
@@ -182,7 +182,7 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 			_.forEach(options.injectDefaultValues, function(v, f) {
 				getFieldsWhereDefaultRequired(f).forEach(function(new_f) {
 					if (IN_DEBUG_MODE_FOR('default-values')) {
-						console.log("[default-values] Injecting " + new_f + " with value:", v);
+						console.log('[default-values] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Injecting ' + new_f + ' with value:', v);
 					}
 					doFieldMatch(new_f);
 					setUpVMToDBBinding(new_f);
@@ -201,7 +201,7 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 					reactive: false
 				});
 				if (IN_DEBUG_MODE_FOR('observer')) {
-					console.log('[Observer] Added:', id, doc);
+					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Added:', id, doc);
 				}
 				threeWay.hasData.set(true);
 				threeWay.__idReady = true;
@@ -220,7 +220,7 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 					reactive: false
 				});
 				if (IN_DEBUG_MODE_FOR('observer')) {
-					console.log('[Observer] Changed:', id, fields, doc);
+					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Changed:', id, fields, doc);
 				}
 				descendInto(fields, doc, false);
 				injectDefaultValues();
@@ -230,7 +230,7 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 			},
 			removed: function(id) {
 				if (IN_DEBUG_MODE_FOR('observer')) {
-					console.log('[Observer] Removed:', id);
+					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Removed:', id);
 				}
 				threeWay.hasData.set(false);
 				threeWay.id.set(null);

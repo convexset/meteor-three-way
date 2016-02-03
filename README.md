@@ -358,7 +358,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     // (be aware that arrow functions are lexically scoped)
     helpers: {
         altGetId: function() {
-            return this._3w_getId()
+            return Template.instance()._3w_.getId()
         }
     }
 

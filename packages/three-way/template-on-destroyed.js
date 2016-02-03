@@ -10,20 +10,20 @@ ThreeWayDependencies.templateOnDestroyed = function(options) {
 		var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
 
 		if (IN_DEBUG_MODE_FOR('observer')) {
-			console.log('[ThreeWay] onDestroy: Stopping current observer', instance);
+			console.log('[ThreeWay] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] onDestroy: Stopping current observer', instance);
 		}
 		if (!!threeWay.observer) {
 			threeWay.observer.stop();
 		}
 
 		if (IN_DEBUG_MODE_FOR('tracker')) {
-			console.log('[ThreeWay] onDestroy: Stopping computations', instance);
+			console.log('[ThreeWay] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] onDestroy: Stopping computations', instance);
 		}
 		_.forEach(threeWay.computations, function(c) {
 			c.stop();
 		});
 		if (IN_DEBUG_MODE_FOR('tracker')) {
-			console.log('[ThreeWay] onDestroy: Stopping data-update computations', instance);
+			console.log('[ThreeWay] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] onDestroy: Stopping data-update computations', instance);
 		}
 		_.forEach(threeWay._dataUpdateComputations, function(c) {
 			c.stop();

@@ -29,7 +29,7 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 		instance.autorun(function() {
 			threeWay.dataMirror = threeWay.data.all();
 			if (IN_DEBUG_MODE_FOR('data-mirror')) {
-				console.log('Updating data mirror...', threeWay.dataMirror);
+				console.log('[data-mirror] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Updating data mirror...', threeWay.dataMirror);
 			}
 		});
 
@@ -42,17 +42,17 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 				threeWay.vmOnlyData_Initial = _.extend(threeWay.vmOnlyData_Initial, instance.data._3w_additionalViewModelOnlyData);
 			}
 			if (IN_DEBUG_MODE_FOR('vm-only')) {
-				console.log("[vm-only] Initial values for view model only data ready.", threeWay.vmOnlyData_Initial);
+				console.log("[vm-only] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Initial values for view model only data ready.", threeWay.vmOnlyData_Initial);
 			}
 			_.forEach(threeWay.vmOnlyData_Initial, function(value, field) {
 				threeWayMethods.set(field, value);
 				if (IN_DEBUG_MODE_FOR('vm-only')) {
-					console.log("[vm-only] Setting up initial value for " + field + " to ", value, " using template-level options.");
+					console.log("[vm-only] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Setting up initial value for " + field + " to ", value, " using template-level options.");
 				}
 				// Check vmOnlyData for nonsense that matches fields. Don't set up computation if so
 				if (!threeWayMethods.isPropVMOnly(field)) {
 					// Do not set-up update computation (not an actual vm-only field)
-					console.warn("[vm-only] Not an actual view model only field:", field);
+					console.warn("[vm-only] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Not an actual view model only field:", field);
 					delete threeWay.vmOnlyData_Initial[field];
 				}
 			});
@@ -77,7 +77,7 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 				var matches = ThreeWayDependencies.utils.matchParamStrings(options.fields, curr_f); // Match all (single run)
 				if (matches.length > 1) {
 					if (isObserver && IN_DEBUG_MODE_FOR('observer')) {
-						console.warn('[Observer] Ambiguous matches for ' + curr_f, ' (will use most specific):', matches);
+						console.warn('[Observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Ambiguous matches for ' + curr_f, ' (will use most specific):', matches);
 					}
 				}
 				threeWay.fieldMatchParams[curr_f] = (matches.length > 0) ? matches[0] : null;
@@ -97,13 +97,13 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 
 			if (!!threeWay.observer) {
 				if (IN_DEBUG_MODE_FOR('observer')) {
-					console.log('[Observer] Stopping existing observer...');
+					console.log('[Observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Stopping existing observer...');
 				}
 				threeWay.observer.stop();
 			}
 			if (!!threeWay._dataUpdateComputations) {
 				if (IN_DEBUG_MODE_FOR('tracker')) {
-					console.log('[ThreeWay] Stopping existing data update autoruns...');
+					console.log('[ThreeWay] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Stopping existing data update autoruns...');
 				}
 				_.forEach(threeWay._dataUpdateComputations, function(c) {
 					c.stop();
@@ -112,7 +112,7 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 			}
 
 			if (IN_DEBUG_MODE_FOR('data-mirror')) {
-				console.log("[data-mirror] Clearing threeWay.data");
+				console.log('[data-mirror] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Clearing threeWay.data');
 			}
 
 			// Store View Model Only Data
@@ -126,7 +126,7 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 				return data;
 			})();
 			if (IN_DEBUG_MODE_FOR('vm-only')) {
-				console.log("[vm-only] Storing current view model only data prior to clearing view model.", viewModelOnlyData);
+				console.log('[vm-only] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Storing current view model only data prior to clearing view model.', viewModelOnlyData);
 			}
 
 			// Clear data
@@ -136,7 +136,7 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 
 			// Replace ViewModel only data
 			if (IN_DEBUG_MODE_FOR('vm-only')) {
-				console.log("[vm-only] Restoring current view model only data.", viewModelOnlyData);
+				console.log('[vm-only] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Restoring current view model only data.', viewModelOnlyData);
 			}
 			_.forEach(viewModelOnlyData, function(value, field) {
 				threeWayMethods.set(field, value);

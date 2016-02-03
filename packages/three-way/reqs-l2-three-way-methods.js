@@ -277,7 +277,7 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		// (including those from the optional field
 		// `_3w_additionalViewModelOnlyData` of the data context)
 		if (IN_DEBUG_MODE_FOR('vm-only')) {
-			console.log("[vm-only] Resetting view model only values to initial values.", threeWay.vmOnlyData_Initial);
+			console.log("[vm-only] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Resetting view model only values to initial values.", threeWay.vmOnlyData_Initial);
 		}
 		_.forEach(threeWay.vmOnlyData_Initial, function(value, field) {
 			threeWayMethods.set(field, value);
