@@ -35,7 +35,7 @@ PackageUtilities.addPropertyGetter(ThreeWayDependencies.utils, 'allInstancesByTe
 
 var _allowInstanceEnumeration = true;
 var _preventInstanceEnumeration_called = false;
-PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, '_preventInstanceEnumeration', function _preventInstanceEnumeration(prevent) {
+PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, '_preventInstanceEnumeration', function _preventInstanceEnumeration(prevent = true) {
 	_preventInstanceEnumeration_called = true;
 	if (_.isFunction(prevent) ? !!prevent() : !!prevent) {
 		_allowInstanceEnumeration = false;

@@ -34,7 +34,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWay, 'prepare', function prep
 
 var _allowSubsequentPrepareCalls = true;
 var _preventSubsequentPrepareCalls_called = false;
-PackageUtilities.addImmutablePropertyFunction(ThreeWay, '_preventSubsequentPrepareCalls', function _preventSubsequentPrepareCalls(prevent) {
+PackageUtilities.addImmutablePropertyFunction(ThreeWay, '_preventSubsequentPrepareCalls', function _preventSubsequentPrepareCalls(prevent = true) {
 	_preventSubsequentPrepareCalls_called = true;
 	if (_.isFunction(prevent) ? !!prevent() : !!prevent) {
 		_allowSubsequentPrepareCalls = false;
