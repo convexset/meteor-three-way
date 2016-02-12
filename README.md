@@ -995,6 +995,12 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `siblingDataGetAll_NR(siblingName)`: (non-reactively) returns all data from sibling instance where `siblingName` gives the name of the relevant sibling
 
+#### Generic Family Tree Access
+
+ - `getTemplateByPath(path)`: obtains the `ThreeWay`-linked template instance given the specified relative path (as an array), for example `templateInstance._3w_.getTemplateByPath(['..', 'grand-child-2'])` (use `".."` to indicate going one level up)
+ - `callOnTemplateByPath(path, methodName, arg_1, arg_2, ..., arg_n)`: invokes the method with name `methodName` (with the relevant arguments) on the `ThreeWay`-linked template instance specified by the path `path`
+ - `applyOnTemplateByPath(path, methodName, args)`: invokes the method with name `methodName` (with the relevant arguments as an array `args`) on the `ThreeWay`-linked template instance specified by the path `path`
+
 ### Additional Template Helpers
 
  - `_3w_3wInstanceId`: returns the instance id of the `ThreeWay` instance

@@ -70,6 +70,50 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		return vmData;
 	};
 
+	threeWayMethods.getTemplateByPath = function getTemplateByPath(path = []) {
+		if (_.isArray(path)) {
+			if (path.length > 0) {
+				var item = path.shift();
+				if (item === "..") {
+					// parent
+					var parentInstance = threeWayMethods.__getNearestThreeWayAncestor(1);
+					if (!!parentInstance) {
+						return parentInstance[THREE_WAY_NAMESPACE_METHODS].getTemplateByPath(path);
+					}
+				} else {
+					// child
+					var hasChildData;
+					Tracker.nonreactive(function() {
+						hasChildData = !!threeWay.__hasChild.get(item);
+					});
+					if (hasChildData) {
+						return threeWay.children[item][THREE_WAY_NAMESPACE_METHODS].getTemplateByPath(path);
+					}
+				}
+			} else {
+				return instance;
+			}
+		}
+	};
+
+	threeWayMethods.callOnTemplateByPath = function callOnTemplateByPath(path, methodName, ...args) {
+		var instance = threeWayMethods.getTemplateByPath(path);
+		if (!!instance) {
+			return instance[THREE_WAY_NAMESPACE_METHODS][methodName].apply(instance, args);
+		} else {
+			throw new Meteor.Error('invalid-path');
+		}
+	};
+
+	threeWayMethods.applyOnTemplateByPath = function applyOnTemplateByPath(path, methodName, args) {
+		var instance = threeWayMethods.getTemplateByPath(path);
+		if (!!instance) {
+			return instance[THREE_WAY_NAMESPACE_METHODS][methodName].apply(instance, args);
+		} else {
+			throw new Meteor.Error('invalid-path');
+		}
+	};
+
 	threeWayMethods.focusedField = () => threeWay._focusedField.get();
 	threeWayMethods.focusedFieldUpdatedOnServer = p => threeWay._focusedFieldUpdatedOnServer.get(p);
 
@@ -209,10 +253,7 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		return value;
 	};
 
-	threeWayMethods.__getNearestThreeWayAncestor = function _3w_getNearestThreeWayAncestor(levelsUp) {
-		if (typeof levelsUp === "undefined") {
-			levelsUp = 1;
-		}
+	threeWayMethods.__getNearestThreeWayAncestor = function _3w_getNearestThreeWayAncestor(levelsUp = 1) {
 		var currentInstance = instance;
 		while (!!currentInstance.parentTemplate()) {
 			currentInstance = currentInstance.parentTemplate();
