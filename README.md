@@ -55,6 +55,7 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
     - [Ancestor Data (and other possessions)](#ancestor-data-and-other-possessions)
     - [Descendant Data](#descendant-data)
     - [Sibling Data](#sibling-data)
+    - [Generic Family Tree Access](#generic-family-tree-access)
   - [Additional Template Helpers](#additional-template-helpers)
   - [Pre-processor Pipelines](#pre-processor-pipelines)
     - [Pure Processing Bindings](#pure-processing-bindings)

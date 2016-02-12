@@ -13,6 +13,7 @@ Accessible on [GitHub](https://github.com/convexset/meteor-three-way/tree/master
 - [`HighlightJSThemes.currentTheme`](#highlightjsthemescurrenttheme)
 - [`HighlightJSThemes.setRandomTheme()`](#highlightjsthemessetrandomtheme)
 - [`HighlightJSThemes.setTheme(themeId)`](#highlightjsthemessetthemethemeid)
+- [`HighlightJSThemes.highlightWithWorker(elemOrSelector)`](#highlightjsthemeshighlightwithworkerelemorselector)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
