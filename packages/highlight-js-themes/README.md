@@ -47,3 +47,7 @@ Sets a random theme.
 #### `HighlightJSThemes.setTheme(themeId)`
 
 Sets the theme by its Id.
+
+#### `HighlightJSThemes.highlightWithWorker(elemOrSelector)`
+
+Uses a web worker to perform highlighting of the content of an element.
