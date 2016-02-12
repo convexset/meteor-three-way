@@ -52,7 +52,7 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'prePro
 
 			var isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
 
-			var doDirectDOMManipulation = isChrome;
+			var doDirectDOMManipulation = isChrome && !!dropdownObject;
 
 			if (doDirectDOMManipulation) {
 				if (isMultipleSelectDropdown) {
