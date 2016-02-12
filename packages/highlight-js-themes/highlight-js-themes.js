@@ -7,6 +7,7 @@ HighlightJSThemes = new _hjs();
 var allThemes = [
 	"agate",
 	"androidstudio",
+	"arduino-light",
 	"arta",
 	"ascetic",
 	"atelier-cave-dark",
@@ -173,6 +174,25 @@ PackageUtilities.addImmutablePropertyFunction(HighlightJSThemes, 'setRandomTheme
 	return themeName;
 });
 PackageUtilities.addPropertyGetter(HighlightJSThemes, 'currentTheme', () => currTheme);
+
+PackageUtilities.addImmutablePropertyFunction(HighlightJSThemes, "highlightWithWorker", function highlightWithWorker(elem) {
+	$(elem).each(function() {
+		var el = this;
+		var languageSubset = Array.prototype.slice.call(el.classList);
+		var worker = new Worker("/packages/convexset_highlight-js-themes/worker.js");
+		worker.onmessage = function(event) {
+			var payload = JSON.parse(event.data)
+			console.log(payload);
+			el.innerHTML = payload.value;
+			$(el).addClass("hljs");
+			worker.terminate();
+		}
+		worker.postMessage({
+			textContent: el.textContent,
+			languageSubset: languageSubset
+		});
+	})
+});
 
 Meteor.startup(function() {
 	if (!currTheme) {
