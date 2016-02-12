@@ -18,13 +18,25 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 
 	return function updateRelatedFields(fieldName, value, calledFromObserver = false) {
 		var fieldSplit = fieldName.split('.');
-		var childFields_Candidates = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length > fieldName.length) && (match.fieldPath.substr(0, fieldName.length) === fieldName));
-		var parentFields_Candidates = _.filter(threeWay.fieldMatchParams, match => !!match && (match.fieldPath.length < fieldName.length) && (fieldName.substr(0, match.fieldPath.length + 1) === match.fieldPath + '.'));
-		var childFields = _.filter(childFields_Candidates, match => match.fieldPath.split('.').length > fieldSplit.length);
-		var parentFields = _.filter(parentFields_Candidates, match => match.fieldPath.split('.').length < fieldSplit.length);
 
-		childFields.forEach(function(match) {
-			var matchSplit = match.fieldPath.split('.');
+		var allFieldPaths = _.map(threeWayMethods.getAll_NR(), (v,k) => k);
+
+		var childFields_Candidates = _.filter(allFieldPaths, fieldPath => (fieldPath.length > fieldName.length) && (fieldPath.substr(0, fieldName.length) === fieldName));
+		var parentFields_Candidates = _.filter(allFieldPaths, fieldPath => (fieldPath.length < fieldName.length) && (fieldName.substr(0, fieldPath.length + 1) === fieldPath + '.'));
+		var childFields = _.filter(childFields_Candidates, fieldPath => fieldPath.split('.').length > fieldSplit.length);
+		var parentFields = _.filter(parentFields_Candidates, fieldPath => fieldPath.split('.').length < fieldSplit.length);
+
+		// console.log('[updateRelatedFields]', fieldName, {
+		// 	allFieldPaths: allFieldPaths,
+		// 	fieldMatchParams: threeWay.fieldMatchParams,
+		// 	childFields_Candidates: childFields_Candidates,
+		// 	parentFields_Candidates: parentFields_Candidates,
+		// 	childFields: childFields,
+		// 	parentFields: parentFields
+		// })
+
+		childFields.forEach(function(fieldPath) {
+			var matchSplit = fieldPath.split('.');
 			var curr_v = value;
 			var haveTraversalError = false;
 			for (var k = fieldSplit.length; k < matchSplit.length; k++) {
@@ -39,17 +51,17 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 				curr_v = undefined;
 			}
 			// Don't use threeWayMethods.set because it calls this method
-			threeWay.data.set(match.fieldPath, curr_v);
-			threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
+			threeWay.data.set(fieldPath, curr_v);
+			threeWay.__updatesToSkipDueToRelatedObjectUpdate[fieldPath] = true;
 
 			if (calledFromObserver) {
 				// If called from observer, this is the "correct database value"
-				threeWay.__mostRecentDatabaseEntry[match.fieldPath] = curr_v;
+				threeWay.__mostRecentDatabaseEntry[fieldPath] = curr_v;
 			}
 		});
-		parentFields.forEach(function(match) {
-			var matchSplit = match.fieldPath.split('.');
-			var parentValue = threeWayMethods.get_NR(match.fieldPath);
+		parentFields.forEach(function(fieldPath) {
+			var matchSplit = fieldPath.split('.');
+			var parentValue = threeWayMethods.get_NR(fieldPath);
 			var thisSubValue = parentValue;
 			for (var k = matchSplit.length; k < fieldSplit.length - 1; k++) {
 				if (typeof thisSubValue[fieldSplit[k]] === "undefined") {
@@ -60,12 +72,12 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 			thisSubValue[fieldSplit[fieldSplit.length - 1]] = value;
 
 			// Don't use threeWayMethods.set because it calls this method
-			threeWay.data.set(match.fieldPath, parentValue);
-			threeWay.__updatesToSkipDueToRelatedObjectUpdate[match.fieldPath] = true;
+			threeWay.data.set(fieldPath, parentValue);
+			threeWay.__updatesToSkipDueToRelatedObjectUpdate[fieldPath] = true;
 
 			if (calledFromObserver) {
 				// If called from observer, this is the "correct database value"
-				threeWay.__mostRecentDatabaseEntry[match.fieldPath] = parentValue;
+				threeWay.__mostRecentDatabaseEntry[fieldPath] = parentValue;
 			}
 		});
 	};
