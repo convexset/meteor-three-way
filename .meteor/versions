@@ -20,12 +20,12 @@ check@1.1.0
 coffeescript@1.0.11
 convexset:collection-tools@0.0.7_1
 convexset:flow-router-tree@0.1.2
-convexset:highlight-js-themes@0.1.1
+convexset:highlight-js-themes@0.1.2
 convexset:match-extensions@0.1.1
 convexset:package-utils@0.1.9
 convexset:plugins@0.1.0
 convexset:template-helpers@0.1.15
-convexset:three-way@0.2.21_1
+convexset:three-way@0.2.22
 convexset:three-way--guide@0.0.1
 convexset:three-way--the-original-demo@0.0.1
 convexset:webshim@1.15.10_1
@@ -85,7 +85,6 @@ routepolicy@1.0.6
 semantic:ui@2.1.6
 semantic:ui-data@2.1.6
 session@1.1.1
-sewdn:highlightjs@8.4.0_2
 spacebars@1.0.7
 spacebars-compiler@1.0.7
 standard-minifiers@1.0.2
