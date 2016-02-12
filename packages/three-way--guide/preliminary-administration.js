@@ -35,6 +35,7 @@ hljsProcessPreBlocks = function hljsProcessPreBlocks() {
 
 		$(elem).text(textBlocks.map(s => lessLeadingCharacters(s, minLeadingSpaces)).join('\n'));
 		hljs.highlightBlock(elem);
+		// HighlightJSThemes.highlightWithWorker(elem);
 	});
 };
 

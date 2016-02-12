@@ -1,0 +1,122 @@
+<template name="ThreeWayGuide_StylesClassesAttributes_Wrapper">
+	<div class="ui container">
+		<h1>Bulk Bindings: styles, classes and attributes</h1>
+		
+		<p>ThreeWay manages bindings at multiple levels. One may bind to a "top level object", its member properties, its member's member properties and so on, as ThreeWay maintains consistency.</p>
+		
+		<div><ul id="toc"></ul></div>
+		
+		{{> ThreeWayGuide_StylesClassesAttributes}}
+	</div>
+</template>
+
+<template name="ThreeWayGuide_StylesClassesAttributes">
+	<div class="column">
+		<section>
+			<h3>The Example</h3>
+			
+			<p>
+				The item below has styles applied via:
+			</p>
+			<pre class="html">
+				&lt;button class=&quot;ui button&quot; data-bind=&quot;styles: styles; classes: classes; attributes: attributes&quot;&gt;
+					Some Item Here
+				&lt;/button&gt;
+			</pre>
+			
+			<div style="text-align: center;">
+				<button class="ui button" data-bind="styles: styles; classes: classes; attributes: attributes">
+					Some Item Here
+				</button>
+			</div>
+			
+			<table class="ui table celled">
+				<thead>
+					<tr>
+						<th>Type</th>
+						<th>Item</th>
+						<th>Value</th>
+						<th>Edit</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td class="collapsing">Styles</td>
+						<td class="collapsing">Font Family</td>
+						<td>{{_3w_get 'styles.font-family'}}</td>
+						<td>
+							<input data-bind="value: styles.font-family" style="border: 0; width: 100%; font-family: Courier New;">
+						</td>
+					</tr>
+					<tr>
+						<td class="collapsing">Styles</td>
+						<td class="collapsing">Font Size</td>
+						<td>{{_3w_get 'styles.font-size'}}</td>
+						<td>
+							<input data-bind="value: styles.font-size" style="border: 0; width: 100%; font-family: Courier New;">
+						</td>
+					</tr>
+					<tr>
+						<td class="collapsing">Classes</td>
+						<td class="collapsing">Red</td>
+						<td>{{truthy (_3w_get 'classes.red')}}</td>
+						<td>
+							<button class="ui button control {{setTrueButtonColor (_3w_get 'classes.red')}}" {{trueDisabled (_3w_get 'classes.red')}} data-id="classes.red|true">Set to TRUE</button>
+							<button class="ui button control {{setFalseButtonColor (_3w_get 'classes.red')}}" {{falseDisabled (_3w_get 'classes.red')}} data-id="classes.red|false">Set to FALSE</button>
+						</td>
+					</tr>
+					<tr>
+						<td class="collapsing">Classes</td>
+						<td class="collapsing">Loading</td>
+						<td>{{truthy (_3w_get 'classes.loading')}}</td>
+						<td>
+							<button class="ui button control {{setTrueButtonColor (_3w_get 'classes.loading')}}" {{trueDisabled (_3w_get 'classes.loading')}} data-id="classes.loading|true">Set to TRUE</button>
+							<button class="ui button control {{setFalseButtonColor (_3w_get 'classes.loading')}}" {{falseDisabled (_3w_get 'classes.loading')}} data-id="classes.loading|false">Set to FALSE</button>
+						</td>
+					</tr>
+					<tr>
+						<td class="collapsing" rowspan=1>Attributes</td>
+						<td class="collapsing">Disabled</td>
+						<td>{{truthy (_3w_get 'attributes.disabled')}}</td>
+						<td>
+							<button class="ui button control {{setTrueButtonColor (_3w_get 'attributes.disabled')}}" {{trueDisabled (_3w_get 'attributes.disabled')}} data-id="attributes.disabled|true">Set to TRUE</button>
+							<button class="ui button control {{setFalseButtonColor (_3w_get 'attributes.disabled')}}" {{falseDisabled (_3w_get 'attributes.disabled')}} data-id="attributes.disabled|false">Set to FALSE</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+		
+		<div style="min-height: 20px"></div>
+		
+		<section>
+			<h3>The Setup</h3>
+			<p>There isn't very much to the set up:</p>
+			
+			<pre class="javascript">
+				ThreeWay.prepare(Template.ThreeWayGuide_StylesClassesAttrs, {
+					viewModelToViewOnly: {
+						// necessary initializations
+						styles: {},
+						classes: {},
+						attrs: {}
+					}
+				});
+				
+				Template.ThreeWayGuide_StylesClassesAttrs.onRendered(function() {
+					var instance = this;
+					// initialize
+					setTimeout(function() {
+						instance._3w_.set('styles.font-family', '');
+						instance._3w_.set('styles.font-size', '');
+						instance._3w_.set('classes.red', false);
+						instance._3w_.set('classes.loading', false);
+						instance._3w_.set('attributes.disabled', false);
+					}, 1000);
+				});
+			</pre>
+		</section>
+		
+		<div style="min-height: 50px"></div>
+	</div>
+</template>

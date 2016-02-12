@@ -11,16 +11,6 @@
 			<h5><a class="item" href="{{pathFor routeName}}" title="{{description}}">{{name}}</a></h5>
 			<p>{{description}}</p>
 		{{/each}}
-
-		<h3>To Do List</h3>
-		<table>
-			{{#each exampleToDos}}
-				<tr>
-					<td style="vertical-align: middle;"><input type="checkbox" {{isChecked this}} disabled>&nbsp;&nbsp;</td>
-					<td>{{item}}</td>
-				</tr>
-			{{/each}}
-		</table>
 		
 	</div>
 	

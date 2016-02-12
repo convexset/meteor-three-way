@@ -45,6 +45,10 @@ Package.onUse(function(api) {
 		'guide-basics.js',
 		'guide-three-way-proper.html',
 		'guide-three-way-proper.js',
+
+		'guide-styles-classes-attributes.html',
+		'guide-styles-classes-attributes.js',
+
 		'guide-pre-processors-and-more-bindings.html',
 		'guide-pre-processors-and-more-bindings.js',
 		'guide-pure-side-effects.html',

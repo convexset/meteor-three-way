@@ -681,6 +681,94 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		}
 
 		//////////////////////////////////////////////////////
+		// .styles
+		//////////////////////////////////////////////////////
+		if (!!elemBindings.bindings.styles) {
+			threeWay.computations.push(Tracker.autorun(function(c) {
+				var pipelineSplit = elemBindings.bindings.styles.source.split('|').map(x => x.trim()).filter(x => x !== "");
+				var source = pipelineSplit[0];
+				var mappings = pipelineSplit.splice(1);
+
+				if (c.firstRun) {
+					if (IN_DEBUG_MODE_FOR('style')) {
+						console.log("[.styles] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .styles binding with " + source + " for", elem);
+					}
+				}
+
+				var styles = processInTemplateContext(source, mappings, elem);
+				styles = _.isObject(styles) ? styles : {};
+
+				if (IN_DEBUG_MODE_FOR('style')) {
+					console.log('[.styles] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting styles.', styles, elem);
+				}
+				_.forEach(styles, function(v, k) {
+					elem.style[k] = v;
+				});
+			}));
+			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+		}
+
+		//////////////////////////////////////////////////////
+		// .classes
+		//////////////////////////////////////////////////////
+		if (!!elemBindings.bindings.classes) {
+			threeWay.computations.push(Tracker.autorun(function(c) {
+				var pipelineSplit = elemBindings.bindings.classes.source.split('|').map(x => x.trim()).filter(x => x !== "");
+				var source = pipelineSplit[0];
+				var mappings = pipelineSplit.splice(1);
+
+				if (c.firstRun) {
+					if (IN_DEBUG_MODE_FOR('class')) {
+						console.log("[.classes] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .classes binding with " + source + " for", elem);
+					}
+				}
+
+				var classes = processInTemplateContext(source, mappings, elem);
+				classes = _.isObject(classes) ? classes : {};
+
+				if (IN_DEBUG_MODE_FOR('class')) {
+					console.log('[.classes] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting classes.', classes, elem);
+				}
+				_.forEach(classes, function(v, k) {
+					if (v) {
+						$(elem).addClass(k);
+					} else {
+						$(elem).removeClass(k);
+					}
+				});
+			}));
+			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+		}
+
+		//////////////////////////////////////////////////////
+		// .attributes
+		//////////////////////////////////////////////////////
+		if (!!elemBindings.bindings.attributes) {
+			threeWay.computations.push(Tracker.autorun(function(c) {
+				var pipelineSplit = elemBindings.bindings.attributes.source.split('|').map(x => x.trim()).filter(x => x !== "");
+				var source = pipelineSplit[0];
+				var mappings = pipelineSplit.splice(1);
+
+				if (c.firstRun) {
+					if (IN_DEBUG_MODE_FOR('attr')) {
+						console.log("[.attributes] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .attributes binding with " + source + " for", elem);
+					}
+				}
+
+				var attributes = processInTemplateContext(source, mappings, elem);
+				attributes = _.isObject(attributes) ? attributes : {};
+
+				if (IN_DEBUG_MODE_FOR('attr')) {
+					console.log('[.attributes] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting attributes.', attributes, elem);
+				}
+				_.forEach(attributes, function(v, k) {
+					$(elem).attr(k, v);
+				});
+			}));
+			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+		}
+
+		//////////////////////////////////////////////////////
 		// .visible
 		//////////////////////////////////////////////////////
 		if (!!elemBindings.bindings.visible) {

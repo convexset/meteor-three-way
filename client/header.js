@@ -20,7 +20,7 @@ Template.Header.helpers({
 	themes: () => _.map(HighlightJSThemes.allThemes, (v, k) => ({
 		id: k,
 		name: v
-	})).sort((x, y) => (x.id > y.id))
+	})).sort((x, y) => (x.id > y.id ? 1 : -1))
 });
 
 webshim.polyfill('forms forms-ext');

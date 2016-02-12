@@ -782,6 +782,30 @@ The following modifiers are available and are applied in the form `<binding>#<mo
 
  Class bindings are done via: `data-bind="class: {class1: bool1|preProc; ...}"`. However, things work more like the visible and disabled bindings in that the values to be bound to will be treated as boolean-ish.
 
+ Alternatively, one can bind each of the above directly to a single object. This can be done as follows:
+  - `data-bind="styles: stylesObject"` where `stylesObject` might be
+    ```
+    {
+        "font-family": "Courier New",
+        "font-size": "200%",
+    }
+    ```
+  - `data-bind="classes: classesObject"` where `classes` might be
+    ```
+    {
+        "red": false,
+        "loading": true,
+    }
+    ```
+  - `data-bind="attributes: attributesObject"` where `attributesObject` might be
+    ```
+    {
+        "disabled": true,
+        "data-id": "xxxxxx",
+    }
+    ```
+
+
 ### Helpers, Template Helpers and Binding
 
 Helper functions may be used as input for display-type bindings.

@@ -155,3 +155,17 @@ Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
         },
     },
 });
+
+Plugins.register(THREEWAY_GUIDE_NAMESPACE, {
+    methods: {
+        info: function() {
+            return {
+                name: 'Bulk Bindings: styles, classes and attributes',
+                description: 'Bulk Bindings (styles, classes and attrs) allow one to work with styles, classes and attrs by binding each to a single object.',
+                routeName: 'styles-classes-attributes',
+                templateName: 'ThreeWayGuide_StylesClassesAttributes_Wrapper',
+                order: 3.5,
+            };
+        },
+    },
+});
