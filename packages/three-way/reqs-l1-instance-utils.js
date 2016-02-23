@@ -21,16 +21,12 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 
 		var allFieldPaths = _.map(threeWayMethods.getAll_NR(), (v,k) => k);
 
-		var childFields_Candidates = _.filter(allFieldPaths, fieldPath => (fieldPath.length > fieldName.length) && (fieldPath.substr(0, fieldName.length) === fieldName));
-		var parentFields_Candidates = _.filter(allFieldPaths, fieldPath => (fieldPath.length < fieldName.length) && (fieldName.substr(0, fieldPath.length + 1) === fieldPath + '.'));
-		var childFields = _.filter(childFields_Candidates, fieldPath => fieldPath.split('.').length > fieldSplit.length);
-		var parentFields = _.filter(parentFields_Candidates, fieldPath => fieldPath.split('.').length < fieldSplit.length);
+		var childFields = _.filter(allFieldPaths, fieldPath => (fieldPath.length > fieldName.length) && (fieldPath.substr(0, fieldName.length + 1) === fieldName + '.'));
+		var parentFields = _.filter(allFieldPaths, fieldPath => (fieldPath.length < fieldName.length) && (fieldName.substr(0, fieldPath.length + 1) === fieldPath + '.'));
 
 		// console.log('[updateRelatedFields]', fieldName, {
 		// 	allFieldPaths: allFieldPaths,
 		// 	fieldMatchParams: threeWay.fieldMatchParams,
-		// 	childFields_Candidates: childFields_Candidates,
-		// 	parentFields_Candidates: parentFields_Candidates,
 		// 	childFields: childFields,
 		// 	parentFields: parentFields
 		// })
