@@ -48,7 +48,7 @@ ThreeWay.prepare(Template.ThreeWayGuide_DataSyncFeedback, {
 		});
 		instance._3w_.set('updatedFieldData', updatedFieldData);
 		console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
-
+		alert("Update of focused field. (Look in the JS console.)");
 		instance._3w_.set(fieldMatchParams.fieldPath, newValue);
 	},
 	viewModelToViewOnly: {

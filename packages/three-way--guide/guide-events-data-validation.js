@@ -122,7 +122,6 @@ ThreeWay.prepare(Template.ThreeWayGuide_DataValidation, {
 		tags: ThreeWay.transformations.arrayToCommaDelimitedString,
 	},
 	viewModelToViewOnly: {
-		someArrayValidationErrorText: '',
 		tagsValidationErrorText: '',
 	},
 	validatorsVM: {
