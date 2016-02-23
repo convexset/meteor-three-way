@@ -32,8 +32,6 @@ Template.ThreeWayGuide_StylesClassesAttributes.events({
 
 Template.ThreeWayGuide_StylesClassesAttributes.helpers({
 	truthy: x => !!x ? "True" : "False",
-	trueDisabled: x => !!x ? "disabled" : "",
-	falseDisabled: x => !!x ? "" : "disabled",
-	setTrueButtonColor: x => !!x ? "grey" : "blue",
-	setFalseButtonColor: x => !!x ? "orange" : "grey",
+	trueButtonClasses: x => !!x ? "blue avoid-clicks" : "grey",
+	falseButtonClasses: x => !!x ? "grey" : "orange avoid-clicks",
 });

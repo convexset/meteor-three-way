@@ -61,8 +61,8 @@
 						<td class="collapsing">Red</td>
 						<td>{{truthy (_3w_get 'classes.red')}}</td>
 						<td>
-							<button class="ui button control {{setTrueButtonColor (_3w_get 'classes.red')}}" {{trueDisabled (_3w_get 'classes.red')}} data-id="classes.red|true">Set to TRUE</button>
-							<button class="ui button control {{setFalseButtonColor (_3w_get 'classes.red')}}" {{falseDisabled (_3w_get 'classes.red')}} data-id="classes.red|false">Set to FALSE</button>
+							<button class="ui button control {{trueButtonClasses (_3w_get 'classes.red')}}" data-id="classes.red|true">True</button>
+							<button class="ui button control {{falseButtonClasses (_3w_get 'classes.red')}}" data-id="classes.red|false">False</button>
 						</td>
 					</tr>
 					<tr>
@@ -70,8 +70,8 @@
 						<td class="collapsing">Loading</td>
 						<td>{{truthy (_3w_get 'classes.loading')}}</td>
 						<td>
-							<button class="ui button control {{setTrueButtonColor (_3w_get 'classes.loading')}}" {{trueDisabled (_3w_get 'classes.loading')}} data-id="classes.loading|true">Set to TRUE</button>
-							<button class="ui button control {{setFalseButtonColor (_3w_get 'classes.loading')}}" {{falseDisabled (_3w_get 'classes.loading')}} data-id="classes.loading|false">Set to FALSE</button>
+							<button class="ui button control {{trueButtonClasses (_3w_get 'classes.loading')}}" data-id="classes.loading|true">True</button>
+							<button class="ui button control {{falseButtonClasses (_3w_get 'classes.loading')}}" data-id="classes.loading|false">False</button>
 						</td>
 					</tr>
 					<tr>
@@ -79,8 +79,8 @@
 						<td class="collapsing">Disabled</td>
 						<td>{{truthy (_3w_get 'attributes.disabled')}}</td>
 						<td>
-							<button class="ui button control {{setTrueButtonColor (_3w_get 'attributes.disabled')}}" {{trueDisabled (_3w_get 'attributes.disabled')}} data-id="attributes.disabled|true">Set to TRUE</button>
-							<button class="ui button control {{setFalseButtonColor (_3w_get 'attributes.disabled')}}" {{falseDisabled (_3w_get 'attributes.disabled')}} data-id="attributes.disabled|false">Set to FALSE</button>
+							<button class="ui button control {{trueButtonClasses (_3w_get 'attributes.disabled')}}" data-id="attributes.disabled|true">True</button>
+							<button class="ui button control {{falseButtonClasses (_3w_get 'attributes.disabled')}}" data-id="attributes.disabled|false">False</button>
 						</td>
 					</tr>
 				</tbody>
