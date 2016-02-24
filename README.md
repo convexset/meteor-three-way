@@ -137,7 +137,7 @@ One then proceeds to bind input and display elements like so:
 Once ready to bind to a document with id `_id` in the database on a template instance `instance`, simply call:
 
 ```javascript
-instance._3w_setId(_id);
+instance._3w_.setId(_id);
 ```
 
 ... or instantiate the relevant template like so:
