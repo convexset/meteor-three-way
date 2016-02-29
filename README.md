@@ -779,7 +779,7 @@ The following modifiers are available and are applied in the form `<binding>#<mo
 
  Style bindings are done via: `data-bind="style: {font-weight: v1|preProc, font-size: v2|preProc; ...}"`. Things work just like the above html binding.
 
- Attribute bindings are done via: `data-bind="attr: {disabled: v1|preProc, ...}"`. Things also work just like html bindings.
+ Attribute bindings are done via: `data-bind="attr: {disabled: v1|preProc, ...}"`. Things also work just like html bindings. Set a value to `null` or `undefined` to ensure that an attribute is not present at all.
 
  Class bindings are done via: `data-bind="class: {class1: bool1|preProc; ...}"`. However, things work more like the visible and disabled bindings in that the values to be bound to will be treated as boolean-ish.
 
@@ -805,6 +805,7 @@ The following modifiers are available and are applied in the form `<binding>#<mo
         "data-id": "xxxxxx",
     }
     ```
+    As above, set a value to `null` or `undefined` to get rid of the respective attribute.
 
 
 ### Helpers, Template Helpers and Binding

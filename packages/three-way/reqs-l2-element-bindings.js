@@ -762,7 +762,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					console.log('[.attributes] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting attributes.', attributes, elem);
 				}
 				_.forEach(attributes, function(v, k) {
-					$(elem).attr(k, v);
+					if ((v === null) || (typeof v === "undefined")) {
+						$(elem).removeAttr(k);
+					} else {
+						$(elem).attr(k, v);
+					}
 				});
 			}));
 			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
@@ -874,13 +878,16 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 					var value = processInTemplateContext(source, mappings, elem);
 
-					// Update Style
+					// Update Attr
 					if ($(elem).attr(key) !== value) {
 						if (IN_DEBUG_MODE_FOR('attr')) {
 							console.log('[.attr|' + key + '] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting attribute ' + key + ' to \"' + value + '\" for', elem);
 						}
-						$(elem).attr(key, value);
-					}
+						if ((value === null) || (typeof value === "undefined")) {
+							$(elem).removeAttr(key);
+						} else {
+							$(elem).attr(key, value);
+						}
 				}));
 				boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 			});
