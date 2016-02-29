@@ -880,8 +880,16 @@ viewModelToViewOnly: {
     'vmOnlyValue': 'something',
 },
 ```
+... or a generic customization via the template instance (fired at `onCreated`)...
+```javascript
+viewModelToViewOnly: function (templateInstance) {
+    return {
+        'vmOnlyValue': someComputation(templateInstance.data.something),
+    };
+},
+```
 
-However, since those are "template-level defaults" that are copied to all template instances, it may be useful at times to customize (update) them at instantiation. This may be achieved through template instance data:
+However, since those are "template-level defaults", it may be useful at times to customize (update) them at instantiation. This may be achieved through template instance data:
 
 ```html
 {{> DemoThreeWay _3w_additionalViewModelOnlyData=helperWithAdditionalData}}

@@ -37,7 +37,12 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 		// Set up VM-Only Data
 		//////////////////////////////////////////////////////////////////////
 		(function __Setup_VM_Only_Data__() {
-			threeWay.vmOnlyData_Initial = _.extend({}, options.viewModelToViewOnly);
+			if (_.isFunction(options.viewModelToViewOnly)) {
+				threeWay.vmOnlyData_Initial = _.extend({}, instance.nonreactive(() => options.viewModelToViewOnly(instance)));
+			} else {
+				threeWay.vmOnlyData_Initial = _.extend({}, options.viewModelToViewOnly);
+			}
+
 			if (!!instance.data && !!instance.data._3w_additionalViewModelOnlyData) {
 				threeWay.vmOnlyData_Initial = _.extend(threeWay.vmOnlyData_Initial, instance.data._3w_additionalViewModelOnlyData);
 			}
