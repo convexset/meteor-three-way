@@ -361,10 +361,10 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'match
 	return matches.sort(function(x, y) {
 		if (x.params.length !== y.params.length) {
 			// shorter param set wins
-			return x.params.length - y.params.length;
+			return x.params.length < y.params.length ? -1 : 1;
 		}
 		// later occurrence of "*" wins
-		return -(x.match.indexOf('*') - y.match.indexOf('*'));
+		return x.match.indexOf('*') > y.match.indexOf('*') ? -1 : 1;
 	});
 });
 
