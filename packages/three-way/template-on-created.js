@@ -38,7 +38,7 @@ ThreeWayDependencies.templateOnCreated = function(options) {
 		//////////////////////////////////////////////////////////////////////
 		(function __Setup_VM_Only_Data__() {
 			if (_.isFunction(options.viewModelToViewOnly)) {
-				threeWay.vmOnlyData_Initial = _.extend({}, instance.nonreactive(() => options.viewModelToViewOnly(instance)));
+				threeWay.vmOnlyData_Initial = _.extend({}, Tracker.nonreactive(() => options.viewModelToViewOnly(instance)));
 			} else {
 				threeWay.vmOnlyData_Initial = _.extend({}, options.viewModelToViewOnly);
 			}
