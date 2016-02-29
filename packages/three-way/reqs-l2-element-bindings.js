@@ -888,6 +888,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 						} else {
 							$(elem).attr(key, value);
 						}
+					}
 				}));
 				boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 			});
