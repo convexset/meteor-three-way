@@ -41,6 +41,7 @@ Somehow links in Atmosphere get messed up. Navigate this properly in [GitHub](ht
     - [Binding: `html` and `text`](#binding-html-and-text)
     - [Binding: `value`](#binding-value)
     - [Binding: `checked`](#binding-checked)
+    - [Binding: `ischecked`](#binding-ischecked)
     - [Binding Modifiers for `value` and `checked`](#binding-modifiers-for-value-and-checked)
     - [Bindings: `visible` and `disabled` (modern necessities)](#bindings-visible-and-disabled-modern-necessities)
     - [Bindings: `focus`](#bindings-focus)
@@ -737,6 +738,12 @@ In the case of radio buttons, `checked` is bound to a string.
     {{/each}}
 </div>
 ```
+
+
+#### Binding: `ischecked`
+
+The `ischecked` binding is similar to the `checked` binding. However, it relates to individual elements rather than the collection of radio buttons or checkboxes. Checked elements map to `true` values and unchecked elements map to `false` values.
+
 
 #### Binding Modifiers for `value` and `checked`
 
