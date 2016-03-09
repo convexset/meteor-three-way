@@ -57,7 +57,17 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 	};
 
 	threeWayMethods.isPropVMOnly = function(p) {
-		return ThreeWayDependencies.utils.matchParamStrings(options.fields, p).length === 0;
+		var pSplit = p.split('.');
+		var q = '';
+
+		// VM only if all parent fields are not DB fields
+		while (pSplit.length > 0) {
+			q = q ? (q + '.' + pSplit.shift()) : pSplit.shift();
+			if (ThreeWayDependencies.utils.matchParamStrings(options.fields, q).length > 0) {
+				return false;
+			}
+		}
+		return true;
 	};
 
 	threeWayMethods.getAll_VMOnly_NR = function() {

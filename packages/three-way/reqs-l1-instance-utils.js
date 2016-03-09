@@ -12,6 +12,26 @@ ThreeWayDependencies.instanceUtils = {};
 /////////////////////////////////////////////////////////////////////
 // Generate generate updateRelatedFields Function
 /////////////////////////////////////////////////////////////////////
+function flattenObject(o, prefix = []) {
+	if (!_.isArray(prefix)) {
+		prefix = [prefix];
+	}
+	var ret = [];
+	_.forEach(o, function(v, name) {
+		var path = prefix.concat(name);
+		ret.push({
+			fieldName: path.join('.'),
+			value: v
+		});
+
+		var vType = Object.prototype.toString.call(v);
+		if (['[object Object]', '[object Array]'].indexOf(vType) !== -1) {
+			ret = ret.concat(flattenObject(v, path))
+		}
+	});
+	return ret;
+}
+
 PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils, 'generateUpdateRelatedFieldsFunction', function generateUpdateRelatedFieldsFunction(options, instance) {
 	var threeWay = instance[THREE_WAY_NAMESPACE];
 	var threeWayMethods = instance[THREE_WAY_NAMESPACE_METHODS];
@@ -31,23 +51,26 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 		// 	parentFields: parentFields
 		// })
 
+		var presentFields = [];
+		var valueType = Object.prototype.toString.call(value);
+		if (['[object Object]', '[object Array]'].indexOf(valueType) !== -1) {
+			flattenObject(value, [fieldName]).forEach(function(fn_v) {
+				var thisFieldName = fn_v.fieldName;
+				var thisValue = fn_v.value;
+				presentFields.push(thisFieldName);
+				
+				// Don't use threeWayMethods.set because it calls this method
+				threeWay.data.set(thisFieldName, thisValue);
+			})
+		}
+
 		childFields.forEach(function(fieldPath) {
 			var matchSplit = fieldPath.split('.');
 			var curr_v = value;
-			var haveTraversalError = false;
-			for (var k = fieldSplit.length; k < matchSplit.length; k++) {
-				curr_v = curr_v[matchSplit[k]];
-				if (typeof curr_v === "undefined") {
-					haveTraversalError = true;
-					break;
-				}
-			}
-			if (haveTraversalError) {
+			if (presentFields.indexOf(fieldPath) === -1) {
 				// Reasonably decent garbage collection
 				curr_v = undefined;
 			}
-			// Don't use threeWayMethods.set because it calls this method
-			threeWay.data.set(fieldPath, curr_v);
 			threeWay.__updatesToSkipDueToRelatedObjectUpdate[fieldPath] = true;
 
 			if (calledFromObserver) {
@@ -55,6 +78,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 				threeWay.__mostRecentDatabaseEntry[fieldPath] = curr_v;
 			}
 		});
+
 		parentFields.forEach(function(fieldPath) {
 			var matchSplit = fieldPath.split('.');
 			var parentValue = threeWayMethods.get_NR(fieldPath);
