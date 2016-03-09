@@ -20,6 +20,8 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		throw new Meteor.Error("missing-function", "threeWayMethods._doFieldMatch should have been defined");
 	}
 
+	var instanceElemGlobalsRegistry = {};
+
 	return function bindElem(elem) {
 		var instanceId;
 
@@ -161,9 +163,14 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		// Dealing With Update Bindings
 		//////////////////////////////////////////////////////
 
+		var thisElemId = ThreeWayDependencies.utils.getNewId();
+		elem.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID, thisElemId);
+
 		var elemGlobals = {
 			suppressChangesToSSOT: false
 		};
+		instanceElemGlobalsRegistry[thisElemId] = elemGlobals;
+
 		var boundElemComputations = [];
 		var boundElemEventHandlers = [];
 		var bindEventToThisElem = function bindEventToThisElem(eventName, handler) {
@@ -273,7 +280,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					}
 				}
 
-				elemGlobals.suppressChangesToSSOT = true;
 				var value = processInTemplateContext(source, pipeline, elem, {
 					useHelpers: false,
 					processorsMutateValue: false,
@@ -311,7 +317,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 						console.log('[.value] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .value of', elem);
 					}
 				}
-				elemGlobals.suppressChangesToSSOT = false;
 			}));
 			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 
@@ -424,7 +429,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					}
 				}
 
-				elemGlobals.suppressChangesToSSOT = true;
 				var value = processInTemplateContext(source, pipeline, elem, {
 					useHelpers: false,
 					processorsMutateValue: false,
@@ -499,7 +503,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				}
 
-				elemGlobals.suppressChangesToSSOT = false;
 			}));
 			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 
@@ -591,7 +594,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					}
 				}
 
-				elemGlobals.suppressChangesToSSOT = true;
 				var ischecked = !!processInTemplateContext(source, pipeline, elem, {
 					useHelpers: false,
 					processorsMutateValue: false,
@@ -629,7 +631,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					}
 				}
 
-				elemGlobals.suppressChangesToSSOT = false;
 			}));
 			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 
@@ -698,7 +699,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 					}
 				}
 
-				elemGlobals.suppressChangesToSSOT = true;
 				var focus = !!processInTemplateContext(source, pipeline, elem, {
 					useHelpers: false,
 					processorsMutateValue: false,
@@ -724,7 +724,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 						console.log('[.focus] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .focus of', elem);
 					}
 				}
-				elemGlobals.suppressChangesToSSOT = false;
 			}));
 			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
 
@@ -1155,9 +1154,6 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		}
 		//////////////////////////////////////////////////////
 
-
-		var thisElemId = ThreeWayDependencies.utils.getNewId();
-		elem.setAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID, thisElemId);
 		Tracker.autorun(function(c) {
 			var instanceId = threeWay.instanceId.get();
 			if (!!instanceId) {
