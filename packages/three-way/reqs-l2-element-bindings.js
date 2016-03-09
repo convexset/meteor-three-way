@@ -426,7 +426,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 				var value = processInTemplateContext(source, pipeline, elem, {
 					useHelpers: false,
 					processorsMutateValue: false,
-					additionalFailureCondition: (elem.getAttribute('type').toLowerCase() === "radio") ? () => false : v => (typeof v !== "object") || (!(v instanceof Array)),
+					additionalFailureCondition: (elem.getAttribute('type').toLowerCase() === "radio") ? () => false : v => (typeof v !== "object") || (!(_.isArray(v))),
 					allowWholeDocumentAsSource: false,
 				});  // helpers not used and pipelines do not manipulate value
 
@@ -504,6 +504,136 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 			bindEventToThisElem('focus', function() {
 				ThreeWayDependencies.utils.pushToEndOfEventQueue(function delayedFocusChange() {
 					var pipelineSplit = elemBindings.bindings.checked.source.split('|').map(x => x.trim()).filter(x => x !== "");
+					var source = pipelineSplit[0];
+					threeWay._focusedField.set(source);
+				}, {});
+			});
+			bindEventToThisElem('focusout', function() {
+				threeWay._focusedField.set(null);
+			});
+
+		}
+
+
+		//////////////////////////////////////////////////////
+		// .ischecked
+		//////////////////////////////////////////////////////
+		if (!!elemBindings.bindings.ischecked) {
+
+			var ischeckedChangeHandler = function ischeckedChangeHandler() { // function(event)
+				var new_value = elem.checked;
+
+				var fieldName = elemBindings.bindings.ischecked.source;
+				var curr_value = threeWayMethods.get(fieldName);
+
+				if (IN_DEBUG_MODE_FOR('checked')) {
+					console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Change', elem);
+					console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Field: ' + fieldName + '; data-bind | ' + dataBind);
+					console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] data-bind | ' + dataBind);
+				}
+
+				if (elemGlobals.suppressChangesToSSOT) {
+					if (IN_DEBUG_MODE_FOR('checked')) {
+						console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Change to S.S.o.T. Suppressed | ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
+					}
+				} else {
+					if (!_.isEqual(new_value, curr_value)) {
+						if (IN_DEBUG_MODE_FOR('checked')) {
+							console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Updating ' + fieldName + ':', curr_value, ' (in mirror); Current:', new_value);
+						}
+						threeWayMethods.set(fieldName, new_value);
+						updateServerUpdatedStatus(fieldName);
+					} else {
+						if (IN_DEBUG_MODE_FOR('checked')) {
+							console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Unchanged value: ' + fieldName + ';', curr_value, '(in mirror)');
+						}
+					}
+				}
+
+				if (elem.getAttribute('type').toLowerCase() === "radio") {
+					// trigger change on "non-receiving" radios
+					var name = elem.name;
+					if (!!name && elem.checked) {
+						instance.$('[type=radio][name=' + name + ']').each(function() {
+							if (this !== elem) {
+								instance.$(this).trigger('change');
+							}
+						});
+					}
+				}
+			};
+
+			// Bind change handler
+			bindEventToThisElem('change', ischeckedChangeHandler);
+
+			// Bind to additional events
+			_.forEach(elemBindings.bindings.ischecked.itemOptions, function(v, opt) {
+				if (opt === "updateon") {
+					if (IN_DEBUG_MODE_FOR('checked')) {
+						console.log("[.ischecked] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Binding with option " + opt + "=" + v + " for", elem);
+					}
+					bindEventToThisElem(v, function changeTriggeredByOtherEvent() {
+						$(elem).trigger('change');
+					});
+				}
+			});
+
+			threeWay.computations.push(Tracker.autorun(function(c) {
+				var pipelineSplit = elemBindings.bindings.ischecked.source.split('|').map(x => x.trim()).filter(x => x !== "");
+				var source = pipelineSplit[0];
+				var pipeline = pipelineSplit.splice(1);
+
+				if (c.firstRun) {
+					if (IN_DEBUG_MODE_FOR('checked')) {
+						console.log("[.ischecked] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Preparing .checked binding (to " + source + ") for", elem);
+					}
+				}
+
+				elemGlobals.suppressChangesToSSOT = true;
+				var ischecked = !!processInTemplateContext(source, pipeline, elem, {
+					useHelpers: false,
+					processorsMutateValue: false,
+					allowWholeDocumentAsSource: false,
+				});  // helpers not used and pipelines do not manipulate value
+
+				// Validate here
+				var isValid = threeWay.validateInput(source, ischecked);
+				threeWay.__dataIsNotInvalid.set(source, isValid);
+
+				// Check Boxes
+				if (elem.checked) {
+					// Should be checked now
+					if (ischecked) {
+						if (IN_DEBUG_MODE_FOR('checked')) {
+							console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .checked of', elem);
+						}
+					} else {
+						elem.checked = false;
+						if (IN_DEBUG_MODE_FOR('checked')) {
+							console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .checked to ' + elem.checked + ' for', elem);
+						}
+					}
+				} else {
+					// Should be unchecked now
+					if (ischecked) {
+						elem.checked = true;
+						if (IN_DEBUG_MODE_FOR('checked')) {
+							console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Setting .checked to ' + elem.checked + ' for', elem);
+						}
+					} else {
+						if (IN_DEBUG_MODE_FOR('checked')) {
+							console.log('[.ischecked] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Not updating .checked of', elem);
+						}
+					}
+				}
+
+				elemGlobals.suppressChangesToSSOT = false;
+			}));
+			boundElemComputations.push(threeWay.computations[threeWay.computations.length - 1]);
+
+			bindEventToThisElem('focus', function() {
+				ThreeWayDependencies.utils.pushToEndOfEventQueue(function delayedFocusChange() {
+					var pipelineSplit = elemBindings.bindings.ischecked.source.split('|').map(x => x.trim()).filter(x => x !== "");
 					var source = pipelineSplit[0];
 					threeWay._focusedField.set(source);
 				}, {});

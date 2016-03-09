@@ -7,6 +7,10 @@ Template.ThreeWayGuide_BasicsVMOnly.onRendered(function() {
     // initialize
     instance._3w_.set('name', 'Some Name');
     instance._3w_.set('checkedValue', []);
+    instance._3w_.set('isCheckedValue1', false);
+    instance._3w_.set('isCheckedValue2', true);
+    instance._3w_.set('isCheckedValue3', false);
+    instance._3w_.set('isCheckedValue4', false);
     instance._3w_.set('radioValue', '');
     instance._3w_.set('sliderValue', 0);
     instance._3w_.set('month', new Date());
