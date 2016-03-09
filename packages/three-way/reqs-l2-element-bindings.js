@@ -286,8 +286,10 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 
 				var newValue;
 				var inputType = elem.getAttribute('type') && elem.getAttribute('type').toLowerCase() || '';
-				if (['number', 'range'].indexOf(inputType) !== -1) {
-					newValue = value.toString();
+				if ((typeof value === "undefined") || (value === null)) {
+					newValue = value;
+				} else if (['number', 'range'].indexOf(inputType) !== -1) {
+					newValue = value.toString && value.toString();
 				} else if (inputType === 'date') {
 					newValue = ThreeWayDependencies.extras.transformations.dateToString(value);
 				} else if (inputType === 'datetime-local') {
@@ -521,7 +523,7 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 		if (!!elemBindings.bindings.ischecked) {
 
 			var ischeckedChangeHandler = function ischeckedChangeHandler() { // function(event)
-				var new_value = elem.checked;
+				var new_value = !!elem.checked;
 
 				var fieldName = elemBindings.bindings.ischecked.source;
 				var curr_value = threeWayMethods.get(fieldName);

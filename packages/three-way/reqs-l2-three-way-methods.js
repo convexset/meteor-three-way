@@ -463,6 +463,9 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 				}
 			});
 			if (getFailed) {
+				if (value.length === 1) {
+					value = value[0];
+				}
 				return;
 			}
 			if (value.length === 1) {

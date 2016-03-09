@@ -205,31 +205,31 @@
 						<td>
 							<div>
 								<div class="ui checkbox">
-									<input type="checkbox" value="someItem1" data-bind="ischecked: isCheckedValue1">
+									<input type="checkbox" value="someItem1" data-bind="ischecked: isCheckedValue.check1">
 									<label>TRUE/FALSE Property P1&nbsp;&nbsp;</label>
 								</div>
 								<div class="ui checkbox">
-									<input type="checkbox" value="someItem2" data-bind="ischecked: isCheckedValue2">
+									<input type="checkbox" value="someItem2" data-bind="ischecked: isCheckedValue.check2">
 									<label>TRUE/FALSE Property P2&nbsp;&nbsp;</label>
 								</div>
 							</div>
 							<div>								
 								<div class="ui radio checkbox">
-									<input name="radio2" type="radio" value="optA" data-bind="ischecked: isCheckedValue3">
+									<input name="radio2" type="radio" value="optA" data-bind="ischecked: isCheckedValue.radio1">
 									<label>TRUE/FALSE Property P3&nbsp;&nbsp;</label>
 								</div>
 								<div class="ui radio checkbox">
-									<input name="radio2" type="radio" value="optB" data-bind="ischecked: isCheckedValue4">
+									<input name="radio2" type="radio" value="optB" data-bind="ischecked: isCheckedValue.radio2">
 									<label>TRUE/FALSE Property P4&nbsp;&nbsp;</label>
 								</div>
 							</div>
 						</td>
 						<td>Values:</td>
 						<td>
-							P1: {{#if _3w_get 'isCheckedValue1'}}TRUE{{else}}FALSE{{/if}}<br/>
-							P2: {{#if _3w_get 'isCheckedValue2'}}TRUE{{else}}FALSE{{/if}}<br/>
-							P3: {{#if _3w_get 'isCheckedValue3'}}TRUE{{else}}FALSE{{/if}}<br/>
-							P4: {{#if _3w_get 'isCheckedValue4'}}TRUE{{else}}FALSE{{/if}}
+							P1: {{#if _3w_get 'isCheckedValue.check1'}}TRUE{{else}}FALSE{{/if}}<br/>
+							P2: {{#if _3w_get 'isCheckedValue.check2'}}TRUE{{else}}FALSE{{/if}}<br/>
+							P3: {{#if _3w_get 'isCheckedValue.radio1'}}TRUE{{else}}FALSE{{/if}}<br/>
+							P4: {{#if _3w_get 'isCheckedValue.radio2'}}TRUE{{else}}FALSE{{/if}}
 						</td>
 					</tr>
 					<tr>
@@ -237,23 +237,23 @@
 							<pre class="html">
 								&lt;div class=&quot;ui checkbox&quot;&gt;
 									&lt;input type=&quot;checkbox&quot; value=&quot;someItem1&quot;
-										data-bind=&quot;ischecked: isCheckedValue1&quot;&gt;
+										data-bind=&quot;ischecked: isCheckedValue..check1&quot;&gt;
 									&lt;label&gt;TRUE/FALSE Property P&lt;/label&gt;
 								&lt;/div&gt;
 
 								&lt;div class=&quot;ui radio checkbox&quot;&gt;
 									&lt;input type=&quot;checkbox&quot; name=&quot;radio2&quot; value=&quot;optA&quot;
-										data-bind=&quot;ischecked: isCheckedValue3&quot;&gt;
+										data-bind=&quot;ischecked: isCheckedValue.radio1&quot;&gt;
 									&lt;label&gt;TRUE/FALSE Property P&lt;/label&gt;
 								&lt;/div&gt;
 							</pre>
 						</td>
 						<td colspan="2"  style="vertical-align: top;">
 							<pre class="html">
-								P1: &lbrace;&lbrace;#if _3w_get 'isCheckedValue1'&rbrace;&rbrace;TRUE&lbrace;&lbrace;else&rbrace;&rbrace;FALSE&lbrace;&lbrace;/if&rbrace;&rbrace;
-								P2: &lbrace;&lbrace;#if _3w_get 'isCheckedValue2'&rbrace;&rbrace;TRUE&lbrace;&lbrace;else&rbrace;&rbrace;FALSE&lbrace;&lbrace;/if&rbrace;&rbrace;
-								P3: &lbrace;&lbrace;#if _3w_get 'isCheckedValue3'&rbrace;&rbrace;TRUE&lbrace;&lbrace;else&rbrace;&rbrace;FALSE&lbrace;&lbrace;/if&rbrace;&rbrace;
-								P4: &lbrace;&lbrace;#if _3w_get 'isCheckedValue4'&rbrace;&rbrace;TRUE&lbrace;&lbrace;else&rbrace;&rbrace;FALSE&lbrace;&lbrace;/if&rbrace;&rbrace;
+								P1: &lbrace;&lbrace;#if _3w_get 'isCheckedValue.check2'&rbrace;&rbrace;TRUE&lbrace;&lbrace;else&rbrace;&rbrace;FALSE&lbrace;&lbrace;/if&rbrace;&rbrace;
+								P2: &lbrace;&lbrace;#if _3w_get 'isCheckedValue.check2'&rbrace;&rbrace;TRUE&lbrace;&lbrace;else&rbrace;&rbrace;FALSE&lbrace;&lbrace;/if&rbrace;&rbrace;
+								P3: &lbrace;&lbrace;#if _3w_get 'isCheckedValue.radio2'&rbrace;&rbrace;TRUE&lbrace;&lbrace;else&rbrace;&rbrace;FALSE&lbrace;&lbrace;/if&rbrace;&rbrace;
+								P4: &lbrace;&lbrace;#if _3w_get 'isCheckedValue.radio1'&rbrace;&rbrace;TRUE&lbrace;&lbrace;else&rbrace;&rbrace;FALSE&lbrace;&lbrace;/if&rbrace;&rbrace;
 							</pre>
 						</td>
 					</tr>
