@@ -437,7 +437,9 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 						name: src
 					});
 				} else if (allowWholeDocumentAsSource && (src === "*")) {
-					_value = threeWay.collection.findOne(threeWay.id.get());
+					_value = threeWay.collection.findOne({
+						_id: threeWay.id.get()
+					});
 					dataSourceInfomation.push({
 						type: 'document',
 						name: src

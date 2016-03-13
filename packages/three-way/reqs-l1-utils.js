@@ -16,7 +16,9 @@ PackageUtilities.addPropertyGetter(ThreeWayDependencies.utils, 'allInstances', (
 		Tracker.nonreactive(function() {
 			instanceId = instance._3w_.get3wInstanceId();
 			dataId = instance._3w_.getId();
-			doc = instance[THREE_WAY_NAMESPACE].collection.findOne(dataId);
+			doc = instance[THREE_WAY_NAMESPACE].collection.findOne({
+				_id: dataId
+			});
 		});
 		return {
 			instanceId: instanceId,

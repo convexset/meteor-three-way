@@ -39,7 +39,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 	return function updateRelatedFields(fieldName, value, calledFromObserver = false) {
 		var fieldSplit = fieldName.split('.');
 
-		var allFieldPaths = _.map(threeWayMethods.getAll_NR(), (v,k) => k);
+		var allFieldPaths = _.map(threeWayMethods.getAll_NR(), (v, k) => k);
 
 		var childFields = _.filter(allFieldPaths, fieldPath => (fieldPath.length > fieldName.length) && (fieldPath.substr(0, fieldName.length + 1) === fieldName + '.'));
 		var parentFields = _.filter(allFieldPaths, fieldPath => (fieldPath.length < fieldName.length) && (fieldName.substr(0, fieldPath.length + 1) === fieldPath + '.'));
@@ -58,7 +58,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 				var thisFieldName = fn_v.fieldName;
 				var thisValue = fn_v.value;
 				presentFields.push(thisFieldName);
-				
+
 				// Don't use threeWayMethods.set because it calls this method
 				threeWay.data.set(thisFieldName, thisValue);
 			})
@@ -118,7 +118,9 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 			var isUpdated;
 			Tracker.nonreactive(function() {
 				// get current value by digging into document
-				var doc = threeWay.collection.findOne(threeWay.id.get());
+				var doc = threeWay.collection.findOne({
+					_id: threeWay.id.get()
+				});
 				var miniMongoValue = doc;
 				var fieldNameSplit = fieldName.split('.');
 
@@ -294,13 +296,13 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					if (IN_DEBUG_MODE_FOR('db')) {
 						console.log('[db|update] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] No update for ' + curr_f + '; value:', value);
 
-						if(!__id) {
+						if (!__id) {
 							console.log('\tReason: No ID');
 						}
 						if (skipUpdate) {
 							console.log('\tReason: Skip Due To Related Object Update');
 						}
-						if(!threeWay.__idReady) {
+						if (!threeWay.__idReady) {
 							console.log('\tReason: ID not ready');
 						}
 						if (equalToRecentDBEntry) {
