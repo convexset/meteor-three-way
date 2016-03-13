@@ -1,0 +1,32 @@
+# Let's Encrypt
+# https://letsencrypt.org/getting-started/
+# https://www.digitalocean.com/community/tutorials/how-to-secure-nginx-with-let-s-encrypt-on-ubuntu-14-04
+
+# Install
+sudo apt-get update
+sudo apt-get -y install git bc
+sudo git clone https://github.com/letsencrypt/letsencrypt /opt/letsencrypt
+
+# Get certificate
+sudo service nginx stop
+cd /opt/letsencrypt
+./letsencrypt-auto certonly --standalone --rsa-key-size 4096
+
+# domains...
+# meteorapp.space three-way.meteorapp.space glpk-demo.meteorapp.space hrmph.meteorapp.space hrmph.co
+
+# Do the nginx stuff
+# ...
+
+# Setup Auto Renewal
+
+# prepare .well-known and setup webroot plugin
+# ...
+./letsencrypt-auto certonly -a webroot --rsa-key-size 4096 --agree-tos --renew-by-default --webroot-path=/var/www -d meteorapp.space -d three-way.meteorapp.space -d glpk-demo.meteorapp.space -d hrmph.meteorapp.space -d hrmph.co
+
+sudo curl -L -o /usr/local/sbin/le-renew-webroot https://gist.githubusercontent.com/thisismitch/e1b603165523df66d5cc/raw/fbffbf358e96110d5566f13677d9bd5f4f65794c/le-renew-webroot
+sudo chmod +x /usr/local/sbin/le-renew-webroot
+
+
+sudo crontab -e
+# 30 2 * * 1 /usr/local/sbin/le-renew-webroot >> /var/log/le-renewal.log

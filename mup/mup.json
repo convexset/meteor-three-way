@@ -2,7 +2,7 @@
   // Server authentication info
   "servers": [
     {
-      "host": "three-way.meteorapp.space",
+      "host": "meteorapp.space",
       "username": "root",
       // "password": "password"
       // or pem file (ssh based authentication)
