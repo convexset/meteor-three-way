@@ -2,7 +2,7 @@
 
 `ThreeWay` is a Meteor package that provides three-way data-binding. In particular, database to view model to view.
 
-Learn more at the [demo/guide site](https://three-way.meteor.com/).
+Learn more at the [demo/guide site](http://three-way.meteorapp.space/).
 
 The objective of writing this package is to provide a powerful (e.g.: dynamic data-binding), flexible (e.g.: transformations of view model data for presentation, ancestor/descendant/sibling data-access) and Blaze-friendly tool for doing data-binding (i.e.: no tip-toeing around the package).
 
@@ -87,7 +87,7 @@ This is available as [`convexset:three-way`](https://atmospherejs.com/convexset/
 
 ## The Demo/Guide Site
 
-The repository contains the source for the [demo/guide site](https://three-way.meteor.com/) as well as the package proper.
+The repository contains the source for the [demo/guide site](http://three-way.meteorapp.space/) as well as the package proper.
 
 The site uses [`semantic:ui`](https://atmospherejs.com/semantic/ui) which requires a bit of initialization. Start Meteor, do a trivial edit of `client/lib/semantic-ui/custom.semantic.json`, and save it to generate [Semantic UI](http://semantic-ui.com/).
 
