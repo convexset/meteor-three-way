@@ -933,6 +933,17 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `getAll_VMOnly_NR`: gets all view-model only data "non-reactively"
 
+ - `fetch(prop)`: attempts to retrieve property `prop` from the view model and, failing that, attempts to read from the bound document
+
+ - `fetchExtended(prop)`: attempts to retrieve property `prop` in the following order of precedence:
+   1. evaluating a ThreeWay helper
+   2. evaluating a ThreeWay helper on (the closest) ancestor
+   3. evaluating a Blaze helper
+   4. the entire document (`prop = "*"`)
+   5. the entire view model (`prop = "@"`)
+   6. from some view model field
+   7. from some document field
+
  - `isSyncedToServer(prop)`: returns `true` if `ThreeWay` can be sure that data for the field with name `prop` has been received and written by the server.
 
  - `allSyncedToServer`: returns `true` if `ThreeWay` can be sure that all data has been received and written by the server.

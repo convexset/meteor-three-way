@@ -399,7 +399,7 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 
 	////////////////////////////////////////////////////////////
 	// Call helpers and pre-processors in template context
-	threeWayMethods._processInTemplateContext = function processInTemplateContext(source, mappings, elem, {
+	threeWayMethods._processInTemplateContext = function processInTemplateContext(source, mappings = [], elem = null, {
 		useHelpers = true,
 		processorsMutateValue = true,
 		additionalFailureCondition = () => false,
@@ -532,6 +532,16 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 
 		return value;
 	};
+
+	threeWayMethods.fetch = src => threeWayMethods._processInTemplateContext(src, [], null, {
+		useHelpers: false,
+		allowWholeDocumentAsSource: false,
+	});
+
+	threeWayMethods.fetchExtended = src => threeWayMethods._processInTemplateContext(src, [], null, {
+		useHelpers: true,
+		allowWholeDocumentAsSource: true,
+	});
 	// End Call helpers and pre-processors in template context
 	////////////////////////////////////////////////////////////
 
