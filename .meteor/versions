@@ -25,7 +25,7 @@ convexset:match-extensions@0.1.1
 convexset:package-utils@0.1.9
 convexset:plugins@0.1.0
 convexset:template-helpers@0.1.15
-convexset:three-way@0.2.27_2
+convexset:three-way@0.2.28
 convexset:three-way--guide@0.0.1
 convexset:three-way--the-original-demo@0.0.1
 convexset:webshim@1.15.10_1

@@ -458,6 +458,29 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 					}, threeWay.fieldMatchParams[src] || {}));
 				}
 
+				if (typeof _value === "undefined") {
+					// try document...
+					_value = threeWay.collection.findOne({
+						_id: threeWay.id.get()
+					});
+					if (!!_value) {
+						var srcPath = src.split('.');
+						while (srcPath.length > 0) {
+							var thisPathElem = srcPath.shift();
+							if (typeof _value[thisPathElem] !== "undefined") {
+								_value = _value[thisPathElem];
+							} else {
+								_value = void 0;
+								break;
+							}
+						}
+						dataSourceInfomation.push({
+							type: 'document-field',
+							name: src
+						});
+					}
+				}
+
 				if ((typeof _value === "undefined") || additionalFailureCondition(_value)) {
 					getFailed = true;
 				} else {
