@@ -63,8 +63,13 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 						console.log('[db|match] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] All matches:', threeWay.fieldMatchParams);
 					}
 
+					var curr_value;
+					Tracker.nonreactive(function() {
+						curr_value = threeWay.data.get(curr_f);
+					});
+
 					if (IN_DEBUG_MODE_FOR('observer')) {
-						console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Field match -- ' + curr_f, ':', v);
+						console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Field match -- ' + curr_f, ':', v, '; Curr. value:', curr_value);
 					}
 
 					// Update data if changed
@@ -115,10 +120,6 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 					} else {
 						// get data directly direct and not from data mirror
 						// not flushing yet...
-						var curr_value;
-						Tracker.nonreactive(function() {
-							curr_value = threeWay.data.get(curr_f);
-						});
 						threeWay.__serverIsUpdated.set(curr_f, _.isEqual(newValue, curr_value));
 					}
 				}
@@ -201,11 +202,16 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 					reactive: false
 				});
 				if (IN_DEBUG_MODE_FOR('observer')) {
-					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Added:', id, doc);
+					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Added (doc):', id, doc);
+					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Added (callback fields):', id, fields);
 				}
 				threeWay.hasData.set(true);
 				threeWay.__idReady = true;
-				descendInto(fields, doc, true);
+				if (options.useTransformedData) {
+					descendInto(doc, doc, true);
+				} else {
+					descendInto(fields, doc, true);
+				}
 				injectDefaultValues();
 
 				// This field should be cleared because updateRelatedFields
@@ -220,9 +226,14 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 					reactive: false
 				});
 				if (IN_DEBUG_MODE_FOR('observer')) {
-					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Changed:', id, fields, doc);
+					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Changed (doc):', id, doc);
+					console.log('[observer] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Changed (callback fields):', id, fields);
 				}
-				descendInto(fields, doc, false);
+				if (options.useTransformedData) {
+					descendInto(doc, doc, true);
+				} else {
+					descendInto(fields, doc, false);
+				}
 				injectDefaultValues();
 
 				// See similar comment above in "added" hook

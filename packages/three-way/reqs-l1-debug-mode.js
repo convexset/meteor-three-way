@@ -55,10 +55,14 @@ PackageUtilities.addPropertyGetter(ThreeWayDependencies.debugMode, 'isOn', funct
 	return DEBUG_MODE;
 });
 PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 'selectAll', function debugModeSelectAll() {
-	DEBUG_MODE_ALL = true;
+	DEBUG_MODE = true;
+	for (var k in DEBUG_MESSAGES) {
+		if (DEBUG_MESSAGES.hasOwnProperty(k)) {
+			DEBUG_MESSAGES[k] = true;
+		}
+	}
 });
 PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 'selectNone', function debugModeSelectNone() {
-	DEBUG_MODE_ALL = false;
 	for (var k in DEBUG_MESSAGES) {
 		if (DEBUG_MESSAGES.hasOwnProperty(k)) {
 			DEBUG_MESSAGES[k] = false;
@@ -67,6 +71,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 's
 });
 PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.debugMode, 'select', function debugModeSelect(k) {
 	if (DEBUG_MESSAGES.hasOwnProperty(k)) {
+		DEBUG_MODE = true;
 		DEBUG_MESSAGES[k] = true;
 	}
 });

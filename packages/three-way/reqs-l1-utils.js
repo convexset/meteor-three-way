@@ -71,6 +71,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'parse
 	}
 	_.forEach({
 		collection: null,
+		useTransformedData: true,
 		updatersForServer: {},
 		injectDefaultValues: {},
 		dataTransformToServer: {},
