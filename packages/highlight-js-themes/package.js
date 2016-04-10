@@ -10,7 +10,7 @@ Package.onUse(function(api) {
 	api.use([
 		'ecmascript',
         'underscore',
-		'convexset:package-utils@0.1.9',
+		'convexset:package-utils@0.1.13',
 	], 'client');
 
 	api.addAssets([

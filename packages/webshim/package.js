@@ -11,7 +11,7 @@ Package.onUse(function(api) {
 		'ecmascript',
 		'underscore',
 		'jquery',
-		'convexset:package-utils@0.1.9',
+		'convexset:package-utils@0.1.13',
 	], 'client');
 
 	api.addAssets([

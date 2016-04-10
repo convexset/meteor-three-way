@@ -8,7 +8,7 @@ Package.describe({
 
 Package.onUse(function(api) {
 	api.versionsFrom('1.2.0.2');
-	api.use(['ecmascript', 'underscore', 'mongo', 'convexset:package-utils@0.1.9']);
+	api.use(['ecmascript', 'underscore', 'mongo', 'convexset:package-utils@0.1.13']);
 	api.use([
 		'blaze', 'tracker',
 		'reactive-var', 'reactive-dict',
