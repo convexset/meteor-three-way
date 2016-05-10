@@ -73,7 +73,7 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'prePro
 							// Set selection status
 							$(elem).addClass("active filtered");
 							// Prepare to create labels
-							items += genLabel(id, elem.getAttribute('data-text') || elem.innerText);
+							items += genLabel(id, elem.getAttribute('data-text') || elem.textContent);
 						});
 
 						if (elems.length === 0) {
@@ -95,7 +95,7 @@ PackageUtilities.addImmutablePropertyObject(ThreeWayDependencies.extras, 'prePro
 						// Set selection status
 						$(elem).addClass("selected active");
 						// Get label text
-						textValue = elem.innerText;
+						textValue = elem.textContent;
 					});
 					// Update value
 					if (!!textValue) {
