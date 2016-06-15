@@ -47,7 +47,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, '_prev
 Meteor.startup(function() {
 	setTimeout(function() {
 		if (!_preventInstanceEnumeration_called) {
-			console.warn('[ThreeWay] ThreeWay.utils._preventInstanceEnumeration was not called. This is recommended when going into production. See the documentation (Usage > Going Into Production) for more details.');
+			console.warn('[ThreeWay] ThreeWay.utils._preventInstanceEnumeration was not called. This is recommended when going into production.\n\nDo: ThreeWay.utils._preventInstanceEnumeration() or ThreeWay.utils._preventInstanceEnumeration(true) to prevent direct access to template instances via ThreeWay.\nDo: ThreeWay.utils._preventInstanceEnumeration(false) to allow direct access to template instances via ThreeWay.\n\nSee the documentation (Usage > Going Into Production) for more details.');
 		}
 	}, 10000);
 });

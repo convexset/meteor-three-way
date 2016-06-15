@@ -22,10 +22,10 @@ convexset:collection-tools@0.0.7_1
 convexset:flow-router-tree@0.1.2
 convexset:highlight-js-themes@0.1.2
 convexset:match-extensions@0.1.1
-convexset:package-utils@0.1.13
+convexset:package-utils@0.1.14
 convexset:plugins@0.1.0
 convexset:template-helpers@0.1.15
-convexset:three-way@0.2.29_2
+convexset:three-way@0.2.29_4
 convexset:three-way--guide@0.0.1
 convexset:three-way--the-original-demo@0.0.1
 convexset:webshim@1.15.10_1
