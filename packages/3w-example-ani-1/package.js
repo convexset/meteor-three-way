@@ -20,13 +20,13 @@ Package.onUse(function(api) {
 		'mongo'
 	]);
 	api.use([
-		'convexset:three-way@0.2.9',
+		'convexset:three-way@0.2.29_8',
 		'semantic:ui@2.1.6',
 		'flemay:less-autoprefixer@1.2.0',
 		'anti:fake',
 		'anima-t3d:3w-ui-modal'
 	]);
-	api.use('convexset:plugins@0.1.0', 'client');
+	api.use('convexset:plugins@0.1.0_3', 'client');
 
 	api.addFiles([
 		'lib/threeway.js',

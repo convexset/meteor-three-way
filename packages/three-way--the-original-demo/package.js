@@ -20,9 +20,9 @@ Package.onUse(function(api) {
 		[
 			'reactive-var',
 			'blaze-html-templates',
-			'convexset:three-way@0.2.15',
-			'convexset:template-helpers@0.1.13',
-			'convexset:plugins@0.1.0',
+			'convexset:three-way@0.2.29_8',
+			'convexset:template-helpers@0.1.18_1',
+			'convexset:plugins@0.1.0_3',
 		],
 		'client'
 	);

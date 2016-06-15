@@ -15,16 +15,16 @@ Package.onUse(function(api) {
 		'ejson',
 		'mongo',
 		'anti:fake@0.4.1',
-        'convexset:collection-tools@0.0.6',
+        'convexset:collection-tools@0.1.2_12',
 	]);
 	api.use(
 		[
 			'reactive-var',
 			'blaze-html-templates',
-			'convexset:three-way@0.2.15',
-			'convexset:template-helpers@0.1.15',
-			'convexset:plugins@0.1.0',
-			'convexset:highlight-js-themes@0.1.0',
+			'convexset:three-way@0.2.29_8',
+			'convexset:template-helpers@0.1.18_1',
+			'convexset:plugins@0.1.0_3',
+			'convexset:highlight-js-themes@0.1.2_2',
 		],
 		'client'
 	);

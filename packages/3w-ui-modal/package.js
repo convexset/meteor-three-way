@@ -19,7 +19,7 @@ Package.onUse(function(api) {
 		'jquery'
 	]);
 	api.use([
-		'convexset:three-way@0.2.9',
+		'convexset:three-way@0.2.29_8',
 		'semantic:ui@2.1.6',
 		'flemay:less-autoprefixer@1.2.0'
 	]);
