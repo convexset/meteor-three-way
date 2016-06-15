@@ -1,3 +1,12 @@
+/* global webshim: true */
+
+import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
+checkNpmVersions({
+  'underscore' : '^1.8.3',
+});
+const _ = require('underscore');
+
+
 webshim.createMutationObserverToUpdatePolyfills = function createMutationObserverToUpdatePolyfills(qs = "html") {
 	// create an observer instance to update polyfills
 	var observer = new MutationObserver(function(mutations) {
@@ -10,7 +19,7 @@ webshim.createMutationObserverToUpdatePolyfills = function createMutationObserve
 				}
 			});
 		});
-	})
+	});
 
 	observer.observe(document.querySelector(qs), {
 		childList: true,
@@ -18,4 +27,4 @@ webshim.createMutationObserverToUpdatePolyfills = function createMutationObserve
 	});
 
 	return observer;
-}
+};

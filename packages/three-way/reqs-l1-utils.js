@@ -1,5 +1,13 @@
 /* global ThreeWayDependencies: true */
-/* global PackageUtilities: true */
+
+import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
+checkNpmVersions({
+  'package-utils': '^0.2.1',
+  'underscore' : '^1.8.3',
+});
+const PackageUtilities = require('package-utils');
+const _ = require('underscore');
+
 
 if (typeof ThreeWayDependencies === "undefined") {
 	ThreeWayDependencies = {};

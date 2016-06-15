@@ -3,7 +3,7 @@ if (typeof ThreeWayDependencies === "undefined") {
 	ThreeWayDependencies = {};
 }
 
-ThreeWayDependencies.templateHelpers = function(options) {
+ThreeWayDependencies.templateHelpers = function() { // function(options) {
 	return {
 		_3w_id: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].getId(),
 		_3w_3wInstanceId: () => Template.instance()[THREE_WAY_NAMESPACE_METHODS].get3wInstanceId(),

@@ -1,17 +1,15 @@
 Package.describe({
 	name: 'convexset:webshim',
-	version: '1.15.10_1',
+	version: '1.15.10_4',
 	summary: 'The Webshim polyfill library for using HTML5 features across browsers',
 	documentation: 'README.md'
 });
 
 Package.onUse(function(api) {
-	api.versionsFrom('1.2.1');
+	api.versionsFrom('1.3.1');
 	api.use([
 		'ecmascript',
-		'underscore',
-		'jquery',
-		'convexset:package-utils@0.1.13',
+		'jquery'
 	], 'client');
 
 	api.addAssets([

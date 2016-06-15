@@ -1,16 +1,15 @@
 Package.describe({
 	name: 'convexset:highlight-js-themes',
-	version: '0.1.2',
+	version: '0.1.2_2',
 	summary: 'HighlightJS v9.1.0 with Easy Theme Switching',
 	documentation: 'README.md'
 });
 
 Package.onUse(function(api) {
-	api.versionsFrom('1.2.1');
+	api.versionsFrom('1.3.1');
 	api.use([
 		'ecmascript',
-        'underscore',
-		'convexset:package-utils@0.1.13',
+		'tmeasday:check-npm-versions@0.3.1'
 	], 'client');
 
 	api.addAssets([

@@ -1,5 +1,4 @@
 /* global ThreeWayDependencies: true */
-/* global ThreeWayDependencies: true */
 if (typeof ThreeWayDependencies === "undefined") {
 	ThreeWayDependencies = {};
 }

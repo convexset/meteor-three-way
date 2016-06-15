@@ -1,5 +1,12 @@
-/* global PackageUtilities: true */
 /* global HighlightJSThemes: true */
+
+import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
+checkNpmVersions({
+  'package-utils': '^0.2.1',
+  'underscore' : '^1.8.3',
+});
+const PackageUtilities = require('package-utils');
+const _ = require('underscore');
 
 var _hjs = function HighlightJSThemes() {};
 HighlightJSThemes = new _hjs();
@@ -180,18 +187,18 @@ PackageUtilities.addImmutablePropertyFunction(HighlightJSThemes, "highlightWithW
 		var el = this;
 		var languageSubset = Array.prototype.slice.call(el.classList);
 		var worker = new Worker("/packages/convexset_highlight-js-themes/worker.js");
-		worker.onmessage = function(event) {
-			var payload = JSON.parse(event.data)
-			console.log(payload);
+		worker.onmessage = function workerOnMessage(event) {
+			var payload = JSON.parse(event.data);
+			// console.log(payload);
 			el.innerHTML = payload.value;
 			$(el).addClass("hljs");
 			worker.terminate();
-		}
+		};
 		worker.postMessage({
 			textContent: el.textContent,
 			languageSubset: languageSubset
 		});
-	})
+	});
 });
 
 Meteor.startup(function() {
