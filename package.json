@@ -1,0 +1,12 @@
+{
+  "name": "three-way",
+  "private": true,
+  "scripts": {
+    "start": "meteor run"
+  },
+  "dependencies": {
+    "meteor-node-stubs": "^0.2.3",
+    "package-utils": "^0.2.1",
+    "underscore": "^1.8.3"
+  }
+}
