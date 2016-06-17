@@ -11,43 +11,47 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 	var updateRelatedFields = ThreeWayDependencies.instanceUtils.generateUpdateRelatedFieldsFunction(options, instance);
 
 	var __rootChanges = 0;
-	threeWayMethods.setRoots = function(selectorString) {
+	threeWayMethods.setRoots = function setRoots(selectorString) {
 		var nodes = instance.$(selectorString);
 		__rootChanges += 1;
 		threeWay.rootNodes = Array.prototype.map.call(nodes, x => x);
 		threeWay._rootNodes.set(selectorString + "|" + __rootChanges);
 	};
-	threeWayMethods.setId = function(id) {
+	threeWayMethods.setId = function setId(id) {
 		threeWay.id.set(id);
 	};
-	threeWayMethods.getId = function() {
+	threeWayMethods.getId = function getId() {
 		return threeWay.id.get();
 	};
-	threeWayMethods.get3wInstanceId = function() {
+	threeWayMethods.get3wInstanceId = function get3wInstanceId() {
 		return threeWay.instanceId.get();
 	};
-	threeWayMethods.get = p => threeWay.data.get(p);
-	threeWayMethods.getWithDefault = function(p, defaultValue) {
+	threeWayMethods.get = function get(p) {
+		return threeWay.data.get(p);
+	};
+	threeWayMethods.getWithDefault = function getWithDefault(p, defaultValue) {
 		var v = threeWay.data.get(p);
 		if (typeof v === "undefined") {
 			return defaultValue;
 		}
 		return v;
 	};
-	threeWayMethods.set = function(p, v) {
+	threeWayMethods.set = function set(p, v) {
 		threeWay.data.set(p, v);
 		threeWay._focusedFieldUpdatedOnServer.set(p, false);
 		updateRelatedFields(p, v);
 	};
-	threeWayMethods.get_NR = function(p) {
+	threeWayMethods.get_NR = function get_NR(p) {
 		var ret;
 		Tracker.nonreactive(function() {
 			ret = threeWayMethods.get(p);
 		});
 		return ret;
 	};
-	threeWayMethods.getAll = () => threeWay.data.all();
-	threeWayMethods.getAll_NR = function() {
+	threeWayMethods.getAll = function getAll() {
+		return threeWay.data.all();
+	};
+	threeWayMethods.getAll_NR = function getAll_NR() {
 		var ret;
 		Tracker.nonreactive(function() {
 			ret = threeWayMethods.getAll();
@@ -55,7 +59,7 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		return ret;
 	};
 
-	threeWayMethods.isPropVMOnly = function(p) {
+	threeWayMethods.isPropVMOnly = function isPropVMOnly(p) {
 		var pSplit = p.split('.');
 		var q = '';
 
@@ -69,7 +73,7 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		return true;
 	};
 
-	threeWayMethods.getAll_VMOnly_NR = function() {
+	threeWayMethods.getAll_VMOnly_NR = function getAll_VMOnly_NR() {
 		var vmData = threeWayMethods.getAll_NR();
 		_.forEach(threeWay.fieldMatchParams, function(v, k) {
 			if (!threeWayMethods.isPropVMOnly(k) && vmData.hasOwnProperty(k)) {
@@ -123,20 +127,38 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		}
 	};
 
-	threeWayMethods.focusedField = () => threeWay._focusedField.get();
-	threeWayMethods.focusedFieldUpdatedOnServer = p => threeWay._focusedFieldUpdatedOnServer.get(p);
+	threeWayMethods.focusedField = function focusedField() {
+		return threeWay._focusedField.get();
+	};
+	threeWayMethods.focusedFieldUpdatedOnServer = function focusedFieldUpdatedOnServer(p) {
+		return threeWay._focusedFieldUpdatedOnServer.get(p);
+	};
 
-	threeWayMethods.isSyncedToServer = p => !!threeWay.__serverIsUpdated.get(p);
-	threeWayMethods.allSyncedToServer = function() {
+	threeWayMethods.isSyncedToServer = function isSyncedToServer(p) {
+		return !!threeWay.__serverIsUpdated.get(p);
+	};
+	threeWayMethods.allSyncedToServer = function allSyncedToServer() {
 		return _.reduce(threeWay.__serverIsUpdated.all(), (m, v) => !!m && !!v, true);
 	};
-	threeWayMethods.isNotInvalid = p => !!threeWay.__dataIsNotInvalid.get(p);
+	threeWayMethods.isNotInvalid = function isNotInvalid(p) {
+		return !!threeWay.__dataIsNotInvalid.get(p);
+	};
 
-	threeWayMethods.parentDataGet = (p, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get(p);
-	threeWayMethods.parentDataGetAll = (levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll();
-	threeWayMethods.parentDataSet = (p, v, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].set(p, v);
-	threeWayMethods.parentDataGet_NR = (p, levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get_NR(p);
-	threeWayMethods.parentDataGetAll_NR = (levelsUp) => threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll_NR();
+	threeWayMethods.parentDataGet = function parentDataGet(p, levelsUp) {
+		return threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get(p);
+	};
+	threeWayMethods.parentDataGetAll = function parentDataGetAll(levelsUp) {
+		return threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll();
+	};
+	threeWayMethods.parentDataSet = function parentDataSet(p, v, levelsUp) {
+		return threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].set(p, v);
+	};
+	threeWayMethods.parentDataGet_NR = function parentDataGet_NR(p, levelsUp) {
+		return threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].get_NR(p);
+	};
+	threeWayMethods.parentDataGetAll_NR = function parentDataGetAll_NR(levelsUp) {
+		return threeWayMethods.__getNearestThreeWayAncestor(levelsUp)[THREE_WAY_NAMESPACE_METHODS].getAll_NR();
+	};
 
 	threeWayMethods.childDataGetId = function _3w_childDataGetId(childNameArray) {
 		if (childNameArray instanceof Array) {
@@ -532,15 +554,19 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		return value;
 	};
 
-	threeWayMethods.fetch = src => threeWayMethods._processInTemplateContext(src, [], null, {
-		useHelpers: false,
-		allowWholeDocumentAsSource: false,
-	});
+	threeWayMethods.fetch = function fetch(src) {
+		return threeWayMethods._processInTemplateContext(src, [], null, {
+			useHelpers: false,
+			allowWholeDocumentAsSource: false,
+		});
+	};
 
-	threeWayMethods.fetchExtended = src => threeWayMethods._processInTemplateContext(src, [], null, {
-		useHelpers: true,
-		allowWholeDocumentAsSource: true,
-	});
+	threeWayMethods.fetchExtended = function fetchExtended(src) {
+		return threeWayMethods._processInTemplateContext(src, [], null, {
+			useHelpers: true,
+			allowWholeDocumentAsSource: true,
+		});
+	};
 	// End Call helpers and pre-processors in template context
 	////////////////////////////////////////////////////////////
 
