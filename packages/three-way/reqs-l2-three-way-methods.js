@@ -18,6 +18,10 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		threeWay._rootNodes.set(selectorString + "|" + __rootChanges);
 	};
 	threeWayMethods.setId = function setId(id) {
+		if (typeof id !== "string") {
+			// I don't know why I need this error check
+			throw new Meteor.Error("id-should-be-a-string");
+		}
 		threeWay.id.set(id);
 	};
 	threeWayMethods.getId = function getId() {
