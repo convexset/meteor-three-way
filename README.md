@@ -950,6 +950,13 @@ The following methods are crammed onto each template instance in an `onCreated` 
 
  - `getAll_NR`: gets all the data "non-reactively"
 
+ - `withArray(prop, methodName, ...args)`: invokes the method with name `methodName` (e.g.: push) on the array in a property with arguments `args` and returns the result (throws if no array is found)
+   * e.g.: `instance._3w_.withArray('numbers', 'push', 5);  /* returns resulting length */`
+   * e.g.: `instance._3w_.withArray('numbers', 'pop', 5);  /* returns 5 */`
+
+ - `mapData(prop, mapFunction, ...additionalArgs)`: invokes the function `mapFunction` with the data of a property as the first argument and additional arguments `additionalArgs`, sets the property to the result, and returns the result
+   * e.g.: `instance._3w_.mapData('someNumber', (x,y) => x+y, 5);  /* increments someNumber by 5 */`
+
  - `isPropVMOnly(prop)`: gets all view-model only data "non-reactively"
 
  - `getAll_VMOnly_NR`: gets all view-model only data "non-reactively"

@@ -1,4 +1,7 @@
 /* global ThreeWayDependencies: true */
+
+const _ = require('underscore');
+
 if (typeof ThreeWayDependencies === "undefined") {
 	ThreeWayDependencies = {};
 }
@@ -60,6 +63,23 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		Tracker.nonreactive(function() {
 			ret = threeWayMethods.getAll();
 		});
+		return ret;
+	};
+
+	threeWayMethods.withArray = function withArray(p, methodName, ...args) {
+		var item = threeWayMethods.get_NR(p);
+		if (!_.isArray(item)) {
+			throw new Meteor.Error("not-array");
+		}
+		var ret = Array.prototype[methodName].apply(item, args);
+		threeWayMethods.set(p, item);
+		return ret;
+	};
+
+	threeWayMethods.mapData = function mapData(p, mapFunction, ...additionalArgs) {
+		var item = threeWayMethods.get_NR(p);
+		var ret = mapFunction.apply(null, [item].concat(additionalArgs));
+		threeWayMethods.set(p, ret);
 		return ret;
 	};
 
