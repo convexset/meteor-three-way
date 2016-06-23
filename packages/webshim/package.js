@@ -1,4 +1,5 @@
 Package.describe({
+	// [validatis:stack]
 	name: 'convexset:webshim',
 	version: '1.15.10_4',
 	summary: 'The Webshim polyfill library for using HTML5 features across browsers',
