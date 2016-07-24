@@ -1181,7 +1181,7 @@ In addition, one may also bind to the full content of the view-model, wherein da
 
 There are some fundamental differences between binding to the entire view model (`@`) and binding to the associated document (`*`).
 
-| Binding to the View Model (`@`) | Binding to the Associated Documentation (`*`) |
+| Binding to the View Model (`@`) | Binding to the Associated Document (`*`) |
 |-------------------------------|---------------------------------------------|
 | All view model data           | Just data in the associated document        |
 | Flat data representation      | An object with "depth" and [transformations](http://docs.meteor.com/#/full/mongo_collection), if any |
