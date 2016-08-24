@@ -88,24 +88,10 @@
     // Custom Globals
     "globals": {
         // Core Meteor
-        "Meteor": true,
-        "Session": true,
-        "Template": true,
-        "Tracker": true,
-        "Blaze": true,
-        "Mongo": true,
-        "UI": true,
-        "EJSON": true,
-        "check": true,
         "Package": true,
-
-        // Additional Meteor
-        "_": true,
-        "ReactiveVar": true,
-        "ReactiveDict": true,
+        "Npm": true,
 
         // Core JS / Node
-        "process": true,
         "console": true,
         "require": true,
         

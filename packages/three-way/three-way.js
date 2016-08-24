@@ -1,6 +1,8 @@
 /* global ThreeWay: true */
 /* global ThreeWayDependencies: true */
 
+import { Meteor } from "meteor/meteor";
+
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 checkNpmVersions({
   'package-utils': '^0.2.1',

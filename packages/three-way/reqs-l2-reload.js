@@ -1,11 +1,11 @@
 /* global Reload: true */
 /* global __meteor_runtime_config__: true */
-/* global ThreeWayDependencies: true */
 
+import { Tracker } from "meteor/tracker";
 const PackageUtilities = require('package-utils');
 const _ = require('underscore');
 
-
+/* global ThreeWayDependencies: true */
 if (typeof ThreeWayDependencies === "undefined") {
 	ThreeWayDependencies = {};
 }

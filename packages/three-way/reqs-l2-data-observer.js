@@ -1,3 +1,6 @@
+import { Tracker } from "meteor/tracker";
+const _ = require('underscore');
+
 /* global ThreeWayDependencies: true */
 if (typeof ThreeWayDependencies === "undefined") {
 	ThreeWayDependencies = {};

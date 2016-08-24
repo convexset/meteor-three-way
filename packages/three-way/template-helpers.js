@@ -1,3 +1,5 @@
+import { Template } from "meteor/templating";
+
 /* global ThreeWayDependencies: true */
 if (typeof ThreeWayDependencies === "undefined") {
 	ThreeWayDependencies = {};
