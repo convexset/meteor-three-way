@@ -454,7 +454,7 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 
     // Reactively update _id of document with the return value of this
     // function (default: null; to not use this feature)
-    idGetter: function reactiveIdGetter() {
+    idGetter: function reactiveIdGetter(c) {
         // return something based on data in collections
         if (Template.instance().subscriptionsReady()) {
             /* return something here? */
@@ -467,6 +467,10 @@ ThreeWay.prepare(Template.DemoThreeWay, {
 
         // to avoid setting (changing) the _id
         // return null;
+
+        // c is a Tracker.Computation, and can be stopped via
+        // c.stop(), which means that following the return of this function
+        // the _id of the bound document will no longer be reactively updated
     }
 });
 ```

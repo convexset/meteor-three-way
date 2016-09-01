@@ -114,9 +114,9 @@ ThreeWayDependencies.templateOnRendered = function(options) {
 		//////////////////////////////////////////////////////////////////
 		// Set Up Id Getter
 		//////////////////////////////////////////////////////////////////
-		instance.autorun(function reactivelyUpdateId() {
+		instance.autorun(function reactivelyUpdateId(c) {
 			if (!!_.isFunction(options.idGetter)) {
-				const _id = options.idGetter(instance);
+				const _id = options.idGetter(c);
 				if (typeof _id === 'string') {
 					threeWayMethods.setId(_id);
 				}
