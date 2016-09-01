@@ -110,5 +110,18 @@ ThreeWayDependencies.templateOnRendered = function(options) {
 			}
 		}
 		ThreeWayDependencies.reload._registerForReload(myId, instance);
+
+		//////////////////////////////////////////////////////////////////
+		// Set Up Id Getter
+		//////////////////////////////////////////////////////////////////
+		instance.autorun(function reactivelyUpdateId() {
+			if (!!_.isFunction(options.idGetter)) {
+				const _id = options.idGetter(instance);
+				if (typeof _id === 'string') {
+					threeWayMethods.setId(_id);
+				}
+			}
+		});
+		//////////////////////////////////////////////////////////////////
 	};
 };

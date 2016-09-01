@@ -450,6 +450,23 @@ ThreeWay.prepare(Template.DemoThreeWay, {
     //      }
     updateOfFocusedFieldCallback: function(fieldMatchParams, newValue, currentValue) {
         console.info("Update of focused field to", newValue, "from", currentValue, "| Field Info:", fieldMatchParams);
+    },
+
+    // Reactively update _id of document with the return value of this
+    // function (default: null; to not use this feature)
+    idGetter: function reactiveIdGetter() {
+        // return something based on data in collections
+        if (Template.instance().subscriptionsReady()) {
+            /* return something here? */
+        }
+
+        // watch path and set _id (here's a FlowRouter example)
+        // it is recommended to give _id params in routes different names from
+        //   _id, such as "userId", "itemId", ...
+        return FlowRouter.getParam('itemId');
+
+        // to avoid setting (changing) the _id
+        // return null;
     }
 });
 ```

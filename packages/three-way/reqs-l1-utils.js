@@ -90,6 +90,7 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.utils, 'parse
 		helpers: {},
 		updateOfFocusedFieldCallback: null,
 		validateRepeats: false,
+		idGetter: null
 	}, function(v, k) {
 		if (!options.hasOwnProperty(k)) {
 			options[k] = v;

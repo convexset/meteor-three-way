@@ -1,13 +1,13 @@
 Package.describe({
 	// [validatis:stack]
 	name: 'convexset:three-way',
-	version: '0.2.30_1',
+	version: '0.2.31',
 	summary: 'Flexible and Blaze-friendly three-way (declarative) data-binding for Meteor',
 	git: 'https://github.com/convexset/meteor-three-way',
 	documentation: '../../README.md'
 });
 
-Package.onUse(function(api) {
+Package.onUse(function pkgSetup(api) {
 	api.versionsFrom('1.3.1');
 	api.use([
 		'ecmascript', 'mongo',
