@@ -8,8 +8,8 @@ checkNpmVersions({
 const PackageUtilities = require('package-utils');
 const _ = require('underscore');
 
-var _hjs = function HighlightJSThemes() {};
-HighlightJSThemes = new _hjs();
+var _hjst = function HighlightJSThemes() {};
+HighlightJSThemes = new _hjst();
 
 var allThemes = [
 	"agate",
@@ -181,25 +181,6 @@ PackageUtilities.addImmutablePropertyFunction(HighlightJSThemes, 'setRandomTheme
 	return themeName;
 });
 PackageUtilities.addPropertyGetter(HighlightJSThemes, 'currentTheme', () => currTheme);
-
-PackageUtilities.addImmutablePropertyFunction(HighlightJSThemes, "highlightWithWorker", function highlightWithWorker(elem) {
-	$(elem).each(function() {
-		var el = this;
-		var languageSubset = Array.prototype.slice.call(el.classList);
-		var worker = new Worker("/packages/convexset_highlight-js-themes/worker.js");
-		worker.onmessage = function workerOnMessage(event) {
-			var payload = JSON.parse(event.data);
-			// console.log(payload);
-			el.innerHTML = payload.value;
-			$(el).addClass("hljs");
-			worker.terminate();
-		};
-		worker.postMessage({
-			textContent: el.textContent,
-			languageSubset: languageSubset
-		});
-	});
-});
 
 Meteor.startup(function() {
 	if (!currTheme) {

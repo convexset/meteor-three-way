@@ -1,21 +1,20 @@
 # HighlightJS Themes
 
-This Meteor package exports [HighlightJS](https://highlightjs.org/) as the usual `hljs` and a tool `HighlightJSThemes` with the following functionality.
+This Meteor package exports a tool `HighlightJSThemes` with the following functionality.
 
 Accessible on [GitHub](https://github.com/convexset/meteor-three-way/tree/master/packages/highlight-js-themes) and [Atmosphere.js](https://atmospherejs.com/convexset/highlight-js-themes).
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-- [HighlightJS Themes](#highlightjs-themes)
+<!-- MarkdownTOC -->
 
 - [`HighlightJSThemes.allThemes`](#highlightjsthemesallthemes)
 - [`HighlightJSThemes.defaultTheme`](#highlightjsthemesdefaulttheme)
 - [`HighlightJSThemes.currentTheme`](#highlightjsthemescurrenttheme)
-- [`HighlightJSThemes.setRandomTheme()`](#highlightjsthemessetrandomtheme)
-- [`HighlightJSThemes.setTheme(themeId)`](#highlightjsthemessetthemethemeid)
-- [`HighlightJSThemes.highlightWithWorker(elemOrSelector)`](#highlightjsthemeshighlightwithworkerelemorselector)
+- [`HighlightJSThemes.setRandomTheme\(\)`](#highlightjsthemessetrandomtheme)
+- [`HighlightJSThemes.setTheme\(themeId\)`](#highlightjsthemessetthemethemeid)
+- [`HighlightJSThemes.highlightWithWorker\(elemOrSelector\)`](#highlightjsthemeshighlightwithworkerelemorselector)
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+<!-- /MarkdownTOC -->
+
 
 #### `HighlightJSThemes.allThemes`
 
