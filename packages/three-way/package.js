@@ -1,7 +1,7 @@
 Package.describe({
 	// [validatis:stack]
 	name: 'convexset:three-way',
-	version: '0.2.31_1',
+	version: '0.2.31_2',
 	summary: 'Flexible and Blaze-friendly three-way (declarative) data-binding for Meteor',
 	git: 'https://github.com/convexset/meteor-three-way',
 	documentation: '../../README.md'

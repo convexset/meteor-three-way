@@ -139,7 +139,10 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					miniMongoValue = miniMongoValue[f];
 				}
 				if (success) {
-					var miniMongoValueTransformed = options.dataTransformFromServer[threeWay.fieldMatchParams[fieldName].match](miniMongoValue, doc);
+					var miniMongoValueTransformed;
+					instance.callFunctionWithTemplateContext(() => {
+						miniMongoValueTransformed = options.dataTransformFromServer[threeWay.fieldMatchParams[fieldName].match](miniMongoValue, doc);
+					});
 					isUpdated = _.isEqual(miniMongoValueTransformed, threeWayMethods.get(fieldName));
 				} else {
 					isUpdated = false;
@@ -254,7 +257,10 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 					if (threeWay.validateInput(curr_f, value)) {
 						threeWay.__dataIsNotInvalid.set(curr_f, true);
 						var vmData = threeWayMethods.getAll_NR();
-						var valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
+						var valueToSend;
+						instance.callFunctionWithTemplateContext(() => {
+							valueToSend = options.dataTransformToServer[matchFamily](value, vmData);
+						});
 
 						if (IN_DEBUG_MODE_FOR('db')) {
 							console.log('[db|update] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Initiating update... ' + curr_f + ' -> ', value, ' (Value for server:', valueToSend, ')');
@@ -418,7 +424,9 @@ PackageUtilities.addImmutablePropertyFunction(ThreeWayDependencies.instanceUtils
 				}
 			}
 			if (passed && useValidatorForServer) {
+				// already called with Template context
 				valueToUse = options.dataTransformToServer[matchFamily](value, vmData);
+
 				validator = !!options.validatorsServer[matchFamilyServer].validator ? options.validatorsServer[matchFamilyServer].validator : () => true;
 				successCB = !!options.validatorsServer[matchFamilyServer].success ? options.validatorsServer[matchFamilyServer].success : function() {};
 				failureCB = !!options.validatorsServer[matchFamilyServer].failure ? options.validatorsServer[matchFamilyServer].failure : function() {};

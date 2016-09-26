@@ -77,7 +77,10 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 
 					// Update data if changed
 					var mostRecentValue = threeWay.__mostRecentDatabaseEntry[curr_f];
-					var newValue = options.dataTransformFromServer[match.match](v, doc);
+					var newValue;
+					instance.callFunctionWithTemplateContext(() => {
+						newValue = options.dataTransformFromServer[match.match](v, doc);
+					});
 					if (_.isEqual(mostRecentValue, newValue)) {
 						if (IN_DEBUG_MODE_FOR('db')) {
 							console.log('[db|receive] [' + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + '] Most recent value matches for ' + curr_f + '. No change to view model.');
