@@ -105,7 +105,10 @@ ThreeWayDependencies.dataObserver = function(options, instance, {
 							});
 							if ((focusedField === curr_f) && !!options.updateOfFocusedFieldCallback) {
 								threeWay._focusedFieldUpdatedOnServer.set(curr_f, true);
-								instance.callFunctionWithTemplateContext(options.updateOfFocusedFieldCallback, instance, threeWay.fieldMatchParams[focusedField], newValue, currentValue);
+								instance.callFunctionWithTemplateContext({
+									func: options.updateOfFocusedFieldCallback,
+									// elemOrSelector: ????
+								}, instance, threeWay.fieldMatchParams[focusedField], newValue, currentValue);
 							} else {
 								threeWay.data.set(curr_f, newValue);
 								updateRelatedFields(curr_f, newValue, true);

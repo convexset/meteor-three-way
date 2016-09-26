@@ -458,121 +458,124 @@ ThreeWayDependencies.createMethods = function(options, instance) {
 		}
 
 		var value;
-		instance.callFunctionWithTemplateContext(function() {
-			var dataSourceInfomation = [];
-			var getFailed = false;
-			var sourceElems = source.split("#").map(x => x.trim()).filter(x => x !== "");
-			value = sourceElems.map(function(src) {
-				var _value;
-				if (useHelpers && (typeof options.helpers[src] !== "undefined")) {
-					_value = _.isFunction(options.helpers[src]) ? options.helpers[src].call(instance) : options.helpers[src];
-					dataSourceInfomation.push({
-						type: 'helper',
-						name: src
-					});
-				} else if (useHelpers && (typeof threeWayMethods.getInheritedHelper(src) !== "undefined")) {
-					_value = _.isFunction(threeWayMethods.getInheritedHelper(src)) ? threeWayMethods.getInheritedHelper(src).call(instance) : threeWayMethods.getInheritedHelper(src);
-					dataSourceInfomation.push({
-						type: 'ancestor-helper',
-						name: src
-					});
-				} else if (useHelpers && thisTemplate.__helpers.has(src)) {
-					_value = _.isFunction(thisTemplate.__helpers.get(src)) ? thisTemplate.__helpers.get(src).call(instance) : thisTemplate.__helpers.get(src);
-					dataSourceInfomation.push({
-						type: 'blaze-helper',
-						name: src
-					});
-				} else if (allowWholeDocumentAsSource && (src === "*")) {
-					_value = threeWay.collection.findOne({
-						_id: threeWay.id.get()
-					});
-					dataSourceInfomation.push({
-						type: 'document',
-						name: src
-					});
-				} else if (allowWholeDocumentAsSource && (src === "@")) {
-					_value = threeWayMethods.getAll();
-					dataSourceInfomation.push({
-						type: 'view-model',
-						name: src
-					});
-				} else {
-					_value = threeWay.data.get(src);
-					dataSourceInfomation.push(_.extend({
-						type: 'field',
-						name: src
-					}, threeWay.fieldMatchParams[src] || {}));
-				}
-
-				if (typeof _value === "undefined") {
-					// try document...
-					_value = threeWay.collection.findOne({
-						_id: threeWay.id.get()
-					});
-					if (!!_value) {
-						var srcPath = src.split('.');
-						while (srcPath.length > 0) {
-							var thisPathElem = srcPath.shift();
-							if (typeof _value[thisPathElem] !== "undefined") {
-								_value = _value[thisPathElem];
-							} else {
-								_value = void 0;
-								break;
-							}
-						}
+		instance.callFunctionWithTemplateContext({
+			elemOrSelector: elem,
+			func: function() {
+				var dataSourceInfomation = [];
+				var getFailed = false;
+				var sourceElems = source.split("#").map(x => x.trim()).filter(x => x !== "");
+				value = sourceElems.map(function(src) {
+					var _value;
+					if (useHelpers && (typeof options.helpers[src] !== "undefined")) {
+						_value = _.isFunction(options.helpers[src]) ? options.helpers[src].call(instance) : options.helpers[src];
 						dataSourceInfomation.push({
-							type: 'document-field',
+							type: 'helper',
 							name: src
 						});
+					} else if (useHelpers && (typeof threeWayMethods.getInheritedHelper(src) !== "undefined")) {
+						_value = _.isFunction(threeWayMethods.getInheritedHelper(src)) ? threeWayMethods.getInheritedHelper(src).call(instance) : threeWayMethods.getInheritedHelper(src);
+						dataSourceInfomation.push({
+							type: 'ancestor-helper',
+							name: src
+						});
+					} else if (useHelpers && thisTemplate.__helpers.has(src)) {
+						_value = _.isFunction(thisTemplate.__helpers.get(src)) ? thisTemplate.__helpers.get(src).call(instance) : thisTemplate.__helpers.get(src);
+						dataSourceInfomation.push({
+							type: 'blaze-helper',
+							name: src
+						});
+					} else if (allowWholeDocumentAsSource && (src === "*")) {
+						_value = threeWay.collection.findOne({
+							_id: threeWay.id.get()
+						});
+						dataSourceInfomation.push({
+							type: 'document',
+							name: src
+						});
+					} else if (allowWholeDocumentAsSource && (src === "@")) {
+						_value = threeWayMethods.getAll();
+						dataSourceInfomation.push({
+							type: 'view-model',
+							name: src
+						});
+					} else {
+						_value = threeWay.data.get(src);
+						dataSourceInfomation.push(_.extend({
+							type: 'field',
+							name: src
+						}, threeWay.fieldMatchParams[src] || {}));
 					}
-				}
-
-				if ((typeof _value === "undefined") || additionalFailureCondition(_value)) {
-					getFailed = true;
-				} else {
-					return _value;
-				}
-			});
-			if (getFailed) {
-				if (value.length === 1) {
-					value = value[0];
-				}
-				return;
-			}
-			if (value.length === 1) {
-				dataSourceInfomation = dataSourceInfomation[0];
-			}
-
-			var mutatedValue;
-			var firstRunArgs = value.map(x => x);
-			if ((mappings.length === 0) && (value.length === 1)) {
-				// if single valued and no mappings, "unbox"
-				value = value[0];
-			}
-
-			_.forEach(mappings, function(m, idx) {
-				var preProcessor = threeWayMethods.getInheritedPreProcessor(m);
-				if (!_.isFunction(preProcessor)) {
-					console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+	
+					if (typeof _value === "undefined") {
+						// try document...
+						_value = threeWay.collection.findOne({
+							_id: threeWay.id.get()
+						});
+						if (!!_value) {
+							var srcPath = src.split('.');
+							while (srcPath.length > 0) {
+								var thisPathElem = srcPath.shift();
+								if (typeof _value[thisPathElem] !== "undefined") {
+									_value = _value[thisPathElem];
+								} else {
+									_value = void 0;
+									break;
+								}
+							}
+							dataSourceInfomation.push({
+								type: 'document-field',
+								name: src
+							});
+						}
+					}
+	
+					if ((typeof _value === "undefined") || additionalFailureCondition(_value)) {
+						getFailed = true;
+					} else {
+						return _value;
+					}
+				});
+				if (getFailed) {
+					if (value.length === 1) {
+						value = value[0];
+					}
 					return;
 				}
-
-				var vmData = threeWayMethods.getAll_NR();
-
-				if (idx === 0) {
-					mutatedValue = preProcessor.apply(instance, firstRunArgs.concat([elem, vmData, dataSourceInfomation]));
-				} else {
-					mutatedValue = preProcessor.call(instance, mutatedValue, elem, vmData, dataSourceInfomation);
+				if (value.length === 1) {
+					dataSourceInfomation = dataSourceInfomation[0];
 				}
-
-				if (processorsMutateValue) {
-					value = mutatedValue;
+	
+				var mutatedValue;
+				var firstRunArgs = value.map(x => x);
+				if ((mappings.length === 0) && (value.length === 1)) {
+					// if single valued and no mappings, "unbox"
+					value = value[0];
 				}
-			});
-
-			if (!processorsMutateValue && (mappings.length > 0) && (value.length === 1)) {
-				// if single valued and mappings do not mutate value, "unbox"
-				value = value[0];
+	
+				_.forEach(mappings, function(m, idx) {
+					var preProcessor = threeWayMethods.getInheritedPreProcessor(m);
+					if (!_.isFunction(preProcessor)) {
+						console.error('[ThreeWay] No such pre-processor: ' + m, elem);
+						return;
+					}
+	
+					var vmData = threeWayMethods.getAll_NR();
+	
+					if (idx === 0) {
+						mutatedValue = preProcessor.apply(instance, firstRunArgs.concat([elem, vmData, dataSourceInfomation]));
+					} else {
+						mutatedValue = preProcessor.call(instance, mutatedValue, elem, vmData, dataSourceInfomation);
+					}
+	
+					if (processorsMutateValue) {
+						value = mutatedValue;
+					}
+				});
+	
+				if (!processorsMutateValue && (mappings.length > 0) && (value.length === 1)) {
+					// if single valued and mappings do not mutate value, "unbox"
+					value = value[0];
+				}
 			}
 		});
 

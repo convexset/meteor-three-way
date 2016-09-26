@@ -71,7 +71,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 						if (!!_node.getAttribute) {
 							// For each node, look for sub nodes
 							// Make sure to check both node and children
-							var node_arr = Array.prototype.concat.apply((!!_node.getAttribute(DATA_BIND_ATTRIBUTE)) ? [_node] : [], $(_node).find('[' + DATA_BIND_ATTRIBUTE + ']'));
+							var node_arr = Array.prototype.concat.apply((!!_node.getAttribute(DATA_BIND_ATTRIBUTE)) ? [_node] : [], instance.$(_node).find('[' + DATA_BIND_ATTRIBUTE + ']'));
 							node_arr.forEach(function(node) {
 								if (!node.getAttributeNS(THREE_WAY_ATTRIBUTE_NAMESPACE, THREE_WAY_DATA_BINDING_ID)) {
 									if (IN_DEBUG_MODE_FOR('bind')) {
@@ -126,7 +126,7 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 						// Clear event handlers
 						if (!!threeWay.boundElemEventHandlers[thisElemId]) {
 							threeWay.boundElemEventHandlers[thisElemId].forEach(function(handlerInfo) {
-								$(node).unbind(handlerInfo.eventName, handlerInfo.handler);
+								instance.$(node).unbind(handlerInfo.eventName, handlerInfo.handler);
 							});
 							delete threeWay.boundElemEventHandlers[thisElemId];
 						}
@@ -145,8 +145,8 @@ ThreeWayDependencies.domObserver = function(options, instance) {
 						}
 					}
 
-					$(node).removeAttr(THREE_WAY_DATA_BINDING_ID);
-					// $(node).removeAttr(THREE_WAY_DATA_BINDING_INSTANCE);
+					instance.$(node).removeAttr(THREE_WAY_DATA_BINDING_ID);
+					// instance.$(node).removeAttr(THREE_WAY_DATA_BINDING_INSTANCE);
 				}
 
 				if (!!mutation.removedNodes) {

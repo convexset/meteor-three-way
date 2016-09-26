@@ -1121,8 +1121,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 									if (IN_DEBUG_MODE_FOR('event')) {
 										console.log("[.event|keyup=" + _eventName + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Firing " + m + " for", elem);
 									}
-									instance.callFunctionWithTemplateContext(function() {
-										handler.call(this, event, instance, threeWayMethods.getAll_NR());
+									instance.callFunctionWithTemplateContext({
+										elemOrSelector: elem,
+										func: function() {
+											handler.call(this, event, instance, threeWayMethods.getAll_NR());
+										}
 									}, this);
 								}, [key]));
 								compositeHandlerUsed = true;
@@ -1131,8 +1134,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 									if (IN_DEBUG_MODE_FOR('event')) {
 										console.log("[.event|keydown=" + _eventName + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Firing " + m + " for", elem);
 									}
-									instance.callFunctionWithTemplateContext(function() {
-										handler.call(this, event, instance, threeWayMethods.getAll_NR());
+									instance.callFunctionWithTemplateContext({
+										elemOrSelector: elem,
+										func: function() {
+											handler.call(this, event, instance, threeWayMethods.getAll_NR());
+										}
 									}, this);
 								}, [key]));
 								compositeHandlerUsed = true;
@@ -1147,8 +1153,11 @@ ThreeWayDependencies.createBindElementFunction = function(options, instance) {
 							if (IN_DEBUG_MODE_FOR('event')) {
 								console.log("[.event|" + eventName + "] [" + Tracker.nonreactive(threeWayMethods.get3wInstanceId) + "] Firing " + m + " for", elem);
 							}
-							instance.callFunctionWithTemplateContext(function() {
-								handler.call(this, event, instance, threeWayMethods.getAll_NR());
+							instance.callFunctionWithTemplateContext({
+								elemOrSelector: elem,
+								func: function() {
+									handler.call(this, event, instance, threeWayMethods.getAll_NR());
+								}
 							}, this);
 						});
 					});
