@@ -1,7 +1,7 @@
 Package.describe({
 	// [validatis:stack]
 	name: 'convexset:three-way',
-	version: '0.2.31_3',
+	version: '0.2.31_4',
 	summary: 'Flexible and Blaze-friendly three-way (declarative) data-binding for Meteor',
 	git: 'https://github.com/convexset/meteor-three-way',
 	documentation: '../../README.md'
@@ -14,7 +14,7 @@ Package.onUse(function pkgSetup(api) {
 		'templating',
 		'tracker', 'reactive-var', 'reactive-dict',
 		'reload',
-		'convexset:template-helpers@0.1.19',
+		'convexset:template-helpers@0.1.19_1',
 		'tmeasday:check-npm-versions@0.3.1'
 	], 'client');
 
