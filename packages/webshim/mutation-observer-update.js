@@ -2,7 +2,7 @@
 
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 checkNpmVersions({
-  'underscore' : '^1.8.3',
+	'underscore': '^1.8.3',
 });
 const _ = require('underscore');
 

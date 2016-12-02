@@ -1,7 +1,7 @@
 /* global Reload: true */
 /* global __meteor_runtime_config__: true */
 
-import { Tracker } from "meteor/tracker";
+import { Tracker } from 'meteor/tracker';
 const PackageUtilities = require('package-utils');
 const _ = require('underscore');
 

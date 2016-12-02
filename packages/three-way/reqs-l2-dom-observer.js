@@ -1,4 +1,4 @@
-import { Tracker } from "meteor/tracker";
+import { Tracker } from 'meteor/tracker';
 
 /* global ThreeWayDependencies: true */
 if (typeof ThreeWayDependencies === "undefined") {

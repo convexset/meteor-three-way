@@ -1,4 +1,4 @@
-import { Tracker } from "meteor/tracker";
+import { Tracker } from 'meteor/tracker';
 const _ = require('underscore');
 
 /* global ThreeWayDependencies: true */
